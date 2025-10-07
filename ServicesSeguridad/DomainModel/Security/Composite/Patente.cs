@@ -26,6 +26,8 @@ namespace ServicesSecurity.DomainModel.Security.Composite
 
         public string Orden { get; set; }
 
+        public string Descripcion { get; set; }
+
         public override void Add(Component component)
         {
             throw new Exception("No se pueden agregar elementos sobre primitivos");

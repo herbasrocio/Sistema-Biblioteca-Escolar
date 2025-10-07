@@ -74,7 +74,33 @@ namespace ServicesSecurity.DomainModel.Security.Composite
         {
             return childrens;
         }
-        /// 
+
+        /// <summary>
+        /// Obtiene todas las patentes (permisos) de esta familia recursivamente
+        /// Incluye patentes directas y patentes de familias hijas
+        /// </summary>
+        public List<Patente> ObtenerPatentes()
+        {
+            List<Patente> patentes = new List<Patente>();
+
+            foreach (var child in childrens)
+            {
+                // Si es una Patente, agregarla
+                if (child is Patente patente)
+                {
+                    patentes.Add(patente);
+                }
+                // Si es una Familia, obtener sus patentes recursivamente
+                else if (child is Familia familia)
+                {
+                    patentes.AddRange(familia.ObtenerPatentes());
+                }
+            }
+
+            return patentes;
+        }
+
+        ///
         /// <param name="component"></param>
         public override void Add(Component component)
         {

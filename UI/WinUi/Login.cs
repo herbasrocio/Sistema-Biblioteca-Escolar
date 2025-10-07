@@ -20,6 +20,7 @@ namespace UI
     public partial class Login : Form
     {
         private bool contraseñaVisible = false;
+        private string _idiomaSeleccionadoEnLogin = null; // Guardar el idioma seleccionado en el login
 
         public Login()
         {
@@ -65,11 +66,13 @@ namespace UI
 
         private void LnkEspañol_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
+            _idiomaSeleccionadoEnLogin = "es-AR"; // Guardar idioma seleccionado
             CambiarIdioma("es-AR");
         }
 
         private void LnkEnglish_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
+            _idiomaSeleccionadoEnLogin = "en-GB"; // Guardar idioma seleccionado
             CambiarIdioma("en-GB");
         }
 
@@ -115,12 +118,6 @@ namespace UI
                 // Intentar login usando LoginService
                 Usuario usuarioLogueado = LoginService.Login(txtUsuario.Text.Trim(), txtContraseña.Text);
 
-                // Aplicar idioma preferido del usuario
-                if (!string.IsNullOrEmpty(usuarioLogueado.IdiomaPreferido))
-                {
-                    CambiarIdioma(usuarioLogueado.IdiomaPreferido);
-                }
-
                 // Login exitoso - redirigir según el rol
                 RedirigirPorRol(usuarioLogueado);
             }
@@ -162,9 +159,30 @@ namespace UI
 
         private void RedirigirPorRol(Usuario usuario)
         {
-            // Obtener el nombre del rol desde la Familia de permisos
-            string nombreRol = usuario.ObtenerNombreRol();
+            // Determinar qué idioma usar: el seleccionado en el login tiene prioridad
+            string idiomaAUsar = _idiomaSeleccionadoEnLogin ?? usuario.IdiomaPreferido ?? "es-AR";
 
+            // Aplicar el idioma ANTES de crear el menú
+            CambiarIdioma(idiomaAUsar);
+
+            // Si el usuario seleccionó un idioma diferente en el login, guardarlo en la BD
+            if (!string.IsNullOrEmpty(_idiomaSeleccionadoEnLogin) &&
+                _idiomaSeleccionadoEnLogin != usuario.IdiomaPreferido)
+            {
+                try
+                {
+                    UsuarioBLL.CambiarIdiomaPreferido(usuario.IdUsuario, _idiomaSeleccionadoEnLogin);
+                    usuario.IdiomaPreferido = _idiomaSeleccionadoEnLogin;
+                }
+                catch (Exception ex)
+                {
+                    // Log error pero no interrumpir el login
+                    Console.WriteLine($"Error al actualizar idioma preferido: {ex.Message}");
+                }
+            }
+
+            // Verificar que el usuario tenga un rol asignado
+            string nombreRol = usuario.ObtenerNombreRol();
             if (string.IsNullOrWhiteSpace(nombreRol))
             {
                 MessageBox.Show(LanguageManager.Translate("usuario_sin_rol"),
@@ -173,26 +191,11 @@ namespace UI
                 return;
             }
 
-            switch (nombreRol.ToUpper())
-            {
-                case "DOCENTE":
-                    UI.WinUi.Docente.menuDocente menuDoc = new UI.WinUi.Docente.menuDocente(usuario);
-                    menuDoc.Show();
-                    this.Hide();
-                    break;
-
-                case "ADMINISTRADOR":
-                    menuAdministrador menuAdmin = new menuAdministrador(usuario);
-                    menuAdmin.Show();
-                    this.Hide();
-                    break;
-
-                default:
-                    MessageBox.Show(LanguageManager.Translate("rol_no_reconocido"),
-                        LanguageManager.Translate("error_autorizacion"),
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
-            }
+            // Redirigir al menú (único para todos los roles)
+            // El menú mostrará/ocultará opciones según los permisos del usuario
+            menu menuForm = new menu(usuario);
+            menuForm.Show();
+            this.Hide();
         }
 
         private void BtnRecuperarContraseña_Click(object sender, EventArgs e)

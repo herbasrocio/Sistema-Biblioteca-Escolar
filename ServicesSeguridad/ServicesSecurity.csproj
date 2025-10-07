@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BLL\ExceptionBLL.cs" />
+    <Compile Include="BLL\FamiliaBLL.cs" />
     <Compile Include="BLL\LanguageBLL.cs" />
     <Compile Include="BLL\LoggerBLL.cs" />
     <Compile Include="BLL\UsuarioBLL.cs" />

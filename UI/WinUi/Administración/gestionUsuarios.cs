@@ -47,9 +47,6 @@ namespace UI.WinUi.Administrador
             // Cargar roles (Familias) en ComboBox
             CargarRolesEnComboBox();
 
-            // Cargar idiomas disponibles
-            CargarIdiomasEnComboBox();
-
             // Configurar estado inicial
             BloquearCampos();
             btnGuardar.Enabled = false;
@@ -79,26 +76,6 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void CargarIdiomasEnComboBox()
-        {
-            try
-            {
-                var idiomas = new Dictionary<string, string>
-                {
-                    { "es-AR", "Español (Argentina)" },
-                    { "en-GB", "English (United Kingdom)" }
-                };
-
-                comboBoxIdioma.DataSource = new BindingSource(idiomas, null);
-                comboBoxIdioma.DisplayMember = "Value";
-                comboBoxIdioma.ValueMember = "Key";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al cargar idiomas: {ex.Message}",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         private void GestionUsuarios_Load(object sender, EventArgs e)
         {
@@ -123,8 +100,6 @@ namespace UI.WinUi.Administrador
                 lblEmail.Text = LanguageManager.Translate("email");
                 lblContraseña.Text = LanguageManager.Translate("contraseña");
                 lblPerfil.Text = LanguageManager.Translate("perfil");
-                lblIdioma.Text = LanguageManager.Translate("idioma");
-                lblEstado.Text = LanguageManager.Translate("estado") + ":";
 
                 // Traducir Botones
                 btnNuevo.Text = LanguageManager.Translate("nuevo");
@@ -238,7 +213,6 @@ namespace UI.WinUi.Administrador
                 string nombre = txtNombreUsuario.Text.Trim();
                 string email = txtEmail.Text.Trim();
                 string password = txtContraseña.Text;
-                string idioma = comboBoxIdioma.SelectedValue?.ToString() ?? "es-AR";
 
                 // Validar formato de email
                 if (!ValidarFormatoEmail(email))
@@ -269,16 +243,13 @@ namespace UI.WinUi.Administrador
                         rolSeleccionado.IdComponent  // Pasar ID de la Familia de rol
                     );
 
-                    // Actualizar idioma preferido
-                    UsuarioBLL.CambiarIdiomaPreferido(_usuarioSeleccionado.IdUsuario, idioma);
-
                     MessageBox.Show("Usuario actualizado correctamente",
                         "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    // Crear nuevo usuario
-                    UsuarioBLL.CrearUsuario(nombre, email, password, rolSeleccionado.IdComponent, idioma);
+                    // Crear nuevo usuario (idioma por defecto: es-AR)
+                    UsuarioBLL.CrearUsuario(nombre, email, password, rolSeleccionado.IdComponent, "es-AR");
 
                     MessageBox.Show("Usuario creado correctamente",
                         "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -426,17 +397,10 @@ namespace UI.WinUi.Administrador
                     comboBoxPerfil.SelectedIndex = -1;
                 }
 
-                // Seleccionar el idioma preferido
-                if (!string.IsNullOrEmpty(usuario.IdiomaPreferido))
-                {
-                    comboBoxIdioma.SelectedValue = usuario.IdiomaPreferido;
-                }
-                else
-                {
-                    comboBoxIdioma.SelectedValue = "es-AR";
-                }
-
-                lblEstado.Text = $"Estado: {(usuario.Activo ? "Activo" : "Inactivo")}";
+                // Traducir el label de estado dinámicamente
+                string estadoTraducido = LanguageManager.Translate("estado");
+                string estadoValor = usuario.Activo ? LanguageManager.Translate("activo") : LanguageManager.Translate("inactivo");
+                lblEstado.Text = $"{estadoTraducido}: {estadoValor}";
             }
         }
 
@@ -446,8 +410,7 @@ namespace UI.WinUi.Administrador
             txtEmail.Clear();
             txtContraseña.Clear();
             comboBoxPerfil.SelectedIndex = -1;
-            comboBoxIdioma.SelectedValue = "es-AR";
-            lblEstado.Text = "Estado:";
+            lblEstado.Text = LanguageManager.Translate("estado") + ":";
             _usuarioSeleccionado = null;
         }
 
@@ -457,7 +420,6 @@ namespace UI.WinUi.Administrador
             txtEmail.Enabled = false;
             txtContraseña.Enabled = false;
             comboBoxPerfil.Enabled = false;
-            comboBoxIdioma.Enabled = false;
         }
 
         private void DesbloquearCampos()
@@ -466,7 +428,6 @@ namespace UI.WinUi.Administrador
             txtEmail.Enabled = true;
             txtContraseña.Enabled = true;
             comboBoxPerfil.Enabled = true;
-            comboBoxIdioma.Enabled = true;
         }
 
         private void BtnVolver_Click(object sender, EventArgs e)

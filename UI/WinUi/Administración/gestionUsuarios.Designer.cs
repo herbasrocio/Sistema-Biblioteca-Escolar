@@ -34,12 +34,10 @@
             this.txtEmail = new System.Windows.Forms.TextBox();
             this.txtContraseña = new System.Windows.Forms.TextBox();
             this.comboBoxPerfil = new System.Windows.Forms.ComboBox();
-            this.comboBoxIdioma = new System.Windows.Forms.ComboBox();
             this.lblNombreUsuario = new System.Windows.Forms.Label();
             this.lblPerfil = new System.Windows.Forms.Label();
             this.lblEmail = new System.Windows.Forms.Label();
             this.lblContraseña = new System.Windows.Forms.Label();
-            this.lblIdioma = new System.Windows.Forms.Label();
             this.lblEstado = new System.Windows.Forms.Label();
             this.groupBoxDatosUsuario = new System.Windows.Forms.GroupBox();
             this.dgvUsuarios = new System.Windows.Forms.DataGridView();
@@ -106,16 +104,7 @@
             this.comboBoxPerfil.Name = "comboBoxPerfil";
             this.comboBoxPerfil.Size = new System.Drawing.Size(125, 21);
             this.comboBoxPerfil.TabIndex = 5;
-            // 
-            // comboBoxIdioma
-            // 
-            this.comboBoxIdioma.FormattingEnabled = true;
-            this.comboBoxIdioma.Location = new System.Drawing.Point(405, 102);
-            this.comboBoxIdioma.Margin = new System.Windows.Forms.Padding(2);
-            this.comboBoxIdioma.Name = "comboBoxIdioma";
-            this.comboBoxIdioma.Size = new System.Drawing.Size(125, 21);
-            this.comboBoxIdioma.TabIndex = 6;
-            // 
+            //
             // lblNombreUsuario
             // 
             this.lblNombreUsuario.AutoSize = true;
@@ -155,17 +144,7 @@
             this.lblContraseña.Size = new System.Drawing.Size(61, 13);
             this.lblContraseña.TabIndex = 9;
             this.lblContraseña.Text = "Contraseña";
-            // 
-            // lblIdioma
-            // 
-            this.lblIdioma.AutoSize = true;
-            this.lblIdioma.Location = new System.Drawing.Point(338, 105);
-            this.lblIdioma.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblIdioma.Name = "lblIdioma";
-            this.lblIdioma.Size = new System.Drawing.Size(38, 13);
-            this.lblIdioma.TabIndex = 11;
-            this.lblIdioma.Text = "Idioma";
-            // 
+            //
             // lblEstado
             // 
             this.lblEstado.AutoSize = true;
@@ -184,9 +163,7 @@
             this.groupBoxDatosUsuario.Controls.Add(this.lblEstado);
             this.groupBoxDatosUsuario.Controls.Add(this.txtNombreUsuario);
             this.groupBoxDatosUsuario.Controls.Add(this.comboBoxPerfil);
-            this.groupBoxDatosUsuario.Controls.Add(this.comboBoxIdioma);
             this.groupBoxDatosUsuario.Controls.Add(this.lblPerfil);
-            this.groupBoxDatosUsuario.Controls.Add(this.lblIdioma);
             this.groupBoxDatosUsuario.Controls.Add(this.lblContraseña);
             this.groupBoxDatosUsuario.Controls.Add(this.lblEmail);
             this.groupBoxDatosUsuario.Controls.Add(this.txtContraseña);
@@ -325,12 +302,10 @@
         private System.Windows.Forms.TextBox txtEmail;
         private System.Windows.Forms.TextBox txtContraseña;
         private System.Windows.Forms.ComboBox comboBoxPerfil;
-        private System.Windows.Forms.ComboBox comboBoxIdioma;
         private System.Windows.Forms.Label lblNombreUsuario;
         private System.Windows.Forms.Label lblPerfil;
         private System.Windows.Forms.Label lblEmail;
         private System.Windows.Forms.Label lblContraseña;
-        private System.Windows.Forms.Label lblIdioma;
         private System.Windows.Forms.Label lblEstado;
         private System.Windows.Forms.GroupBox groupBoxDatosUsuario;
         private System.Windows.Forms.GroupBox groupBoxAcciones;

@@ -31,14 +31,16 @@ namespace ServicesSecurity.DAL.Implementations.Adapter
         public Patente Adapt(object[] values)
         {
             //Hidratar el objeto patente
+            // El SP devuelve: IdPatente, FormName, MenuItemName, Orden, Descripcion
             Patente patente = new Patente()
             {
                 IdComponent = Guid.Parse(values[0].ToString()),
-                MenuItemName = values[1].ToString(),
-                FormName = values[2].ToString(),
-                Orden = values[3].ToString()
+                FormName = values[1].ToString(),
+                MenuItemName = values[2].ToString(),
+                Orden = values[3]?.ToString(),
+                Descripcion = values.Length > 4 ? values[4]?.ToString() : string.Empty
             };
-            // estaba mal un sp del getone de patente
+
             return patente;
         }
     }
