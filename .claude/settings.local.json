@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sqlcmd:*)",
+      "Bash(Get-Process)",
+      "Bash(Where-Object {$_rocessName -eq \"UI\"})",
+      "Bash(Select-Object Id, ProcessName)",
+      "Bash(powershell:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
