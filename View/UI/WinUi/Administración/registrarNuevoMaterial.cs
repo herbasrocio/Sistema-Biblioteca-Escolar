@@ -1,36 +1,34 @@
-using DomainModel;
 using DomainModel.Enums;
 using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.Services;
 using System;
 using System.Windows.Forms;
 using UI.Helpers;
-using BLL;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class RegistrarMaterial : Form
+    public partial class registrarNuevoMaterial : Form
     {
         private Usuario _usuarioLogueado;
-        private MaterialBLL _materialBLL;
 
-        public RegistrarMaterial()
+        public registrarNuevoMaterial()
         {
             InitializeComponent();
         }
 
-        public RegistrarMaterial(Usuario usuario) : this()
+        public registrarNuevoMaterial(Usuario usuario) : this()
         {
             _usuarioLogueado = usuario;
-            _materialBLL = new MaterialBLL();
             ConfigurarFormulario();
         }
 
         private void ConfigurarFormulario()
         {
-            this.Load += RegistrarMaterial_Load;
+            this.Load += registrarNuevoMaterial_Load;
+            btnNuevo.Click += BtnNuevo_Click;
             btnGuardar.Click += BtnGuardar_Click;
-            btnLimpiar.Click += BtnLimpiar_Click;
+            btnModificar.Click += BtnModificar_Click;
+            btnEliminar.Click += BtnEliminar_Click;
             btnVolver.Click += BtnVolver_Click;
             txtAnioPublicacion.KeyPress += TxtAnioPublicacion_KeyPress;
             txtAnioPublicacion.Leave += TxtAnioPublicacion_Leave;
@@ -43,13 +41,14 @@ namespace UI.WinUi.Administrador
             CargarGeneros();
             CargarEdadesRecomendadas();
 
-            // Inicializar con valores por defecto
-            LimpiarCampos();
+            BloquearCampos();
+            btnGuardar.Enabled = false;
         }
 
-        private void RegistrarMaterial_Load(object sender, EventArgs e)
+        private void registrarNuevoMaterial_Load(object sender, EventArgs e)
         {
             AplicarTraducciones();
+            // CargarMateriales();
         }
 
         private void AplicarTraducciones()
@@ -68,11 +67,13 @@ namespace UI.WinUi.Administrador
                 lblEditorial.Text = LanguageManager.Translate("editorial");
                 lblAnioPublicacion.Text = LanguageManager.Translate("anio_publicacion");
                 lblEdadRecomendada.Text = LanguageManager.Translate("edad_recomendada");
-                lblCantidad.Text = LanguageManager.Translate("cantidad");
+                lblEjemplares.Text = LanguageManager.Translate("cantidad");
                 lblDescripcion.Text = LanguageManager.Translate("descripcion");
 
+                btnNuevo.Text = LanguageManager.Translate("nuevo");
                 btnGuardar.Text = LanguageManager.Translate("guardar_material");
-                btnLimpiar.Text = LanguageManager.Translate("limpiar");
+                btnModificar.Text = LanguageManager.Translate("editar");
+                btnEliminar.Text = LanguageManager.Translate("eliminar");
                 btnVolver.Text = LanguageManager.Translate("volver");
             }
             catch (Exception ex)
@@ -83,40 +84,24 @@ namespace UI.WinUi.Administrador
 
         #region CRUD Operations
 
+        private void BtnNuevo_Click(object sender, EventArgs e)
+        {
+            LimpiarCampos();
+            DesbloquearCampos();
+            btnGuardar.Enabled = true;
+            btnGuardar.Visible = true;
+            btnModificar.Visible = false;
+            btnEliminar.Visible = false;
+            txtTitulo.Focus();
+        }
+
         private void BtnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                // Validar campos obligatorios
-                if (!ValidarCampos())
-                    return;
-
-                // Crear objeto Material con los datos del formulario
-                Material nuevoMaterial = new Material
-                {
-                    Titulo = txtTitulo.Text.Trim(),
-                    Autor = txtAutor.Text.Trim(),
-                    Editorial = txtEditorial.Text.Trim(),
-                    Tipo = (TipoMaterial)((dynamic)comboBoxTipo.SelectedItem).Value,
-                    Genero = comboBoxGenero.SelectedItem?.ToString(),
-                    ISBN = txtISBN.Text.Trim(),
-                    AnioPublicacion = int.TryParse(txtAnioPublicacion.Text, out int anio) ? (int?)anio : null,
-                    EdadRecomendada = comboBoxEdadRecomendada.SelectedItem?.ToString(),
-                    Descripcion = txtDescripcion.Text.Trim(),
-                    CantidadTotal = (int)numCantidad.Value,
-                    CantidadDisponible = (int)numCantidad.Value // Inicialmente todo está disponible
-                };
-
-                // Guardar en la base de datos
-                _materialBLL.GuardarMaterial(nuevoMaterial);
-
-                MessageBox.Show("Material registrado exitosamente",
-                    LanguageManager.Translate("exito"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-
-                LimpiarCampos();
-                txtTitulo.Focus();
+                // TODO: Implementar lógica de guardado
+                MessageBox.Show("Funcionalidad pendiente de implementación",
+                    "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -125,10 +110,38 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void BtnLimpiar_Click(object sender, EventArgs e)
+        private void BtnModificar_Click(object sender, EventArgs e)
         {
-            LimpiarCampos();
+            DesbloquearCampos();
+            btnGuardar.Enabled = true;
+            btnGuardar.Visible = true;
+            btnModificar.Visible = false;
+            btnEliminar.Visible = false;
             txtTitulo.Focus();
+        }
+
+        private void BtnEliminar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var confirmResult = MessageBox.Show(
+                    "¿Está seguro que desea eliminar este material?",
+                    "Confirmar eliminación",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (confirmResult == DialogResult.Yes)
+                {
+                    // TODO: Implementar lógica de eliminación
+                    MessageBox.Show("Funcionalidad pendiente de implementación",
+                        "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al eliminar: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnVolver_Click(object sender, EventArgs e)
@@ -158,7 +171,7 @@ namespace UI.WinUi.Administrador
             EstilosSistema.AplicarEstiloLabel(lblEditorial);
             EstilosSistema.AplicarEstiloLabel(lblAnioPublicacion);
             EstilosSistema.AplicarEstiloLabel(lblEdadRecomendada);
-            EstilosSistema.AplicarEstiloLabel(lblCantidad);
+            EstilosSistema.AplicarEstiloLabel(lblEjemplares);
             EstilosSistema.AplicarEstiloLabel(lblDescripcion);
 
             // Aplicar estilos a los TextBox
@@ -175,9 +188,14 @@ namespace UI.WinUi.Administrador
             EstilosSistema.AplicarEstiloComboBox(comboBoxEdadRecomendada);
 
             // Aplicar estilos a los botones
+            EstilosSistema.AplicarEstiloBotonPrimario(btnNuevo);
             EstilosSistema.AplicarEstiloBotonPrimario(btnGuardar);
-            EstilosSistema.AplicarEstiloBotonSecundario(btnLimpiar);
+            EstilosSistema.AplicarEstiloBotonSecundario(btnModificar);
+            EstilosSistema.AplicarEstiloBotonSecundario(btnEliminar);
             EstilosSistema.AplicarEstiloBotonSecundario(btnVolver);
+
+            // Aplicar estilos al DataGridView
+            EstilosSistema.AplicarEstiloDataGridView(dgvMateriales);
         }
 
         private void CargarTiposMaterial()
@@ -260,40 +278,35 @@ namespace UI.WinUi.Administrador
             comboBoxTipo.SelectedIndex = -1;
             comboBoxGenero.SelectedIndex = -1;
             comboBoxEdadRecomendada.SelectedIndex = -1;
-            numCantidad.Value = 1;
+            numEjemplares.Value = 1;
         }
 
-        private bool ValidarCampos()
+        private void BloquearCampos()
         {
-            if (string.IsNullOrWhiteSpace(txtTitulo.Text))
-            {
-                MessageBox.Show("El título es obligatorio", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtTitulo.Focus();
-                return false;
-            }
+            txtTitulo.Enabled = false;
+            txtAutor.Enabled = false;
+            txtISBN.Enabled = false;
+            txtEditorial.Enabled = false;
+            txtDescripcion.Enabled = false;
+            txtAnioPublicacion.Enabled = false;
+            comboBoxTipo.Enabled = false;
+            comboBoxGenero.Enabled = false;
+            comboBoxEdadRecomendada.Enabled = false;
+            numEjemplares.Enabled = false;
+        }
 
-            if (string.IsNullOrWhiteSpace(txtAutor.Text))
-            {
-                MessageBox.Show("El autor es obligatorio", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtAutor.Focus();
-                return false;
-            }
-
-            if (comboBoxTipo.SelectedIndex == -1)
-            {
-                MessageBox.Show("Debe seleccionar un tipo de material", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                comboBoxTipo.Focus();
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(txtAnioPublicacion.Text) || txtAnioPublicacion.Text.Length != 4)
-            {
-                MessageBox.Show("El año de publicación debe tener 4 dígitos", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtAnioPublicacion.Focus();
-                return false;
-            }
-
-            return true;
+        private void DesbloquearCampos()
+        {
+            txtTitulo.Enabled = true;
+            txtAutor.Enabled = true;
+            txtISBN.Enabled = true;
+            txtEditorial.Enabled = true;
+            txtDescripcion.Enabled = true;
+            txtAnioPublicacion.Enabled = true;
+            comboBoxTipo.Enabled = true;
+            comboBoxGenero.Enabled = true;
+            comboBoxEdadRecomendada.Enabled = true;
+            numEjemplares.Enabled = true;
         }
 
         private void TxtAnioPublicacion_KeyPress(object sender, KeyPressEventArgs e)

@@ -29,8 +29,16 @@ namespace DAL.Implementations
             {
                 conn.Open();
                 string query = @"
-                    INSERT INTO Material (IdMaterial, Titulo, Autor, Editorial, Tipo, Genero, CantidadTotal, CantidadDisponible, FechaRegistro, Activo)
-                    VALUES (@IdMaterial, @Titulo, @Autor, @Editorial, @Tipo, @Genero, @CantidadTotal, @CantidadDisponible, @FechaRegistro, @Activo)";
+                    INSERT INTO Material (
+                        IdMaterial, Titulo, Autor, Editorial, Tipo, Genero,
+                        ISBN, AnioPublicacion, EdadRecomendada, Descripcion,
+                        CantidadTotal, CantidadDisponible, FechaRegistro, Activo
+                    )
+                    VALUES (
+                        @IdMaterial, @Titulo, @Autor, @Editorial, @Tipo, @Genero,
+                        @ISBN, @AnioPublicacion, @EdadRecomendada, @Descripcion,
+                        @CantidadTotal, @CantidadDisponible, @FechaRegistro, @Activo
+                    )";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -38,8 +46,12 @@ namespace DAL.Implementations
                     cmd.Parameters.AddWithValue("@Titulo", entity.Titulo);
                     cmd.Parameters.AddWithValue("@Autor", entity.Autor);
                     cmd.Parameters.AddWithValue("@Editorial", (object)entity.Editorial ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Tipo", entity.Tipo);
-                    cmd.Parameters.AddWithValue("@Genero", entity.Genero);
+                    cmd.Parameters.AddWithValue("@Tipo", entity.Tipo.ToString());
+                    cmd.Parameters.AddWithValue("@Genero", (object)entity.Genero ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ISBN", (object)entity.ISBN ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@AnioPublicacion", entity.AnioPublicacion.HasValue ? (object)entity.AnioPublicacion.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@EdadRecomendada", (object)entity.EdadRecomendada ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Descripcion", (object)entity.Descripcion ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@CantidadTotal", entity.CantidadTotal);
                     cmd.Parameters.AddWithValue("@CantidadDisponible", entity.CantidadDisponible);
                     cmd.Parameters.AddWithValue("@FechaRegistro", entity.FechaRegistro);
@@ -62,6 +74,10 @@ namespace DAL.Implementations
                         Editorial = @Editorial,
                         Tipo = @Tipo,
                         Genero = @Genero,
+                        ISBN = @ISBN,
+                        AnioPublicacion = @AnioPublicacion,
+                        EdadRecomendada = @EdadRecomendada,
+                        Descripcion = @Descripcion,
                         CantidadTotal = @CantidadTotal,
                         CantidadDisponible = @CantidadDisponible,
                         Activo = @Activo
@@ -73,8 +89,12 @@ namespace DAL.Implementations
                     cmd.Parameters.AddWithValue("@Titulo", entity.Titulo);
                     cmd.Parameters.AddWithValue("@Autor", entity.Autor);
                     cmd.Parameters.AddWithValue("@Editorial", (object)entity.Editorial ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Tipo", entity.Tipo);
-                    cmd.Parameters.AddWithValue("@Genero", entity.Genero);
+                    cmd.Parameters.AddWithValue("@Tipo", entity.Tipo.ToString());
+                    cmd.Parameters.AddWithValue("@Genero", (object)entity.Genero ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ISBN", (object)entity.ISBN ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@AnioPublicacion", entity.AnioPublicacion.HasValue ? (object)entity.AnioPublicacion.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@EdadRecomendada", (object)entity.EdadRecomendada ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Descripcion", (object)entity.Descripcion ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@CantidadTotal", entity.CantidadTotal);
                     cmd.Parameters.AddWithValue("@CantidadDisponible", entity.CantidadDisponible);
                     cmd.Parameters.AddWithValue("@Activo", entity.Activo);

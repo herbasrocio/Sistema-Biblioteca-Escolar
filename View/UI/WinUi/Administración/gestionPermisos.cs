@@ -407,5 +407,10 @@ namespace UI.WinUi.Administrador
                 cboUsuarios.SelectedIndex = -1;
             }
         }
+
+        private void checkedListPatentesRol_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

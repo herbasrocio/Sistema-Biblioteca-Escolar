@@ -15,6 +15,8 @@ namespace UI.WinUi.Administrador
         private const string PATENTE_PERMISOS = "GestionPermisos";
         private const string PATENTE_CONSULTAR_MATERIAL = "ConsultarMaterial";
         private const string PATENTE_REGISTRAR_MATERIAL = "RegistrarMaterial";
+        private const string PATENTE_EDITAR_MATERIAL = "EditarMaterial";
+        private const string PATENTE_GESTIONAR_EJEMPLARES = "GestionarEjemplares";
         private const string PATENTE_ALUMNOS = "GestionAlumnos";
         private const string PATENTE_PRESTAMOS = "GestionPrestamos";
         private const string PATENTE_DEVOLUCIONES = "GestionDevoluciones";
@@ -173,7 +175,7 @@ namespace UI.WinUi.Administrador
         {
             try
             {
-                registrarMaterial formRegistrar = new registrarMaterial(_usuarioLogueado);
+                RegistrarMaterial formRegistrar = new RegistrarMaterial(_usuarioLogueado);
                 formRegistrar.ShowDialog();
             }
             catch (Exception ex)

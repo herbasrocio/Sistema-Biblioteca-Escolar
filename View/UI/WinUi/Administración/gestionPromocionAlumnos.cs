@@ -150,7 +150,7 @@ namespace UI.WinUi.Administrador
                 btnPromocionarGrado.Text = LanguageManager.Translate("promocionar_grado");
                 btnPromocionMasiva.Text = LanguageManager.Translate("promocion_masiva");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Si falta alguna traducción, usar texto por defecto
                 this.Text = "Promoción de Alumnos";

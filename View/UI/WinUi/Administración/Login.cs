@@ -207,7 +207,7 @@ namespace UI
 
                 MessageBox.Show(mensaje, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Si falla la traducción, mostrar mensaje por defecto
                 MessageBox.Show(

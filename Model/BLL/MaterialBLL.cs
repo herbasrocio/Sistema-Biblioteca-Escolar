@@ -43,8 +43,8 @@ namespace BLL
             if (string.IsNullOrWhiteSpace(material.Autor))
                 throw new Exception("El autor es obligatorio");
 
-            if (string.IsNullOrWhiteSpace(material.Tipo))
-                throw new Exception("El tipo es obligatorio");
+            // El Tipo es un enum, siempre tendrá un valor válido por defecto
+            // No es necesario validarlo
 
             if (string.IsNullOrWhiteSpace(material.Genero))
                 throw new Exception("El género es obligatorio");
@@ -70,8 +70,8 @@ namespace BLL
             if (string.IsNullOrWhiteSpace(material.Autor))
                 throw new Exception("El autor es obligatorio");
 
-            if (string.IsNullOrWhiteSpace(material.Tipo))
-                throw new Exception("El tipo es obligatorio");
+            // El Tipo es un enum, siempre tendrá un valor válido por defecto
+            // No es necesario validarlo
 
             if (string.IsNullOrWhiteSpace(material.Genero))
                 throw new Exception("El género es obligatorio");

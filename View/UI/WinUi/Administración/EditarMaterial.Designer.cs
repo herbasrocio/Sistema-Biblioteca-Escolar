@@ -1,6 +1,6 @@
 namespace UI.WinUi.Administrador
 {
-    partial class RegistrarMaterial
+    partial class EditarMaterial
     {
         /// <summary>
         /// Required designer variable.
@@ -29,12 +29,10 @@ namespace UI.WinUi.Administrador
         private void InitializeComponent()
         {
             this.groupBoxDatosMaterial = new System.Windows.Forms.GroupBox();
-            this.txtDescripcion = new System.Windows.Forms.TextBox();
-            this.lblDescripcion = new System.Windows.Forms.Label();
             this.numCantidad = new System.Windows.Forms.NumericUpDown();
             this.lblCantidad = new System.Windows.Forms.Label();
-            this.comboBoxEdadRecomendada = new System.Windows.Forms.ComboBox();
-            this.lblEdadRecomendada = new System.Windows.Forms.Label();
+            this.comboBoxNivel = new System.Windows.Forms.ComboBox();
+            this.lblNivel = new System.Windows.Forms.Label();
             this.txtAnioPublicacion = new System.Windows.Forms.TextBox();
             this.lblAnioPublicacion = new System.Windows.Forms.Label();
             this.txtEditorial = new System.Windows.Forms.TextBox();
@@ -51,7 +49,7 @@ namespace UI.WinUi.Administrador
             this.lblTitulo = new System.Windows.Forms.Label();
             this.groupBoxAcciones = new System.Windows.Forms.GroupBox();
             this.btnVolver = new System.Windows.Forms.Button();
-            this.btnLimpiar = new System.Windows.Forms.Button();
+            this.btnEliminar = new System.Windows.Forms.Button();
             this.btnGuardar = new System.Windows.Forms.Button();
             this.groupBoxDatosMaterial.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numCantidad)).BeginInit();
@@ -61,12 +59,10 @@ namespace UI.WinUi.Administrador
             // groupBoxDatosMaterial
             //
             this.groupBoxDatosMaterial.BackColor = System.Drawing.Color.Transparent;
-            this.groupBoxDatosMaterial.Controls.Add(this.txtDescripcion);
-            this.groupBoxDatosMaterial.Controls.Add(this.lblDescripcion);
             this.groupBoxDatosMaterial.Controls.Add(this.numCantidad);
             this.groupBoxDatosMaterial.Controls.Add(this.lblCantidad);
-            this.groupBoxDatosMaterial.Controls.Add(this.comboBoxEdadRecomendada);
-            this.groupBoxDatosMaterial.Controls.Add(this.lblEdadRecomendada);
+            this.groupBoxDatosMaterial.Controls.Add(this.comboBoxNivel);
+            this.groupBoxDatosMaterial.Controls.Add(this.lblNivel);
             this.groupBoxDatosMaterial.Controls.Add(this.txtAnioPublicacion);
             this.groupBoxDatosMaterial.Controls.Add(this.lblAnioPublicacion);
             this.groupBoxDatosMaterial.Controls.Add(this.txtEditorial);
@@ -85,31 +81,10 @@ namespace UI.WinUi.Administrador
             this.groupBoxDatosMaterial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.groupBoxDatosMaterial.Location = new System.Drawing.Point(30, 30);
             this.groupBoxDatosMaterial.Name = "groupBoxDatosMaterial";
-            this.groupBoxDatosMaterial.Size = new System.Drawing.Size(310, 545);
+            this.groupBoxDatosMaterial.Size = new System.Drawing.Size(310, 460);
             this.groupBoxDatosMaterial.TabIndex = 0;
             this.groupBoxDatosMaterial.TabStop = false;
             this.groupBoxDatosMaterial.Text = "Datos del Material";
-            //
-            // txtDescripcion
-            //
-            this.txtDescripcion.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtDescripcion.Location = new System.Drawing.Point(20, 455);
-            this.txtDescripcion.Multiline = true;
-            this.txtDescripcion.Name = "txtDescripcion";
-            this.txtDescripcion.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtDescripcion.Size = new System.Drawing.Size(270, 80);
-            this.txtDescripcion.TabIndex = 19;
-            //
-            // lblDescripcion
-            //
-            this.lblDescripcion.AutoSize = true;
-            this.lblDescripcion.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblDescripcion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
-            this.lblDescripcion.Location = new System.Drawing.Point(20, 435);
-            this.lblDescripcion.Name = "lblDescripcion";
-            this.lblDescripcion.Size = new System.Drawing.Size(72, 15);
-            this.lblDescripcion.TabIndex = 18;
-            this.lblDescripcion.Text = "Descripción:";
             //
             // numCantidad
             //
@@ -145,26 +120,26 @@ namespace UI.WinUi.Administrador
             this.lblCantidad.TabIndex = 16;
             this.lblCantidad.Text = "Cantidad:";
             //
-            // comboBoxEdadRecomendada
+            // comboBoxNivel
             //
-            this.comboBoxEdadRecomendada.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxEdadRecomendada.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.comboBoxEdadRecomendada.FormattingEnabled = true;
-            this.comboBoxEdadRecomendada.Location = new System.Drawing.Point(140, 360);
-            this.comboBoxEdadRecomendada.Name = "comboBoxEdadRecomendada";
-            this.comboBoxEdadRecomendada.Size = new System.Drawing.Size(150, 23);
-            this.comboBoxEdadRecomendada.TabIndex = 15;
+            this.comboBoxNivel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxNivel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.comboBoxNivel.FormattingEnabled = true;
+            this.comboBoxNivel.Location = new System.Drawing.Point(140, 360);
+            this.comboBoxNivel.Name = "comboBoxNivel";
+            this.comboBoxNivel.Size = new System.Drawing.Size(150, 23);
+            this.comboBoxNivel.TabIndex = 15;
             //
-            // lblEdadRecomendada
+            // lblNivel
             //
-            this.lblEdadRecomendada.AutoSize = true;
-            this.lblEdadRecomendada.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblEdadRecomendada.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
-            this.lblEdadRecomendada.Location = new System.Drawing.Point(20, 363);
-            this.lblEdadRecomendada.Name = "lblEdadRecomendada";
-            this.lblEdadRecomendada.Size = new System.Drawing.Size(111, 15);
-            this.lblEdadRecomendada.TabIndex = 14;
-            this.lblEdadRecomendada.Text = "Edad Recomendada:";
+            this.lblNivel.AutoSize = true;
+            this.lblNivel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblNivel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblNivel.Location = new System.Drawing.Point(20, 363);
+            this.lblNivel.Name = "lblNivel";
+            this.lblNivel.Size = new System.Drawing.Size(38, 15);
+            this.lblNivel.TabIndex = 14;
+            this.lblNivel.Text = "Nivel:";
             //
             // txtAnioPublicacion
             //
@@ -308,11 +283,11 @@ namespace UI.WinUi.Administrador
             //
             this.groupBoxAcciones.BackColor = System.Drawing.Color.Transparent;
             this.groupBoxAcciones.Controls.Add(this.btnVolver);
-            this.groupBoxAcciones.Controls.Add(this.btnLimpiar);
+            this.groupBoxAcciones.Controls.Add(this.btnEliminar);
             this.groupBoxAcciones.Controls.Add(this.btnGuardar);
             this.groupBoxAcciones.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxAcciones.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
-            this.groupBoxAcciones.Location = new System.Drawing.Point(30, 590);
+            this.groupBoxAcciones.Location = new System.Drawing.Point(30, 505);
             this.groupBoxAcciones.Name = "groupBoxAcciones";
             this.groupBoxAcciones.Size = new System.Drawing.Size(310, 80);
             this.groupBoxAcciones.TabIndex = 1;
@@ -332,18 +307,18 @@ namespace UI.WinUi.Administrador
             this.btnVolver.Text = "Volver";
             this.btnVolver.UseVisualStyleBackColor = false;
             //
-            // btnLimpiar
+            // btnEliminar
             //
-            this.btnLimpiar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(156)))), ((int)(((byte)(18)))));
-            this.btnLimpiar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.btnLimpiar.ForeColor = System.Drawing.Color.White;
-            this.btnLimpiar.Location = new System.Drawing.Point(113, 28);
-            this.btnLimpiar.Name = "btnLimpiar";
-            this.btnLimpiar.Size = new System.Drawing.Size(85, 35);
-            this.btnLimpiar.TabIndex = 1;
-            this.btnLimpiar.Text = "Limpiar";
-            this.btnLimpiar.UseVisualStyleBackColor = false;
+            this.btnEliminar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
+            this.btnEliminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEliminar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnEliminar.ForeColor = System.Drawing.Color.White;
+            this.btnEliminar.Location = new System.Drawing.Point(113, 28);
+            this.btnEliminar.Name = "btnEliminar";
+            this.btnEliminar.Size = new System.Drawing.Size(85, 35);
+            this.btnEliminar.TabIndex = 1;
+            this.btnEliminar.Text = "Eliminar";
+            this.btnEliminar.UseVisualStyleBackColor = false;
             //
             // btnGuardar
             //
@@ -358,19 +333,19 @@ namespace UI.WinUi.Administrador
             this.btnGuardar.Text = "Guardar";
             this.btnGuardar.UseVisualStyleBackColor = false;
             //
-            // RegistrarMaterial
+            // EditarMaterial
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.ClientSize = new System.Drawing.Size(370, 700);
+            this.ClientSize = new System.Drawing.Size(370, 615);
             this.Controls.Add(this.groupBoxAcciones);
             this.Controls.Add(this.groupBoxDatosMaterial);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
-            this.Name = "RegistrarMaterial";
+            this.Name = "EditarMaterial";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Registrar Material";
+            this.Text = "Editar Material";
             this.groupBoxDatosMaterial.ResumeLayout(false);
             this.groupBoxDatosMaterial.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numCantidad)).EndInit();
@@ -382,12 +357,10 @@ namespace UI.WinUi.Administrador
         #endregion
 
         private System.Windows.Forms.GroupBox groupBoxDatosMaterial;
-        private System.Windows.Forms.TextBox txtDescripcion;
-        private System.Windows.Forms.Label lblDescripcion;
         private System.Windows.Forms.NumericUpDown numCantidad;
         private System.Windows.Forms.Label lblCantidad;
-        private System.Windows.Forms.ComboBox comboBoxEdadRecomendada;
-        private System.Windows.Forms.Label lblEdadRecomendada;
+        private System.Windows.Forms.ComboBox comboBoxNivel;
+        private System.Windows.Forms.Label lblNivel;
         private System.Windows.Forms.TextBox txtAnioPublicacion;
         private System.Windows.Forms.Label lblAnioPublicacion;
         private System.Windows.Forms.TextBox txtEditorial;
@@ -404,7 +377,7 @@ namespace UI.WinUi.Administrador
         private System.Windows.Forms.ComboBox comboBoxTipo;
         private System.Windows.Forms.GroupBox groupBoxAcciones;
         private System.Windows.Forms.Button btnGuardar;
-        private System.Windows.Forms.Button btnLimpiar;
+        private System.Windows.Forms.Button btnEliminar;
         private System.Windows.Forms.Button btnVolver;
     }
 }

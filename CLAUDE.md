@@ -4,349 +4,219 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Sistema Biblioteca Escolar** - School Library Management System for UAI (Universidad Abierta Interamericana). This is a Windows Forms .NET Framework 4.7.2 application that manages library materials, student records, loans/returns, and includes a complete student enrollment and promotion system by academic year.
+**Sistema Biblioteca Escolar** - School Library Management System developed for UAI (Prácticas Profesionales 3ro).
 
-The system uses a **dual-database architecture**:
-- **NegocioBiblioteca**: Business logic (materials, students, loans, enrollments)
-- **SeguridadBiblioteca**: Security system (users, permissions, logging)
+This is a .NET Framework 4.7.2 Windows Forms application for managing a school library with student enrollment, material catalog, loans/returns, and role-based access control.
 
-## Solution Structure
+## Architecture
 
-The solution follows a **layered architecture** organized into three main folders:
+### Solution Structure
 
-### Model/ - Business Layer
-Contains all business logic separated into layers:
-- **DomainModel**: Entity classes (Material, Alumno, Prestamo, Devolucion, Inscripcion, AnioLectivo)
-- **DAL**: Data Access Layer with Repository pattern (Contracts, Implementations, Adapters)
-- **BLL**: Business Logic Layer (MaterialBLL, AlumnoBLL, PrestamoBLL, InscripcionBLL, etc.)
-- **Services**: Utility services (shared across the application)
+The solution follows a layered architecture with clear separation of concerns:
 
-### Security/ - Security System
-Complete security subsystem with Composite pattern for permissions:
-- **ServicesSecurity**: Self-contained security library
-  - DomainModel: Security entities (Usuario, Familia, Patente) using Composite pattern
-  - DAL: Repositories for security entities
-  - BLL: Security business logic (UsuarioBLL, FamiliaBLL)
-  - Services: CryptographyService, LanguageManager, LoginService, ExceptionManager
-
-### View/ - Presentation Layer
-- **UI**: Windows Forms application (WinForms)
-  - WinUi/Administración: Admin forms (Login, menu, user/permission management, student promotion)
-  - WinUi/Transacciones: Transaction forms (loans, returns)
-  - Resources/I18n: Multi-language support (es-AR, en-GB)
-
-## Building and Running
-
-### Build Commands
-```bash
-# From solution root - Full rebuild
-msbuild "Sistema Biblioteca Escolar.sln" -t:Rebuild -p:Configuration=Debug
-
-# Clean before build
-msbuild "Sistema Biblioteca Escolar.sln" -t:Clean
-msbuild "Sistema Biblioteca Escolar.sln" -t:Build
-
-# From Visual Studio
-# Build > Rebuild Solution (Ctrl+Shift+B)
+```
+Sistema Biblioteca Escolar.sln
+├── Model/                          # Business & Data Logic
+│   ├── DomainModel/               # Domain entities (Alumno, Material, Inscripcion, etc.)
+│   ├── DAL/                       # Data Access Layer
+│   │   ├── Contracts/            # Repository interfaces
+│   │   ├── Implementations/      # Repository implementations
+│   │   └── Tools/                # Adapters (DataRow → Entity conversion)
+│   ├── BLL/                       # Business Logic Layer
+│   └── Services/                  # Application services
+├── View/                          # Presentation Layer
+│   └── UI/                       # Windows Forms application
+│       └── WinUi/                # Form implementations
+│           ├── Administración/   # Admin forms (Users, Permissions, Students, Materials)
+│           └── Transacciones/    # Transaction forms (Loans, Returns)
+└── Security/                      # Security Module (separate concern)
+    └── ServicesSeguridad/        # Authentication, Authorization, Logging, i18n
 ```
 
-### Run Application
+### Key Architectural Patterns
+
+**1. Repository Pattern**
+- Interfaces in `DAL/Contracts` (IGenericRepository, IAlumnoRepository, IMaterialRepository, etc.)
+- Implementations in `DAL/Implementations`
+- Adapters in `DAL/Tools` convert DataRow to domain entities
+
+**2. Composite Pattern (Security System)**
+- `Component` (abstract base) → `Familia` (composite) and `Patente` (leaf)
+- Located in `Security/ServicesSeguridad/DomainModel/Security/Composite/`
+- Enables hierarchical role/permission structures
+- Roles are `Familia` with names starting with "ROL_" (e.g., "ROL_Administrador")
+- Permissions are `Patente` objects with `MenuItemName` property for UI access control
+
+**3. Multilingual Support (i18n)**
+- Translation files: `View/UI/Resources/I18n/idioma.es-AR` and `idioma.en-GB`
+- Use `LanguageManager.Translate("key")` for all UI text
+- LanguageManager service in `Security/ServicesSeguridad/Services/`
+
+## Database Configuration
+
+**Two SQL Server databases:**
+1. **SeguridadBiblioteca** - Security (Users, Roles, Permissions, Logs)
+2. **NegocioBiblioteca** - Business (Students, Materials, Loans, Enrollments)
+
+Connection strings in `View/UI/App.config`:
+```xml
+<connectionStrings>
+  <add name="ServicesConString" connectionString="Data Source=localhost;Initial Catalog=SeguridadBiblioteca;Integrated Security=True;TrustServerCertificate=True"/>
+  <add name="NegocioConString" connectionString="Data Source=localhost;Initial Catalog=NegocioBiblioteca;Integrated Security=True;TrustServerCertificate=True"/>
+</connectionStrings>
+```
+
+**Important:**
+- Security DAL uses `SqlHelper` class (in `Security/ServicesSeguridad/DAL/Tools/`) which reads `ServicesConString`
+- Business DAL repositories instantiate connection string directly from `NegocioConString`
+
+## Common Development Commands
+
+### Build the Solution
+```bash
+# From solution root directory
+msbuild "Sistema Biblioteca Escolar.sln" -t:Rebuild -p:Configuration=Debug
+```
+
+### Run the Application
 ```bash
 # After building
 cd "View\UI\bin\Debug"
-UI.exe
-
-# From Visual Studio
-# Press F5 (Debug) or Ctrl+F5 (Without Debug)
+.\UI.exe
 ```
 
-### Build Order (Dependencies)
-1. ServicesSecurity (Security layer - no dependencies)
-2. DomainModel (Entities - no dependencies)
-3. DAL (depends on DomainModel)
-4. Services (depends on DomainModel)
-5. BLL (depends on DAL, DomainModel, ServicesSecurity)
-6. UI (depends on all layers)
+### Database Setup
 
-## Database Setup
-
-### Initial Setup - Complete Installation
+**Initial Setup (First Time):**
 ```bash
-# 1. Setup Security Database (Run FIRST)
+# Execute master script for Security DB
 sqlcmd -S localhost -E -i "Database\00_EJECUTAR_TODO.sql"
 
-# 2. Setup Business Database
+# Execute master script for Business DB
 sqlcmd -S localhost -E -i "Database\Negocio\00_EJECUTAR_TODO_NEGOCIO.sql"
+```
 
-# 3. Setup Enrollment System (inscriptions)
+**Enrollment System Setup (if needed):**
+```bash
 sqlcmd -S localhost -E -i "Database\EJECUTAR_SETUP_INSCRIPCIONES.sql"
 ```
 
-### Database Verification
-```bash
-# Check current state without modifying
-sqlcmd -S localhost -E -i "Database\Negocio\00_VerificarBaseDatos.sql"
-```
-
-### Important Database Notes
-- **Two databases**: SeguridadBiblioteca (security) and NegocioBiblioteca (business)
-- Security database uses **Composite Pattern** for hierarchical permissions (Familia = roles/groups, Patente = atomic permissions)
-- Business database includes enrollment history system (Inscripcion table) for tracking students across academic years
-- Connection strings in `View\UI\App.config` - update server name if needed
-
-## Key Architecture Patterns
-
-### 1. Composite Pattern (Security Permissions)
-The security system uses Composite pattern for flexible permission hierarchies:
-
-```
-Component (abstract base)
-├── Patente (Leaf - atomic permission)
-└── Familia (Composite - role or permission group)
-    ├── Can contain Patentes (atomic permissions)
-    └── Can contain other Familias (nested groups)
-
-Example hierarchy:
-ROL_Administrador (Familia)
-├── Gestión de Usuarios (Familia)
-│   ├── Alta de Usuario (Patente)
-│   ├── Baja de Usuario (Patente)
-│   └── Modificar Usuario (Patente)
-└── PromocionAlumnos (Patente)
-```
-
-Key classes:
-- `Security/ServicesSeguridad/DomainModel/Security/Composite/Component.cs` - Base class
-- `Security/ServicesSeguridad/DomainModel/Security/Composite/Familia.cs` - Composite (roles/groups)
-- `Security/ServicesSeguridad/DomainModel/Security/Composite/Patente.cs` - Leaf (permissions)
-
-### 2. Repository Pattern (Data Access)
-All data access uses Repository pattern with Adapters for SQL mapping:
-
-```
-IGenericRepository<T>        (contract)
-└── SpecificRepository       (implementation - SQL queries)
-    └── SpecificAdapter      (SQL DataReader to Entity mapping)
-```
-
-Example flow: BLL → Repository (via contract) → Adapter → Database
-
-### 3. Adapter Pattern (SQL Mapping)
-Adapters convert between DataReader and domain entities:
-- Located in `Model/DAL/Tools/` and `Security/ServicesSeguridad/DAL/Implementations/Adapter/`
-- Example: `MaterialAdapter.cs` maps SQL results to Material objects
-
-## Multi-Language Support (i18n)
-
-The application supports Spanish (es-AR) and English (en-GB):
-
-### Language Files Location
-- `View/UI/Resources/I18n/idioma.es-AR` - Spanish translations
-- `View/UI/Resources/I18n/idioma.en-GB` - English translations
-
-### Language File Format
-```
-key_name=Translation text
-ejemplo_clave=Texto en español
-example_key=Text in English
-```
-
-### Using Translations in Code
-```csharp
-// Import LanguageManager
-using ServicesSecurity.Services;
-
-// Use in forms
-string text = LanguageManager.Translate("key_name");
-button.Text = LanguageManager.Translate("guardar");
-```
-
-### Adding New Translations
-1. Add same key to BOTH language files (`idioma.es-AR` and `idioma.en-GB`)
-2. Ensure keys are identical, only values differ
-3. Use lowercase with underscores (e.g., `promocion_alumnos`)
-
-## Student Enrollment System
-
-Recent major feature: Complete enrollment and promotion system for managing students across academic years.
-
-### Core Concept
-- Students have **historical enrollments** by academic year (tabla Inscripcion)
-- Each enrollment tracks: Year, Grade, Division, Status (Activo/Finalizado/Abandonado/Egresado)
-- Maintains complete academic history per student
-
-### Key Components
-- **Domain Model**: `Model/DomainModel/Inscripcion.cs`, `Model/DomainModel/AnioLectivo.cs`
-- **Repository**: `Model/DAL/Implementations/InscripcionRepository.cs`
-- **Business Logic**: `Model/BLL/InscripcionBLL.cs`
-- **UI**: `View/UI/WinUi/Administración/gestionPromocionAlumnos.cs`
-
-### Stored Procedures (Database/Negocio/)
-- `sp_ObtenerInscripcionActiva` - Get current enrollment for a student
-- `sp_PromocionarAlumnosPorGrado` - Promote specific grade/division
-- `sp_PromocionarTodosLosAlumnos` - Mass promotion (all grades)
-- `sp_ObtenerAlumnosPorGradoDivision` - List students by grade/division
-
-### Usage Example
-```csharp
-// Get student's enrollment history
-var inscripcionBLL = new InscripcionBLL();
-var historial = inscripcionBLL.ObtenerHistorialAlumno(idAlumno);
-
-// Promote students manually
-inscripcionBLL.PromocionarAlumnosPorGrado(2025, 2026, gradoActual, divisionActual, gradoNuevo, divisionNueva);
-
-// Mass promotion (end of school year)
-inscripcionBLL.PromocionarTodosLosAlumnos(2025, 2026);
-```
-
-## Security System Details
-
-### User Authentication
-```csharp
-// Login flow (in forms)
-using ServicesSecurity.Services;
-
-var loginService = new LoginService();
-var usuario = loginService.Login(username, password);
-// Returns Usuario object if successful, throws exception if failed
-```
-
-### Permission Checking
-Permissions are checked via the Composite pattern:
-- User has Familias (roles/groups) assigned
-- Each Familia contains Patentes (permissions) and can contain other Familias
-- Recursive traversal checks all permissions
-
-### Important Security Services
-- **CryptographyService**: Password hashing (SHA256)
-- **LoginService**: Authentication logic
-- **LanguageManager**: i18n support
-- **ExceptionManager**: Centralized exception handling
-
-### Default Admin Credentials
-- User: `admin`
+**Default Admin Credentials:**
+- Username: `admin`
 - Password: `admin123`
-- **IMPORTANT**: Change password after first login in production
 
-## Common Development Tasks
+## Key Domain Concepts
 
-### Adding a New Entity
-1. Create entity class in `Model/DomainModel/`
-2. Create repository interface in `Model/DAL/Contracts/`
-3. Create adapter in `Model/DAL/Tools/`
-4. Implement repository in `Model/DAL/Implementations/`
-5. Create BLL in `Model/BLL/`
-6. Reference in UI layer
+### Student Enrollment System
+- `Inscripcion` entity tracks student enrollment per academic year (`AnioLectivo`)
+- One student can have only ONE active enrollment per year
+- States: `Activo`, `Finalizado`, `Abandonado`
+- Promotion system moves students between grades automatically or manually
+- Stored procedures: `sp_PromocionarAlumnosPorGrado`, `sp_PromocionarTodosLosAlumnos`
 
-### Adding a New Form
-1. Create form in `View/UI/WinUi/[Administración or Transacciones]/`
-2. Add translations to both i18n files
-3. Create corresponding permission (Patente) in database if needed
-4. Wire up form opening from menu
+### Material Catalog
+- `Material` entity supports different types (Libro, Revista, etc.) via `TipoMaterial` enum
+- States managed via `EstadoMaterial` enum
+- Both enums in `Model/DomainModel/Enums/`
+- Logical deletion (Activo flag)
 
-### Adding Database Changes
-1. Create SQL script in appropriate `Database/` subfolder
-2. Test script independently
-3. Update master setup scripts if part of initial setup
-4. Document in README files
+### Security & Permissions
+- Dynamic menu generation based on user permissions in `View/UI/WinUi/Administración/menu.cs`
+- `TienePermiso(string nombrePatente)` checks if user has specific permission
+- Permission checking is recursive through Familia hierarchy
+- Pattern: Check `Patente.MenuItemName` property for UI permission names
 
-### Validation Pattern
-Both layers have ValidationBLL classes:
-- `Model/BLL/ValidationBLL.cs` - Business validations (DNI format, required fields)
-- `Security/ServicesSeguridad/BLL/ValidationBLL.cs` - Security validations (user/password rules)
+### Permission Constants (in menu.cs)
+- `GestionUsuarios` - User management
+- `GestionPermisos` - Permission management
+- `ConsultarMaterial` - Material catalog viewing
+- `RegistrarMaterial` - Material registration
+- `GestionAlumnos` - Student management
+- `GestionPrestamos` - Loan management
+- `GestionDevoluciones` - Return management
+- `PromocionAlumnos` - Student promotion (bulk operations)
 
-Always validate in BLL before calling DAL:
+## Important Development Notes
+
+### When Adding New Forms
+1. Always pass `Usuario _usuarioLogueado` to constructor
+2. Use `LanguageManager.Translate()` for all text
+3. Check permissions using `TienePermiso()` if needed
+4. Add new permission `Patente` via SQL script in `Database/` folder
+5. Update menu.cs if form needs menu item
+
+### When Adding Database Features
+1. Create SQL scripts in `Database/` (security) or `Database/Negocio/` (business)
+2. Follow naming convention: `##_DescriptiveName.sql`
+3. Create stored procedures for complex operations
+4. Create repository interface in `DAL/Contracts`
+5. Implement repository in `DAL/Implementations`
+6. Create adapter in `DAL/Tools` for DataRow mapping
+7. Create BLL class in `BLL/` for business logic
+
+### Data Access Pattern
 ```csharp
-// In BLL class
-ValidationBLL.ValidarCamposRequeridos(alumno.Nombre, alumno.Apellido, alumno.DNI);
-ValidationBLL.ValidarFormatoDNI(alumno.DNI);
-// Then proceed with repository call
-```
+// Example repository implementation
+public class MaterialRepository : IMaterialRepository
+{
+    private readonly string _connectionString;
 
-## Exception Handling
+    public MaterialRepository()
+    {
+        var connStringSetting = ConfigurationManager.ConnectionStrings["NegocioConString"];
+        _connectionString = connStringSetting.ConnectionString;
+    }
 
-Custom exception hierarchy in both layers:
-
-### Business Layer Exceptions
-- `Model/DomainModel/Exceptions/ValidacionException.cs` - Validation errors
-
-### Security Layer Exceptions
-- `ServicesSecurity.DomainModel.Exceptions.AutenticacionException` - Authentication failures
-- `ServicesSecurity.DomainModel.Exceptions.ValidacionException` - Validation errors
-- `ServicesSecurity.DomainModel.Exceptions.IntegridadException` - Data integrity issues
-
-### Usage Pattern
-```csharp
-try {
-    // Business logic
-} catch (ValidacionException ex) {
-    MessageBox.Show(ex.Message, "Validation Error");
-} catch (Exception ex) {
-    var mensaje = ExceptionManager.ManejarExcepcion(ex);
-    MessageBox.Show(mensaje, "Error");
+    public List<Material> GetAll()
+    {
+        using (SqlConnection conn = new SqlConnection(_connectionString))
+        {
+            // Execute query
+            // Use MaterialAdapter.AdaptMaterial(DataRow) to convert
+        }
+    }
 }
 ```
 
-## Documentation Files
+### Adding Translations
+1. Add key-value pairs to both `idioma.es-AR` and `idioma.en-GB`
+2. Use format: `key=value` (one per line)
+3. Keys use snake_case convention
 
-Extensive documentation exists - always check before asking:
+## Current System Status
 
-- `INDICE_DOCUMENTACION.md` - Central index of all documentation
-- `RESUMEN_EJECUTIVO.md` - Executive summary of enrollment system
-- `README_SISTEMA_INSCRIPCIONES.md` - Technical overview of enrollment system
-- `INSTRUCCIONES_INSTALACION.md` - Complete installation guide
-- `RESUMEN_IMPLEMENTACION_COMPLETA.md` - Full implementation details
-- `CHECKLIST_VERIFICACION.md` - QA verification checklist
-- `Database/README_INSTALACION.md` - Database setup guide
-- `Database/Negocio/README.md` - Business database scripts guide
+**Completed Features:**
+- ✅ User authentication & authorization
+- ✅ Role-based access control (Composite pattern)
+- ✅ Student management (CRUD)
+- ✅ Student enrollment & promotion system
+- ✅ Material catalog (CRUD with search filters)
+- ✅ Multilingual support (Spanish/English)
+- ✅ Dynamic menu based on permissions
+- ✅ Audit logging (Bitacora)
 
-## Important Notes
+**Pending/Not Implemented:**
+- ⏳ Loan/Return transactions (forms exist but not functional)
+- ⏳ Reports generation
+- ⏳ Testing suite
 
-### Database Connection
-- Connection strings in `View/UI/App.config`
-- Uses Windows Authentication by default (Integrated Security=True)
-- Update server name for your SQL Server instance
+## Known Issues
 
-### Build Warnings
-- 3 expected warnings about unused variables (not critical)
-- Focus on errors, not warnings
+**Compilation Warnings:**
+- `LoginService.cs:87` - Unused variable 'iex'
+- `Login.cs:210` - Unused variable 'ex'
+- `gestionPromocionAlumnos.cs:153` - Unused variable 'ex'
 
-### Git Status Notes
-- Old ServicesSeguridad files were moved to Security folder (marked as deleted in git)
-- Old UI, BLL, DAL, DomainModel, Services files also reorganized under Model/View folders
-- New structure is in Model/, Security/, View/ folders
+These do not affect functionality but should be cleaned up.
 
-### Testing Strategy
-- No unit tests currently implemented
-- Testing done via UI and manual database verification
-- Use `Database/Negocio/00_VerificarBaseDatos.sql` for database state checks
+## Documentation
 
-### Performance Optimization
-- Database has indexes on Inscripcion table (IdAlumno, AnioLectivo)
-- Stored procedures used for complex queries (promotion operations)
-- Use SPs for bulk operations rather than iterating in C#
+Reference documentation in repository:
+- `README_SISTEMA_INSCRIPCIONES.md` - Enrollment & promotion system overview
+- `INSTRUCCIONES_INSTALACION.md` - Detailed installation guide (if exists)
+- `RESUMEN_IMPLEMENTACION_COMPLETA.md` - Technical implementation details (if exists)
 
-## Troubleshooting
+## Git Workflow
 
-### Build Errors
-```bash
-# Clean and rebuild
-msbuild "Sistema Biblioteca Escolar.sln" -t:Clean
-msbuild "Sistema Biblioteca Escolar.sln" -t:Rebuild
-```
-
-### Database Connection Issues
-- Verify SQL Server is running
-- Check server name in App.config matches your instance
-- Ensure Windows Authentication has permissions
-
-### Missing Translations
-- Check both `idioma.es-AR` and `idioma.en-GB` have the same keys
-- Use lowercase with underscores for key names
-- If key missing, LanguageManager returns the key itself (visible in UI)
-
-### Enrollment System Issues
-- Run `Database\Negocio\00_VerificarBaseDatos.sql` to check data
-- Verify stored procedures exist with query: `SELECT * FROM sys.procedures WHERE name LIKE 'sp_%Inscripcion%'`
-- Check migration completed: `SELECT COUNT(*) FROM Inscripcion`
+Current branch: `master`
+No main branch configured - PRs should target `master`

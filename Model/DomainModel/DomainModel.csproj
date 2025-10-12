@@ -51,6 +51,9 @@
     <Compile Include="AnioLectivo.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="Devolucion.cs" />
+    <Compile Include="Ejemplar.cs" />
+    <Compile Include="Enums\EstadoMaterial.cs" />
+    <Compile Include="Enums\TipoMaterial.cs" />
     <Compile Include="Exceptions\ValidacionException.cs" />
     <Compile Include="Inscripcion.cs" />
     <Compile Include="Material.cs" />

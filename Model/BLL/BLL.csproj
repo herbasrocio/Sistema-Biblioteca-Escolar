@@ -50,6 +50,7 @@
     <Compile Include="AlumnoBLL.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="DevolucionBLL.cs" />
+    <Compile Include="EjemplarBLL.cs" />
     <Compile Include="InscripcionBLL.cs" />
     <Compile Include="MaterialBLL.cs" />
     <Compile Include="PrestamoBLL.cs" />

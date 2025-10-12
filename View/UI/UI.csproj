@@ -53,11 +53,23 @@
     <Compile Include="WinUi\Administración\consultarMaterial.Designer.cs">
       <DependentUpon>consultarMaterial.cs</DependentUpon>
     </Compile>
-    <Compile Include="WinUi\Administración\registrarMaterial.cs">
+    <Compile Include="WinUi\Administración\RegistrarMaterial.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WinUi\Administración\registrarMaterial.Designer.cs">
-      <DependentUpon>registrarMaterial.cs</DependentUpon>
+    <Compile Include="WinUi\Administración\RegistrarMaterial.Designer.cs">
+      <DependentUpon>RegistrarMaterial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WinUi\Administración\EditarMaterial.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Administración\EditarMaterial.Designer.cs">
+      <DependentUpon>EditarMaterial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WinUi\Administración\GestionarEjemplares.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Administración\GestionarEjemplares.Designer.cs">
+      <DependentUpon>GestionarEjemplares.cs</DependentUpon>
     </Compile>
     <Compile Include="WinUi\Administración\gestionUsuarios.cs">
       <SubType>Form</SubType>
@@ -119,8 +131,8 @@
     <EmbeddedResource Include="WinUi\Administración\consultarMaterial.resx">
       <DependentUpon>consultarMaterial.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WinUi\Administración\registrarMaterial.resx">
-      <DependentUpon>registrarMaterial.cs</DependentUpon>
+    <EmbeddedResource Include="WinUi\Administración\GestionarEjemplares.resx">
+      <DependentUpon>GestionarEjemplares.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Administración\gestionUsuarios.resx">
       <DependentUpon>gestionUsuarios.cs</DependentUpon>
