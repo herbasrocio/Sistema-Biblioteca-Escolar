@@ -14,7 +14,7 @@ namespace DAL.Tools
                 IdEjemplar = (Guid)row["IdEjemplar"],
                 IdMaterial = (Guid)row["IdMaterial"],
                 NumeroEjemplar = Convert.ToInt32(row["NumeroEjemplar"]),
-                CodigoBarras = row["CodigoBarras"] != DBNull.Value ? row["CodigoBarras"].ToString() : string.Empty,
+                CodigoEjemplar = row["CodigoEjemplar"] != DBNull.Value ? row["CodigoEjemplar"].ToString() : string.Empty,
                 Estado = (EstadoMaterial)Convert.ToInt32(row["Estado"]),
                 Ubicacion = row["Ubicacion"] != DBNull.Value ? row["Ubicacion"].ToString() : string.Empty,
                 Observaciones = row["Observaciones"] != DBNull.Value ? row["Observaciones"].ToString() : string.Empty,

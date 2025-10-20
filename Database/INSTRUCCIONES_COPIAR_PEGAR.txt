@@ -1,0 +1,49 @@
+=====================================================
+INSTRUCCIONES: COPIAR Y PEGAR EN SSMS
+=====================================================
+
+Si el script 39_ActualizarFamiliaUnicode.sql no funciona,
+haz lo siguiente:
+
+1. Abre SQL Server Management Studio (SSMS)
+2. Abre una nueva ventana de consulta (Ctrl+N)
+3. COPIA Y PEGA el siguiente c贸digo DIRECTAMENTE en SSMS:
+
+=====================================================
+COPIAR DESDE AQU脥 鈫?
+=====================================================
+
+USE SeguridadBiblioteca;
+GO
+
+-- Configuraci贸n
+UPDATE Familia SET Nombre = N'Configuraci贸n', Descripcion = N'Configuraci贸n del sistema' WHERE Nombre LIKE 'Configuraci%';
+
+-- Gesti贸n de Permisos
+UPDATE Familia SET Nombre = N'Gesti贸n de Permisos', Descripcion = N'Administraci贸n de familias y patentes' WHERE Nombre LIKE '%Permisos%';
+
+-- Gesti贸n de Usuarios
+UPDATE Familia SET Nombre = N'Gesti贸n de Usuarios', Descripcion = N'Administraci贸n de usuarios del sistema' WHERE Nombre LIKE '%Usuarios%';
+
+-- ROL_Administrador
+UPDATE Familia SET Nombre = N'ROL_Administrador', Descripcion = N'Rol de Administrador del Sistema - Acceso completo al sistema' WHERE Nombre LIKE 'ROL_Administrador%';
+
+-- ROL_Bibliotecario
+UPDATE Familia SET Nombre = N'ROL_Bibliotecario', Descripcion = N'Rol de Bibliotecario - Gesti贸n de cat谩logo, pr茅stamos y devoluciones' WHERE Nombre LIKE 'ROL_Bibliotecario%';
+
+-- ROL_Docente
+UPDATE Familia SET Nombre = N'ROL_Docente', Descripcion = N'Rol de Docente - Gesti贸n de pr茅stamos y consultas' WHERE Nombre LIKE 'ROL_Docente%';
+
+-- Verificar
+SELECT Nombre, Descripcion FROM Familia ORDER BY Nombre;
+
+GO
+
+=====================================================
+鈫?HASTA AQU脥
+=====================================================
+
+4. Presiona F5 para ejecutar
+5. En los resultados deber铆as ver los acentos correctos
+6. Env铆ame una captura de pantalla de los resultados
+

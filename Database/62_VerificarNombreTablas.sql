@@ -1,0 +1,5 @@
+-- Verificar nombres de tablas en la base de datos
+SELECT TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_TYPE = 'BASE TABLE'
+ORDER BY TABLE_NAME;

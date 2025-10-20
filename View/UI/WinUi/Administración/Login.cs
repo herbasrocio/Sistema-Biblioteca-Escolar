@@ -20,11 +20,15 @@ namespace UI
     public partial class Login : Form
     {
         private bool contraseñaVisible = false;
-        private string _idiomaSeleccionadoEnLogin = null; // Guardar el idioma seleccionado en el login
+        private string _idiomaSeleccionadoEnLogin = "es-AR"; // Siempre iniciar en español
 
         public Login()
         {
             InitializeComponent();
+
+            // IMPORTANTE: Establecer español como idioma por defecto al iniciar
+            CambiarIdioma("es-AR");
+
             AplicarTraducciones();
             this.btnIngresar.Click += BtnIngresar_Click;
             this.btnRecuperarContraseña.Click += BtnRecuperarContraseña_Click;
@@ -103,9 +107,20 @@ namespace UI
             lblContraseña.Text = LanguageManager.Translate("contraseña") + ":";
             lblMenu.Text = LanguageManager.Translate("sistema_biblioteca");
 
+            // Centrar el label del título después de cambiar el texto
+            CentrarLabel(lblMenu);
+
             // Traducir botones
             btnIngresar.Text = LanguageManager.Translate("ingresar");
             btnRecuperarContraseña.Text = LanguageManager.Translate("recuperar_contraseña");
+        }
+
+        /// <summary>
+        /// Centra un label horizontalmente en el formulario
+        /// </summary>
+        private void CentrarLabel(System.Windows.Forms.Label label)
+        {
+            label.Left = (this.ClientSize.Width - label.Width) / 2;
         }
 
         private void BtnIngresar_Click(object sender, EventArgs e)
@@ -159,27 +174,8 @@ namespace UI
 
         private void RedirigirPorRol(Usuario usuario)
         {
-            // Determinar qué idioma usar: el seleccionado en el login tiene prioridad
-            string idiomaAUsar = _idiomaSeleccionadoEnLogin ?? usuario.IdiomaPreferido ?? "es-AR";
-
-            // Aplicar el idioma ANTES de crear el menú
-            CambiarIdioma(idiomaAUsar);
-
-            // Si el usuario seleccionó un idioma diferente en el login, guardarlo en la BD
-            if (!string.IsNullOrEmpty(_idiomaSeleccionadoEnLogin) &&
-                _idiomaSeleccionadoEnLogin != usuario.IdiomaPreferido)
-            {
-                try
-                {
-                    UsuarioBLL.CambiarIdiomaPreferido(usuario.IdUsuario, _idiomaSeleccionadoEnLogin);
-                    usuario.IdiomaPreferido = _idiomaSeleccionadoEnLogin;
-                }
-                catch (Exception ex)
-                {
-                    // Log error pero no interrumpir el login
-                    Console.WriteLine($"Error al actualizar idioma preferido: {ex.Message}");
-                }
-            }
+            // Usar el idioma seleccionado en el login (español por defecto, o inglés si el usuario lo cambió)
+            CambiarIdioma(_idiomaSeleccionadoEnLogin);
 
             // Verificar que el usuario tenga un rol asignado
             string nombreRol = usuario.ObtenerNombreRol();

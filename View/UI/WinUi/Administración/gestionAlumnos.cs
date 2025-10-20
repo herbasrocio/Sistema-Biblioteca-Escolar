@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -16,13 +17,17 @@ namespace UI.WinUi.Administrador
     {
         private Usuario _usuarioLogueado;
         private AlumnoBLL _alumnoBLL;
+        private InscripcionBLL _inscripcionBLL;
         private List<Alumno> _alumnosGrado;
+        private int _anioLectivoSeleccionado;
 
         public gestionAlumnos()
         {
             InitializeComponent();
             _alumnoBLL = new AlumnoBLL();
+            _inscripcionBLL = new InscripcionBLL();
             _alumnosGrado = new List<Alumno>();
+            _anioLectivoSeleccionado = DateTime.Now.Year;
         }
 
         public gestionAlumnos(Usuario usuario) : this()
@@ -34,16 +39,23 @@ namespace UI.WinUi.Administrador
         private void ConfigurarFormulario()
         {
             this.Load += GestionAlumnos_Load;
-            btnImportarCSV.Click += BtnImportarCSV_Click;
-            btnPlantilla.Click += BtnPlantilla_Click;
-            btnExportarCSV.Click += BtnExportarCSV_Click;
+
+            // Configurar menú Importar/Exportar
+            ConfigurarMenuImportarExportar();
+
+            // Eventos de botones
             btnEditarGrado.Click += BtnEditarGrado_Click;
             btnNuevoGrado.Click += BtnNuevoGrado_Click;
-            btnEliminarGrado.Click += BtnEliminarGrado_Click;
             btnNuevo.Click += BtnNuevo_Click;
             btnEditar.Click += BtnEditar_Click;
             btnEliminar.Click += BtnEliminar_Click;
+            btnPromocionAlumnos.Click += BtnPromocionAlumnos_Click;
+
+            // Eventos de búsqueda
             cmbGrado.SelectedIndexChanged += CmbGrado_SelectedIndexChanged;
+            txtBuscar.TextChanged += TxtBuscar_TextChanged;
+            txtBuscar.Enter += TxtBuscar_Enter;
+            txtBuscar.Leave += TxtBuscar_Leave;
 
             // Configurar DataGridView
             dgvAlumnos.ReadOnly = true;
@@ -54,6 +66,9 @@ namespace UI.WinUi.Administrador
             dgvAlumnos.AutoGenerateColumns = true;
 
             ConfigurarEstiloDataGridView();
+
+            // Configurar pestaña de historial
+            ConfigurarPestañaHistorial();
         }
 
         private void ConfigurarEstiloDataGridView()
@@ -72,8 +87,302 @@ namespace UI.WinUi.Administrador
 
         private void GestionAlumnos_Load(object sender, EventArgs e)
         {
+            // AgregarSelectorAnioLectivo(); // Ya no es necesario, los controles están en el Designer
             AplicarTraducciones();
             CargarGrados();
+        }
+
+        /// <summary>
+        /// Agrega un selector de año lectivo encima del selector de grado
+        /// </summary>
+        private void AgregarSelectorAnioLectivo()
+        {
+            // Crear Label para Año Lectivo
+            Label lblAnioLectivo = new Label
+            {
+                Text = "Año Lectivo:",
+                Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold),
+                ForeColor = System.Drawing.Color.FromArgb(44, 62, 80),
+                Location = new System.Drawing.Point(20, 92),
+                AutoSize = true,
+                Name = "lblAnioLectivo"
+            };
+
+            // Crear ComboBox para Año Lectivo
+            ComboBox cmbAnioLectivo = new ComboBox
+            {
+                Name = "cmbAnioLectivo",
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new System.Drawing.Font("Segoe UI", 9F),
+                Location = new System.Drawing.Point(120, 89),
+                Size = new System.Drawing.Size(110, 23)
+            };
+
+            // Cargar años (5 años atrás hasta 1 año adelante)
+            int anioActual = DateTime.Now.Year;
+            for (int i = anioActual - 5; i <= anioActual + 1; i++)
+            {
+                cmbAnioLectivo.Items.Add(i);
+            }
+            cmbAnioLectivo.SelectedItem = anioActual;
+
+            // Evento de cambio de año
+            cmbAnioLectivo.SelectedIndexChanged += (s, ev) =>
+            {
+                _anioLectivoSeleccionado = (int)cmbAnioLectivo.SelectedItem;
+                CargarGrados();
+            };
+
+            // Botón para crear nuevo año lectivo
+            Button btnNuevoAnio = new Button
+            {
+                Text = "Nuevo Año",
+                Location = new System.Drawing.Point(240, 88),
+                Size = new System.Drawing.Size(90, 25),
+                BackColor = System.Drawing.Color.FromArgb(39, 174, 96),
+                ForeColor = System.Drawing.Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new System.Drawing.Font("Segoe UI", 8F),
+                Cursor = Cursors.Hand
+            };
+            btnNuevoAnio.FlatAppearance.BorderSize = 0;
+            btnNuevoAnio.Click += BtnNuevoAnio_Click;
+
+            // Agregar controles al formulario
+            this.Controls.Add(lblAnioLectivo);
+            this.Controls.Add(cmbAnioLectivo);
+            this.Controls.Add(btnNuevoAnio);
+
+            // Ajustar posición de controles existentes (moverlos hacia abajo)
+            lblGrado.Location = new System.Drawing.Point(20, 122);
+            cmbGrado.Location = new System.Drawing.Point(120, 119);
+        }
+
+        /// <summary>
+        /// Evento para crear un nuevo año lectivo
+        /// </summary>
+        private void BtnNuevoAnio_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (Form formNuevoAnio = new Form())
+                {
+                    formNuevoAnio.Text = "Crear Nuevo Año Lectivo";
+                    formNuevoAnio.Size = new System.Drawing.Size(350, 150);
+                    formNuevoAnio.StartPosition = FormStartPosition.CenterParent;
+                    formNuevoAnio.FormBorderStyle = FormBorderStyle.FixedDialog;
+                    formNuevoAnio.MaximizeBox = false;
+                    formNuevoAnio.MinimizeBox = false;
+
+                    Label lblAnio = new Label
+                    {
+                        Text = "Año:",
+                        Location = new System.Drawing.Point(20, 25),
+                        AutoSize = true
+                    };
+
+                    NumericUpDown numAnio = new NumericUpDown
+                    {
+                        Location = new System.Drawing.Point(80, 22),
+                        Size = new System.Drawing.Size(230, 23),
+                        Minimum = 2020,
+                        Maximum = 2050,
+                        Value = DateTime.Now.Year + 1
+                    };
+
+                    Button btnAceptar = new Button
+                    {
+                        Text = "Crear",
+                        Location = new System.Drawing.Point(140, 70),
+                        Size = new System.Drawing.Size(80, 30),
+                        DialogResult = DialogResult.OK
+                    };
+
+                    Button btnCancelar = new Button
+                    {
+                        Text = "Cancelar",
+                        Location = new System.Drawing.Point(230, 70),
+                        Size = new System.Drawing.Size(80, 30),
+                        DialogResult = DialogResult.Cancel
+                    };
+
+                    formNuevoAnio.Controls.AddRange(new Control[] { lblAnio, numAnio, btnAceptar, btnCancelar });
+                    formNuevoAnio.AcceptButton = btnAceptar;
+                    formNuevoAnio.CancelButton = btnCancelar;
+
+                    if (formNuevoAnio.ShowDialog() == DialogResult.OK)
+                    {
+                        int nuevoAnio = (int)numAnio.Value;
+
+                        // Agregar el año al combo si no existe
+                        ComboBox cmbAnioLectivo = this.Controls.Find("cmbAnioLectivo", false).FirstOrDefault() as ComboBox;
+                        if (cmbAnioLectivo != null && !cmbAnioLectivo.Items.Contains(nuevoAnio))
+                        {
+                            cmbAnioLectivo.Items.Add(nuevoAnio);
+                            cmbAnioLectivo.SelectedItem = nuevoAnio;
+
+                            MessageBox.Show($"Año lectivo {nuevoAnio} creado exitosamente.\n\nAhora puede crear grados y agregar alumnos para este año.",
+                                "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("El año lectivo ya existe.", "Información",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al crear año lectivo: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Configura el menú contextual para Importar/Exportar
+        /// </summary>
+        private void ConfigurarMenuImportarExportar()
+        {
+            menuImportarExportar.Items.Clear();
+
+            // Opción: Importar alumnos
+            ToolStripMenuItem menuImportar = new ToolStripMenuItem("📥 Importar alumnos...");
+            menuImportar.Click += BtnImportarCSV_Click;
+            menuImportarExportar.Items.Add(menuImportar);
+
+            // Opción: Exportar alumnos (CSV)
+            ToolStripMenuItem menuExportar = new ToolStripMenuItem("📤 Exportar alumnos (CSV)...");
+            menuExportar.Click += BtnExportarCSV_Click;
+            menuImportarExportar.Items.Add(menuExportar);
+
+            // Separador
+            menuImportarExportar.Items.Add(new ToolStripSeparator());
+
+            // Opción: Descargar plantilla
+            ToolStripMenuItem menuPlantilla = new ToolStripMenuItem("📋 Descargar plantilla CSV");
+            menuPlantilla.Click += BtnPlantilla_Click;
+            menuImportarExportar.Items.Add(menuPlantilla);
+
+            // Configurar el botón para mostrar el menú
+            btnImportarExportar.Click += (s, e) =>
+            {
+                menuImportarExportar.Show(btnImportarExportar, new Point(0, btnImportarExportar.Height));
+            };
+        }
+
+        /// <summary>
+        /// Maneja el evento Enter del TextBox de búsqueda (quita el placeholder)
+        /// </summary>
+        private void TxtBuscar_Enter(object sender, EventArgs e)
+        {
+            if (txtBuscar.Text == "Buscar por nombre, apellido o DNI...")
+            {
+                txtBuscar.Text = "";
+                txtBuscar.ForeColor = System.Drawing.Color.Black;
+            }
+        }
+
+        /// <summary>
+        /// Maneja el evento Leave del TextBox de búsqueda (restaura el placeholder)
+        /// </summary>
+        private void TxtBuscar_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtBuscar.Text))
+            {
+                txtBuscar.Text = "Buscar por nombre, apellido o DNI...";
+                txtBuscar.ForeColor = System.Drawing.Color.Gray;
+            }
+        }
+
+        /// <summary>
+        /// Filtra la lista de alumnos en tiempo real según el texto de búsqueda
+        /// </summary>
+        private void TxtBuscar_TextChanged(object sender, EventArgs e)
+        {
+            // Ignorar si es el texto placeholder
+            if (txtBuscar.Text == "Buscar por nombre, apellido o DNI...")
+            {
+                dgvAlumnos.DataSource = _alumnosGrado;
+                return;
+            }
+
+            string filtro = txtBuscar.Text.ToLower().Trim();
+
+            if (string.IsNullOrWhiteSpace(filtro))
+            {
+                dgvAlumnos.DataSource = _alumnosGrado;
+            }
+            else
+            {
+                var alumnosFiltrados = _alumnosGrado.Where(a =>
+                    a.Nombre.ToLower().Contains(filtro) ||
+                    a.Apellido.ToLower().Contains(filtro) ||
+                    a.DNI.Contains(filtro)
+                ).ToList();
+
+                dgvAlumnos.DataSource = alumnosFiltrados;
+                ActualizarEstadisticas(alumnosFiltrados.Count);
+            }
+
+            // Reconfigurar columnas visibles después del filtro
+            ConfigurarColumnasVisibles();
+        }
+
+        /// <summary>
+        /// Actualiza el panel de estadísticas con información del grado actual
+        /// </summary>
+        private void ActualizarEstadisticas(int? totalFiltrado = null)
+        {
+            int total = totalFiltrado ?? _alumnosGrado.Count;
+
+            lblEstadisticas.Text = $"📊 Total: {total} alumno(s) - Año {_anioLectivoSeleccionado}";
+
+            // Si hay alumnos, mostrar más detalles
+            if (_alumnosGrado.Count > 0)
+            {
+                if (totalFiltrado.HasValue && totalFiltrado.Value != _alumnosGrado.Count)
+                {
+                    lblEstadisticas.Text += $"\n(Mostrando {totalFiltrado} de {_alumnosGrado.Count})";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Configura qué columnas son visibles en el DataGridView
+        /// </summary>
+        private void ConfigurarColumnasVisibles()
+        {
+            if (dgvAlumnos.Columns.Count > 0)
+            {
+                if (dgvAlumnos.Columns.Contains("IdAlumno"))
+                    dgvAlumnos.Columns["IdAlumno"].Visible = false;
+                if (dgvAlumnos.Columns.Contains("FechaRegistro"))
+                    dgvAlumnos.Columns["FechaRegistro"].Visible = false;
+                if (dgvAlumnos.Columns.Contains("Grado"))
+                    dgvAlumnos.Columns["Grado"].Visible = false;
+                if (dgvAlumnos.Columns.Contains("Division"))
+                    dgvAlumnos.Columns["Division"].Visible = false;
+                if (dgvAlumnos.Columns.Contains("NombreCompleto"))
+                    dgvAlumnos.Columns["NombreCompleto"].Visible = false;
+
+                // Configurar orden de columnas visibles
+                if (dgvAlumnos.Columns.Contains("Apellido"))
+                {
+                    dgvAlumnos.Columns["Apellido"].HeaderText = "Apellido";
+                    dgvAlumnos.Columns["Apellido"].DisplayIndex = 0;
+                }
+                if (dgvAlumnos.Columns.Contains("Nombre"))
+                {
+                    dgvAlumnos.Columns["Nombre"].HeaderText = "Nombre";
+                    dgvAlumnos.Columns["Nombre"].DisplayIndex = 1;
+                }
+                if (dgvAlumnos.Columns.Contains("DNI"))
+                {
+                    dgvAlumnos.Columns["DNI"].HeaderText = "DNI";
+                    dgvAlumnos.Columns["DNI"].DisplayIndex = 2;
+                }
+            }
         }
 
         private void AplicarTraducciones()
@@ -81,20 +390,23 @@ namespace UI.WinUi.Administrador
             try
             {
                 this.Text = LanguageManager.Translate("gestionar_alumnos");
-                btnImportarCSV.Text = LanguageManager.Translate("importar_alumnos_csv");
                 lblGrado.Text = LanguageManager.Translate("grado_division");
+                lblBuscar.Text = LanguageManager.Translate("buscar") + ":";
                 lblListaAlumnos.Text = LanguageManager.Translate("alumnos");
-                btnExportarCSV.Text = LanguageManager.Translate("exportar_alumnos_csv");
-                btnEditarGrado.Text = LanguageManager.Translate("cambiar_grado");
-                btnNuevo.Text = LanguageManager.Translate("nuevo");
-                btnEditar.Text = LanguageManager.Translate("editar");
-                btnEliminar.Text = LanguageManager.Translate("eliminar");
+                btnEditarGrado.Text = "↔ " + LanguageManager.Translate("cambiar_grado");
+                btnNuevo.Text = "+ " + LanguageManager.Translate("nuevo");
+                btnEditar.Text = "✏ " + LanguageManager.Translate("editar");
+                btnEliminar.Text = "🗑 " + LanguageManager.Translate("eliminar");
+                btnPromocionAlumnos.Text = "🔄 " + LanguageManager.Translate("promocion");
+                groupOperacionesAlumno.Text = LanguageManager.Translate("operaciones_alumno");
+                groupOperacionesMasivas.Text = LanguageManager.Translate("operaciones_masivas");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al aplicar traducciones: {ex.Message}");
             }
         }
+
 
         private string FormatearGrado(string grado, string division)
         {
@@ -132,24 +444,22 @@ namespace UI.WinUi.Administrador
             return $"{gradoLimpio} {division}";
         }
 
+        /// <summary>
+        /// Carga los grados disponibles para el año lectivo seleccionado
+        /// usando el sistema de Inscripciones
+        /// </summary>
         private void CargarGrados()
         {
             cmbGrado.Items.Clear();
 
-            // Obtener todos los alumnos y extraer grados únicos
             try
             {
-                var todosAlumnos = _alumnoBLL.ObtenerTodosAlumnos();
-                var gradosUnicos = todosAlumnos
-                    .Where(a => !string.IsNullOrEmpty(a.Grado) && !string.IsNullOrEmpty(a.Division))
-                    .Select(a => FormatearGrado(a.Grado, a.Division))
-                    .Distinct()
-                    .OrderBy(g => g)
-                    .ToList();
+                // Obtener estadísticas de inscripciones para el año lectivo seleccionado
+                var estadisticas = _inscripcionBLL.ObtenerEstadisticasPorAnio(_anioLectivoSeleccionado);
 
-                // Si no hay grados, agregar algunos por defecto
-                if (gradosUnicos.Count == 0)
+                if (estadisticas.Count == 0)
                 {
+                    // Si no hay inscripciones, agregar algunos grados por defecto para que el usuario pueda empezar
                     cmbGrado.Items.Add("1ro A");
                     cmbGrado.Items.Add("1ro B");
                     cmbGrado.Items.Add("1ro C");
@@ -174,9 +484,11 @@ namespace UI.WinUi.Administrador
                 }
                 else
                 {
-                    foreach (var grado in gradosUnicos)
+                    // Cargar grados desde las estadísticas de inscripciones
+                    foreach (var est in estadisticas)
                     {
-                        cmbGrado.Items.Add(grado);
+                        string gradoFormateado = FormatearGrado(est.Grado, est.Division);
+                        cmbGrado.Items.Add(gradoFormateado);
                     }
                 }
 
@@ -218,14 +530,29 @@ namespace UI.WinUi.Administrador
             }
         }
 
+        /// <summary>
+        /// Carga los alumnos inscritos en un grado específico para el año lectivo seleccionado
+        /// usando el sistema de Inscripciones
+        /// </summary>
         private void CargarAlumnosPorGrado(string grado, string division)
         {
             try
             {
-                var todosAlumnos = _alumnoBLL.ObtenerTodosAlumnos();
-                _alumnosGrado = todosAlumnos.FindAll(a =>
-                    a.Grado == grado &&
-                    a.Division.Equals(division, StringComparison.OrdinalIgnoreCase));
+                _alumnosGrado.Clear();
+
+                // Obtener inscripciones del grado para el año lectivo seleccionado
+                var inscripciones = _inscripcionBLL.ObtenerInscripcionesPorGrado(
+                    _anioLectivoSeleccionado, grado, division);
+
+                // Cargar los alumnos correspondientes a esas inscripciones
+                foreach (var inscripcion in inscripciones)
+                {
+                    var alumno = _alumnoBLL.ObtenerAlumnoPorId(inscripcion.IdAlumno);
+                    if (alumno != null)
+                    {
+                        _alumnosGrado.Add(alumno);
+                    }
+                }
 
                 dgvAlumnos.DataSource = null;
                 dgvAlumnos.DataSource = _alumnosGrado;
@@ -258,8 +585,8 @@ namespace UI.WinUi.Administrador
                         dgvAlumnos.Columns["NombreCompleto"].Visible = false;
                 }
 
-                // Actualizar contador
-                lblTotal.Text = $"Total: {_alumnosGrado.Count} alumno(s)";
+                // Actualizar estadísticas
+                ActualizarEstadisticas();
             }
             catch (Exception ex)
             {
@@ -530,21 +857,13 @@ namespace UI.WinUi.Administrador
                 using (SaveFileDialog sfd = new SaveFileDialog())
                 {
                     string gradoSeleccionado = cmbGrado.SelectedItem?.ToString().Replace("°", "").Replace(" ", "_") ?? "alumnos";
-                    sfd.Filter = "Archivos Excel (*.xlsx)|*.xlsx|Archivos CSV (*.csv)|*.csv";
-                    sfd.FileName = $"Alumnos_{gradoSeleccionado}.xlsx";
-                    sfd.Title = "Guardar archivo Excel";
+                    sfd.Filter = "Archivos CSV (*.csv)|*.csv";
+                    sfd.FileName = $"Alumnos_{gradoSeleccionado}.csv";
+                    sfd.Title = "Guardar archivo CSV";
 
                     if (sfd.ShowDialog() == DialogResult.OK)
                     {
-                        string extension = Path.GetExtension(sfd.FileName).ToLower();
-                        if (extension == ".xlsx")
-                        {
-                            ExportarAlumnosAExcel(sfd.FileName);
-                        }
-                        else
-                        {
-                            ExportarAlumnosACSV(sfd.FileName);
-                        }
+                        ExportarAlumnosACSV(sfd.FileName);
                     }
                 }
             }
@@ -555,76 +874,6 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void ExportarAlumnosAExcel(string rutaArchivo)
-        {
-            try
-            {
-                // Crear archivo Excel usando OleDb
-                string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={rutaArchivo};Extended Properties=\"Excel 12.0 Xml;HDR=YES\"";
-
-                // Crear el archivo si no existe
-                if (File.Exists(rutaArchivo))
-                    File.Delete(rutaArchivo);
-
-                // Crear DataTable con los datos
-                DataTable dt = new DataTable();
-                dt.Columns.Add("Nombre", typeof(string));
-                dt.Columns.Add("Apellido", typeof(string));
-                dt.Columns.Add("DNI", typeof(string));
-                dt.Columns.Add("Grado", typeof(string));
-                dt.Columns.Add("División", typeof(string));
-
-                foreach (var alumno in _alumnosGrado)
-                {
-                    dt.Rows.Add(alumno.Nombre, alumno.Apellido, alumno.DNI, alumno.Grado, alumno.Division);
-                }
-
-                // Crear archivo Excel vacío primero
-                using (var conn = new OleDbConnection(connectionString))
-                {
-                    conn.Open();
-
-                    // Crear la hoja
-                    string createTable = "CREATE TABLE [Alumnos] (" +
-                        "[Nombre] VARCHAR(100), " +
-                        "[Apellido] VARCHAR(100), " +
-                        "[DNI] VARCHAR(20), " +
-                        "[Grado] VARCHAR(10), " +
-                        "[División] VARCHAR(5))";
-
-                    using (var cmd = new OleDbCommand(createTable, conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    // Insertar datos
-                    foreach (DataRow row in dt.Rows)
-                    {
-                        string insert = "INSERT INTO [Alumnos] ([Nombre], [Apellido], [DNI], [Grado], [División]) " +
-                            $"VALUES ('{row["Nombre"].ToString().Replace("'", "''")}', " +
-                            $"'{row["Apellido"].ToString().Replace("'", "''")}', " +
-                            $"'{row["DNI"]}', " +
-                            $"'{row["Grado"]}', " +
-                            $"'{row["División"]}')";
-
-                        using (var cmd = new OleDbCommand(insert, conn))
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
-
-                MessageBox.Show($"Archivo Excel exportado exitosamente:\n{rutaArchivo}\n\n" +
-                    $"Total de alumnos: {_alumnosGrado.Count}", "Éxito",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al exportar a Excel: {ex.Message}\n\n" +
-                    "Asegúrese de tener instalado Microsoft Access Database Engine.", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         private void ExportarAlumnosACSV(string rutaArchivo)
         {
@@ -632,19 +881,24 @@ namespace UI.WinUi.Administrador
             {
                 using (StreamWriter sw = new StreamWriter(rutaArchivo, false, System.Text.Encoding.UTF8))
                 {
-                    // Escribir encabezado
-                    sw.WriteLine("Nombre,Apellido,DNI,Grado,Division");
+                    // BOM para UTF-8 (ayuda a Excel a detectar el encoding correcto)
+                    sw.Write('\uFEFF');
+
+                    // Escribir encabezado usando punto y coma como separador
+                    // Excel en configuración regional de español abre automáticamente los CSV con ; en columnas
+                    sw.WriteLine("Apellido;Nombre;DNI;Grado;División");
 
                     // Escribir datos
                     foreach (var alumno in _alumnosGrado)
                     {
-                        sw.WriteLine($"{alumno.Nombre},{alumno.Apellido},{alumno.DNI},{alumno.Grado},{alumno.Division}");
+                        sw.WriteLine($"{alumno.Apellido};{alumno.Nombre};{alumno.DNI};{alumno.Grado};{alumno.Division}");
                     }
                 }
 
                 MessageBox.Show($"Archivo CSV exportado exitosamente:\n{rutaArchivo}\n\n" +
-                    $"Total de alumnos: {_alumnosGrado.Count}", "Éxito",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    $"Total de alumnos: {_alumnosGrado.Count}\n\n" +
+                    $"✓ El archivo se abrirá automáticamente en Excel con columnas separadas.",
+                    "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -653,6 +907,10 @@ namespace UI.WinUi.Administrador
             }
         }
 
+        /// <summary>
+        /// Cambia el grado de alumnos seleccionados actualizando su inscripción
+        /// en el año lectivo seleccionado
+        /// </summary>
         private void BtnEditarGrado_Click(object sender, EventArgs e)
         {
             try
@@ -732,19 +990,69 @@ namespace UI.WinUi.Administrador
                             string nuevaDivision = partes[1];
 
                             int actualizados = 0;
+                            int errores = 0;
+                            List<string> mensajesError = new List<string>();
+
                             foreach (DataGridViewRow row in dgvAlumnos.SelectedRows)
                             {
                                 Alumno alumno = (Alumno)row.DataBoundItem;
-                                alumno.Grado = nuevoGrado;
-                                alumno.Division = nuevaDivision;
-                                _alumnoBLL.ActualizarAlumno(alumno);
-                                actualizados++;
+
+                                try
+                                {
+                                    // Obtener la inscripción activa del alumno para el año seleccionado
+                                    var inscripcionActual = _inscripcionBLL.ObtenerInscripcionActiva(
+                                        alumno.IdAlumno, _anioLectivoSeleccionado);
+
+                                    if (inscripcionActual != null)
+                                    {
+                                        // Actualizar la inscripción con el nuevo grado/división
+                                        inscripcionActual.Grado = nuevoGrado;
+                                        inscripcionActual.Division = nuevaDivision;
+                                        _inscripcionBLL.ActualizarInscripcion(inscripcionActual);
+
+                                        // También actualizar el alumno para mantener compatibilidad
+                                        alumno.Grado = nuevoGrado;
+                                        alumno.Division = nuevaDivision;
+                                        _alumnoBLL.ActualizarAlumno(alumno);
+
+                                        actualizados++;
+                                    }
+                                    else
+                                    {
+                                        // Si no tiene inscripción activa, crear una nueva
+                                        _inscripcionBLL.InscribirAlumno(
+                                            alumno.IdAlumno,
+                                            _anioLectivoSeleccionado,
+                                            nuevoGrado,
+                                            nuevaDivision);
+
+                                        alumno.Grado = nuevoGrado;
+                                        alumno.Division = nuevaDivision;
+                                        _alumnoBLL.ActualizarAlumno(alumno);
+
+                                        actualizados++;
+                                    }
+                                }
+                                catch (Exception exAlumno)
+                                {
+                                    errores++;
+                                    mensajesError.Add($"{alumno.NombreCompleto}: {exAlumno.Message}");
+                                }
                             }
 
-                            MessageBox.Show($"Se actualizaron {actualizados} alumno(s) al grado {nuevoGradoSeleccionado}",
-                                "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            string mensaje = $"Se actualizaron {actualizados} alumno(s) al grado {nuevoGradoSeleccionado}";
+                            if (errores > 0)
+                            {
+                                mensaje += $"\n\nErrores: {errores}\n" + string.Join("\n", mensajesError);
+                            }
+
+                            MessageBox.Show(mensaje,
+                                errores > 0 ? "Advertencia" : "Éxito",
+                                MessageBoxButtons.OK,
+                                errores > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
 
                             // Recargar la lista
+                            CargarGrados(); // Recargar grados por si el nuevo grado no existía
                             CmbGrado_SelectedIndexChanged(null, EventArgs.Empty);
                         }
                     }
@@ -757,6 +1065,9 @@ namespace UI.WinUi.Administrador
             }
         }
 
+        /// <summary>
+        /// Crea un nuevo alumno y automáticamente lo inscribe en el año lectivo seleccionado
+        /// </summary>
         private void BtnNuevo_Click(object sender, EventArgs e)
         {
             try
@@ -774,12 +1085,30 @@ namespace UI.WinUi.Administrador
                         return;
                     }
 
+                    // Guardar el alumno
                     _alumnoBLL.GuardarAlumno(formEditar.AlumnoEditado);
 
-                    MessageBox.Show("Alumno creado exitosamente", "Éxito",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // Crear inscripción automáticamente para el año lectivo seleccionado
+                    try
+                    {
+                        _inscripcionBLL.InscribirAlumno(
+                            formEditar.AlumnoEditado.IdAlumno,
+                            _anioLectivoSeleccionado,
+                            formEditar.AlumnoEditado.Grado,
+                            formEditar.AlumnoEditado.Division);
+
+                        MessageBox.Show($"Alumno creado e inscrito exitosamente en el año {_anioLectivoSeleccionado}", "Éxito",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception exInscripcion)
+                    {
+                        // Si falla la inscripción, informar pero el alumno ya fue creado
+                        MessageBox.Show($"Alumno creado, pero ocurrió un error al inscribirlo:\n{exInscripcion.Message}\n\nPuede inscribirlo manualmente.",
+                            "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
 
                     // Recargar lista
+                    CargarGrados(); // Recargar grados por si es necesario
                     CmbGrado_SelectedIndexChanged(null, EventArgs.Empty);
                 }
             }
@@ -857,6 +1186,27 @@ namespace UI.WinUi.Administrador
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al eliminar alumno: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Abre la ventana de Promoción de Alumnos para promocionar alumnos
+        /// de un año lectivo al siguiente
+        /// </summary>
+        private void BtnPromocionAlumnos_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                gestionPromocionAlumnos formPromocion = new gestionPromocionAlumnos(_usuarioLogueado);
+                formPromocion.ShowDialog();
+
+                // Recargar grados y alumnos por si hubo cambios
+                CargarGrados();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir ventana de promoción: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -974,62 +1324,6 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void BtnEliminarGrado_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (cmbGrado.SelectedIndex < 0)
-                {
-                    MessageBox.Show("Debe seleccionar un grado para eliminar", "Validación",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                string gradoSeleccionado = cmbGrado.SelectedItem.ToString();
-
-                // Contar alumnos en el grado
-                int cantidadAlumnos = _alumnosGrado.Count;
-
-                var resultado = MessageBox.Show(
-                    $"¿Está seguro de eliminar el grado {gradoSeleccionado}?\n\n" +
-                    $"Esta acción eliminará los {cantidadAlumnos} alumno(s) de este grado.\n" +
-                    "Esta operación NO se puede deshacer.",
-                    "Confirmar eliminación de grado",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning);
-
-                if (resultado == DialogResult.Yes)
-                {
-                    // Eliminar todos los alumnos del grado
-                    foreach (var alumno in _alumnosGrado.ToList())
-                    {
-                        _alumnoBLL.EliminarAlumno(alumno);
-                    }
-
-                    // Remover grado del combo
-                    cmbGrado.Items.Remove(gradoSeleccionado);
-
-                    if (cmbGrado.Items.Count > 0)
-                    {
-                        cmbGrado.SelectedIndex = 0;
-                    }
-                    else
-                    {
-                        _alumnosGrado.Clear();
-                        dgvAlumnos.DataSource = null;
-                        lblTotal.Text = "Total: 0 alumno(s)";
-                    }
-
-                    MessageBox.Show($"Grado {gradoSeleccionado} y sus {cantidadAlumnos} alumno(s) eliminados exitosamente",
-                        "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al eliminar grado: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         private void BtnPlantilla_Click(object sender, EventArgs e)
         {
@@ -1073,46 +1367,6 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void CrearPlantillaExcel(string rutaArchivo)
-        {
-            string connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={rutaArchivo};Extended Properties=\"Excel 12.0 Xml;HDR=YES\"";
-
-            if (File.Exists(rutaArchivo))
-                File.Delete(rutaArchivo);
-
-            using (var conn = new OleDbConnection(connectionString))
-            {
-                conn.Open();
-
-                string createTable = "CREATE TABLE [Alumnos] (" +
-                    "[Nombre] VARCHAR(100), " +
-                    "[Apellido] VARCHAR(100), " +
-                    "[DNI] VARCHAR(20), " +
-                    "[Grado] VARCHAR(10), " +
-                    "[División] VARCHAR(5))";
-
-                using (var cmd = new OleDbCommand(createTable, conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Agregar filas de ejemplo
-                string[] ejemplos = {
-                    "('Juan', 'Pérez', '12345678', '1', 'A')",
-                    "('María', 'González', '23456789', '1', 'A')",
-                    "('Pedro', 'Rodríguez', '34567890', '2', 'B')"
-                };
-
-                foreach (var ejemplo in ejemplos)
-                {
-                    string insert = $"INSERT INTO [Alumnos] ([Nombre], [Apellido], [DNI], [Grado], [División]) VALUES {ejemplo}";
-                    using (var cmd = new OleDbCommand(insert, conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-        }
 
         private void MostrarVistaPreviaImportacion(List<Alumno> alumnosParaImportar, List<string> errores)
         {
@@ -1248,11 +1502,17 @@ namespace UI.WinUi.Administrador
             }
         }
 
+        /// <summary>
+        /// Procesa la importación de alumnos y crea automáticamente sus inscripciones
+        /// para el año lectivo seleccionado
+        /// </summary>
         private void ProcesarImportacion(List<Alumno> alumnos, bool saltarDuplicados)
         {
             int importados = 0;
             int omitidos = 0;
             int errores = 0;
+            int inscripciones = 0;
+            List<string> mensajesError = new List<string>();
 
             foreach (var alumno in alumnos)
             {
@@ -1266,24 +1526,451 @@ namespace UI.WinUi.Administrador
                         continue;
                     }
 
+                    // Guardar el alumno
                     _alumnoBLL.GuardarAlumno(alumno);
                     importados++;
+
+                    // Crear inscripción automáticamente si el alumno tiene grado asignado
+                    if (!string.IsNullOrWhiteSpace(alumno.Grado))
+                    {
+                        try
+                        {
+                            _inscripcionBLL.InscribirAlumno(
+                                alumno.IdAlumno,
+                                _anioLectivoSeleccionado,
+                                alumno.Grado,
+                                alumno.Division ?? "A");
+                            inscripciones++;
+                        }
+                        catch (Exception exInscripcion)
+                        {
+                            mensajesError.Add($"{alumno.NombreCompleto}: Error al inscribir - {exInscripcion.Message}");
+                        }
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
                     errores++;
+                    mensajesError.Add($"{alumno.NombreCompleto}: {ex.Message}");
                 }
             }
 
             string mensaje = $"Importación completada:\n\n" +
-                $"✓ Importados: {importados}\n" +
+                $"✓ Alumnos importados: {importados}\n" +
+                $"✓ Inscripciones creadas: {inscripciones} (año {_anioLectivoSeleccionado})\n" +
                 (omitidos > 0 ? $"⊘ Omitidos (duplicados): {omitidos}\n" : "") +
-                (errores > 0 ? $"✗ Errores: {errores}" : "");
+                (errores > 0 ? $"✗ Errores: {errores}\n" : "");
 
-            MessageBox.Show(mensaje, "Resultado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (mensajesError.Count > 0)
+            {
+                mensaje += "\n\nDetalles de errores:\n" + string.Join("\n", mensajesError.Take(5));
+                if (mensajesError.Count > 5)
+                    mensaje += $"\n... y {mensajesError.Count - 5} errores más";
+            }
 
-            // Recargar lista
+            MessageBox.Show(mensaje, "Resultado", MessageBoxButtons.OK,
+                errores > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+
+            // Recargar grados (por si se agregaron nuevos) y lista
+            CargarGrados();
             CmbGrado_SelectedIndexChanged(null, EventArgs.Empty);
         }
+
+        #region Métodos de Pestaña Historial
+
+        /// <summary>
+        /// Configura los controles y eventos de la pestaña Historial
+        /// </summary>
+        private void ConfigurarPestañaHistorial()
+        {
+            // Configurar combo de años lectivos
+            CargarAniosLectivosHistorial();
+
+            // Configurar DataGridView de historial
+            dgvHistorial.ReadOnly = true;
+            dgvHistorial.AllowUserToAddRows = false;
+            dgvHistorial.AllowUserToDeleteRows = false;
+            dgvHistorial.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvHistorial.MultiSelect = false;
+            dgvHistorial.AutoGenerateColumns = false;
+
+            // Configurar columnas del DataGridView de historial
+            dgvHistorial.Columns.Clear();
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Apellido", HeaderText = "Apellido", DataPropertyName = "Apellido", Width = 120 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre", Width = 120 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "DNI", HeaderText = "DNI", DataPropertyName = "DNI", Width = 100 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Grado", HeaderText = "Grado", Width = 80 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Division", HeaderText = "División", Width = 80 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Estado", HeaderText = "Estado", Width = 100 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "FechaInscripcion", HeaderText = "Fecha Inscripción", Width = 130 });
+
+            // Aplicar estilo al dgvHistorial
+            ConfigurarEstiloDataGridViewHistorial();
+
+            // Eventos
+            cmbAnioLectivoHistorial.SelectedIndexChanged += CmbAnioLectivoHistorial_SelectedIndexChanged;
+            cmbGradoHistorial.SelectedIndexChanged += CmbGradoHistorial_SelectedIndexChanged;
+            btnLimpiarFiltrosHistorial.Click += BtnLimpiarFiltrosHistorial_Click;
+            btnVerTrayectoria.Click += BtnVerTrayectoria_Click;
+
+            // Aplicar traducciones
+            AplicarTraduccionesHistorial();
+        }
+
+        private void ConfigurarEstiloDataGridViewHistorial()
+        {
+            dgvHistorial.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(52, 152, 219);
+            dgvHistorial.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
+            dgvHistorial.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(245, 246, 247);
+            dgvHistorial.RowsDefaultCellStyle.BackColor = System.Drawing.Color.White;
+            dgvHistorial.EnableHeadersVisualStyles = false;
+            dgvHistorial.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(52, 152, 219);
+            dgvHistorial.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.White;
+            dgvHistorial.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            dgvHistorial.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgvHistorial.GridColor = System.Drawing.Color.FromArgb(189, 195, 199);
+        }
+
+        private void AplicarTraduccionesHistorial()
+        {
+            try
+            {
+                tabGestionActual.Text = LanguageManager.Translate("tab_gestion_actual");
+                tabHistorial.Text = LanguageManager.Translate("tab_historial");
+                lblAnioLectivoHistorial.Text = LanguageManager.Translate("anio_lectivo") + ":";
+                lblGradoHistorial.Text = LanguageManager.Translate("grado_division") + ":";
+                btnLimpiarFiltrosHistorial.Text = LanguageManager.Translate("limpiar");
+                lblListaHistorial.Text = LanguageManager.Translate("historial_alumnos") + ":";
+                btnVerTrayectoria.Text = "📋 " + LanguageManager.Translate("ver_trayectoria");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al aplicar traducciones del historial: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Carga los años lectivos disponibles en el combo de la pestaña historial
+        /// </summary>
+        private void CargarAniosLectivosHistorial()
+        {
+            try
+            {
+                cmbAnioLectivoHistorial.Items.Clear();
+
+                // Obtener todos los años lectivos con inscripciones
+                var anios = _inscripcionBLL.ObtenerAniosLectivosDisponibles();
+
+                if (anios.Count == 0)
+                {
+                    // Si no hay años, agregar el actual
+                    cmbAnioLectivoHistorial.Items.Add(DateTime.Now.Year);
+                }
+                else
+                {
+                    foreach (var anio in anios.OrderByDescending(a => a))
+                    {
+                        cmbAnioLectivoHistorial.Items.Add(anio);
+                    }
+                }
+
+                if (cmbAnioLectivoHistorial.Items.Count > 0)
+                {
+                    cmbAnioLectivoHistorial.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar años lectivos: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void CmbAnioLectivoHistorial_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbAnioLectivoHistorial.SelectedItem != null)
+            {
+                int anioSeleccionado = (int)cmbAnioLectivoHistorial.SelectedItem;
+                CargarGradosHistorial(anioSeleccionado);
+                CargarHistorialAlumnos(anioSeleccionado, null, null);
+            }
+        }
+
+        /// <summary>
+        /// Carga los grados disponibles para un año lectivo en la pestaña historial
+        /// </summary>
+        private void CargarGradosHistorial(int anio)
+        {
+            try
+            {
+                cmbGradoHistorial.Items.Clear();
+                cmbGradoHistorial.Items.Add("Todos");
+
+                var estadisticas = _inscripcionBLL.ObtenerEstadisticasPorAnio(anio);
+
+                foreach (var est in estadisticas)
+                {
+                    string gradoFormateado = FormatearGrado(est.Grado, est.Division);
+                    cmbGradoHistorial.Items.Add(gradoFormateado);
+                }
+
+                if (cmbGradoHistorial.Items.Count > 0)
+                {
+                    cmbGradoHistorial.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar grados: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void CmbGradoHistorial_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbAnioLectivoHistorial.SelectedItem != null && cmbGradoHistorial.SelectedItem != null)
+            {
+                int anioSeleccionado = (int)cmbAnioLectivoHistorial.SelectedItem;
+                string gradoSeleccionado = cmbGradoHistorial.SelectedItem.ToString();
+
+                if (gradoSeleccionado == "Todos")
+                {
+                    CargarHistorialAlumnos(anioSeleccionado, null, null);
+                }
+                else
+                {
+                    var partes = gradoSeleccionado.Split(' ');
+                    if (partes.Length == 2)
+                    {
+                        string grado = new string(partes[0].Where(char.IsDigit).ToArray());
+                        string division = partes[1];
+                        CargarHistorialAlumnos(anioSeleccionado, grado, division);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Carga el historial de alumnos inscritos en un año lectivo específico
+        /// </summary>
+        private void CargarHistorialAlumnos(int anio, string grado = null, string division = null)
+        {
+            try
+            {
+                List<Inscripcion> inscripciones;
+
+                if (string.IsNullOrEmpty(grado))
+                {
+                    // Cargar todas las inscripciones del año
+                    inscripciones = _inscripcionBLL.ObtenerInscripcionesPorAnio(anio);
+                }
+                else
+                {
+                    // Cargar inscripciones del grado específico
+                    inscripciones = _inscripcionBLL.ObtenerInscripcionesPorGrado(anio, grado, division);
+                }
+
+                // Crear lista de objetos para mostrar en el grid
+                var datosHistorial = new List<dynamic>();
+
+                foreach (var inscripcion in inscripciones)
+                {
+                    var alumno = _alumnoBLL.ObtenerAlumnoPorId(inscripcion.IdAlumno);
+                    if (alumno != null)
+                    {
+                        datosHistorial.Add(new
+                        {
+                            IdAlumno = alumno.IdAlumno,
+                            Apellido = alumno.Apellido,
+                            Nombre = alumno.Nombre,
+                            DNI = alumno.DNI,
+                            Grado = inscripcion.Grado,
+                            Division = inscripcion.Division,
+                            Estado = ObtenerTraduccionEstado(inscripcion.Estado),
+                            FechaInscripcion = inscripcion.FechaInscripcion.ToString("dd/MM/yyyy")
+                        });
+                    }
+                }
+
+                dgvHistorial.DataSource = datosHistorial;
+                ActualizarEstadisticasHistorial(datosHistorial.Count, anio, grado, division);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar historial: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string ObtenerTraduccionEstado(string estado)
+        {
+            switch (estado?.ToLower())
+            {
+                case "activo":
+                    return LanguageManager.Translate("estado_activo");
+                case "finalizado":
+                    return LanguageManager.Translate("estado_finalizado");
+                case "abandonado":
+                    return LanguageManager.Translate("estado_abandonado");
+                default:
+                    return estado;
+            }
+        }
+
+        /// <summary>
+        /// Actualiza el panel de estadísticas del historial
+        /// </summary>
+        private void ActualizarEstadisticasHistorial(int total, int anio, string grado = null, string division = null)
+        {
+            try
+            {
+                string texto = $"📊 {LanguageManager.Translate("total_alumnos")}: {total} - {LanguageManager.Translate("anio_lectivo")} {anio}";
+
+                if (!string.IsNullOrEmpty(grado))
+                {
+                    texto += $" - Grado {FormatearGrado(grado, division)}";
+                }
+
+                // Obtener estadísticas por estado
+                var inscripciones = string.IsNullOrEmpty(grado)
+                    ? _inscripcionBLL.ObtenerInscripcionesPorAnio(anio)
+                    : _inscripcionBLL.ObtenerInscripcionesPorGrado(anio, grado, division);
+
+                var porEstado = inscripciones.GroupBy(i => i.Estado).Select(g => new { Estado = g.Key, Cantidad = g.Count() }).ToList();
+
+                texto += "\n";
+                foreach (var grupo in porEstado)
+                {
+                    texto += $"{ObtenerTraduccionEstado(grupo.Estado)}: {grupo.Cantidad}  ";
+                }
+
+                lblEstadisticasHistorial.Text = texto;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al actualizar estadísticas: {ex.Message}");
+            }
+        }
+
+        private void BtnLimpiarFiltrosHistorial_Click(object sender, EventArgs e)
+        {
+            if (cmbGradoHistorial.Items.Count > 0)
+            {
+                cmbGradoHistorial.SelectedIndex = 0; // Seleccionar "Todos"
+            }
+        }
+
+        /// <summary>
+        /// Muestra la trayectoria completa de un alumno seleccionado
+        /// </summary>
+        private void BtnVerTrayectoria_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dgvHistorial.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Debe seleccionar un alumno para ver su trayectoria", "Validación",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Obtener el IdAlumno del DataBoundItem (objeto dinámico)
+                var filaDatos = dgvHistorial.SelectedRows[0].DataBoundItem;
+                Guid idAlumno = (Guid)filaDatos.GetType().GetProperty("IdAlumno").GetValue(filaDatos, null);
+
+                var alumno = _alumnoBLL.ObtenerAlumnoPorId(idAlumno);
+
+                if (alumno == null)
+                {
+                    MessageBox.Show("No se pudo obtener la información del alumno", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Obtener todas las inscripciones del alumno
+                var todasInscripciones = _inscripcionBLL.ObtenerInscripcionesPorAlumno(idAlumno);
+
+                // Crear formulario de trayectoria
+                Form frmTrayectoria = new Form
+                {
+                    Text = $"{LanguageManager.Translate("trayectoria_alumno")}: {alumno.NombreCompleto}",
+                    Size = new System.Drawing.Size(700, 500),
+                    StartPosition = FormStartPosition.CenterParent,
+                    FormBorderStyle = FormBorderStyle.Sizable,
+                    MinimizeBox = false,
+                    MaximizeBox = true
+                };
+
+                // Label de información
+                Label lblInfo = new Label
+                {
+                    Text = $"Alumno: {alumno.NombreCompleto} - DNI: {alumno.DNI}",
+                    Location = new System.Drawing.Point(20, 20),
+                    Size = new System.Drawing.Size(640, 25),
+                    Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold)
+                };
+
+                // DataGridView
+                DataGridView dgvTrayectoria = new DataGridView
+                {
+                    Location = new System.Drawing.Point(20, 60),
+                    Size = new System.Drawing.Size(640, 350),
+                    ReadOnly = true,
+                    AllowUserToAddRows = false,
+                    AllowUserToDeleteRows = false,
+                    SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                    AutoGenerateColumns = false
+                };
+
+                // Configurar columnas
+                dgvTrayectoria.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "AnioLectivo", HeaderText = "Año Lectivo", Width = 100 });
+                dgvTrayectoria.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "GradoCompleto", HeaderText = "Grado/División", Width = 150 });
+                dgvTrayectoria.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Estado", HeaderText = "Estado", Width = 120 });
+                dgvTrayectoria.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "FechaInscripcion", HeaderText = "Fecha Inscripción", Width = 130 });
+
+                // Configurar estilo
+                dgvTrayectoria.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(52, 152, 219);
+                dgvTrayectoria.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
+                dgvTrayectoria.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(245, 246, 247);
+                dgvTrayectoria.RowsDefaultCellStyle.BackColor = System.Drawing.Color.White;
+                dgvTrayectoria.EnableHeadersVisualStyles = false;
+                dgvTrayectoria.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(52, 152, 219);
+                dgvTrayectoria.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.White;
+                dgvTrayectoria.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+
+                // Cargar datos
+                var datosTrayectoria = todasInscripciones.OrderByDescending(i => i.AnioLectivo).Select(i => new
+                {
+                    AnioLectivo = i.AnioLectivo,
+                    GradoCompleto = FormatearGrado(i.Grado, i.Division),
+                    Estado = ObtenerTraduccionEstado(i.Estado),
+                    FechaInscripcion = i.FechaInscripcion.ToString("dd/MM/yyyy")
+                }).ToList();
+
+                dgvTrayectoria.DataSource = datosTrayectoria;
+
+                // Botón cerrar
+                Button btnCerrar = new Button
+                {
+                    Text = "Cerrar",
+                    Location = new System.Drawing.Point(580, 420),
+                    Size = new System.Drawing.Size(80, 30),
+                    DialogResult = DialogResult.OK
+                };
+
+                frmTrayectoria.Controls.Add(lblInfo);
+                frmTrayectoria.Controls.Add(dgvTrayectoria);
+                frmTrayectoria.Controls.Add(btnCerrar);
+
+                frmTrayectoria.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al mostrar trayectoria: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #endregion
     }
 }

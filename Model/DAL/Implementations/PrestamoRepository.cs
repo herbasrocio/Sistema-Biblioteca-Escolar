@@ -23,13 +23,14 @@ namespace DAL.Implementations
             {
                 conn.Open();
                 string query = @"
-                    INSERT INTO Prestamo (IdPrestamo, IdMaterial, IdAlumno, IdUsuario, FechaPrestamo, FechaDevolucionPrevista, Estado)
-                    VALUES (@IdPrestamo, @IdMaterial, @IdAlumno, @IdUsuario, @FechaPrestamo, @FechaDevolucionPrevista, @Estado)";
+                    INSERT INTO Prestamo (IdPrestamo, IdMaterial, IdEjemplar, IdAlumno, IdUsuario, FechaPrestamo, FechaDevolucionPrevista, Estado)
+                    VALUES (@IdPrestamo, @IdMaterial, @IdEjemplar, @IdAlumno, @IdUsuario, @FechaPrestamo, @FechaDevolucionPrevista, @Estado)";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@IdPrestamo", entity.IdPrestamo);
                     cmd.Parameters.AddWithValue("@IdMaterial", entity.IdMaterial);
+                    cmd.Parameters.AddWithValue("@IdEjemplar", entity.IdEjemplar);
                     cmd.Parameters.AddWithValue("@IdAlumno", entity.IdAlumno);
                     cmd.Parameters.AddWithValue("@IdUsuario", entity.IdUsuario);
                     cmd.Parameters.AddWithValue("@FechaPrestamo", entity.FechaPrestamo);
@@ -49,6 +50,7 @@ namespace DAL.Implementations
                 string query = @"
                     UPDATE Prestamo
                     SET IdMaterial = @IdMaterial,
+                        IdEjemplar = @IdEjemplar,
                         IdAlumno = @IdAlumno,
                         IdUsuario = @IdUsuario,
                         FechaPrestamo = @FechaPrestamo,
@@ -60,6 +62,7 @@ namespace DAL.Implementations
                 {
                     cmd.Parameters.AddWithValue("@IdPrestamo", entity.IdPrestamo);
                     cmd.Parameters.AddWithValue("@IdMaterial", entity.IdMaterial);
+                    cmd.Parameters.AddWithValue("@IdEjemplar", entity.IdEjemplar);
                     cmd.Parameters.AddWithValue("@IdAlumno", entity.IdAlumno);
                     cmd.Parameters.AddWithValue("@IdUsuario", entity.IdUsuario);
                     cmd.Parameters.AddWithValue("@FechaPrestamo", entity.FechaPrestamo);

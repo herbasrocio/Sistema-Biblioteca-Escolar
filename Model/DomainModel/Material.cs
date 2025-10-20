@@ -18,8 +18,7 @@ namespace DomainModel
         public string Genero { get; set; } // Fantasia, Terror, Comedia, etc.
         public string ISBN { get; set; }
         public int? AnioPublicacion { get; set; }
-        public string EdadRecomendada { get; set; }
-        public string Descripcion { get; set; }
+        public string Nivel { get; set; } // Inicial, Primario, Secundario, Universitario
         public int CantidadTotal { get; set; } // Total de ejemplares (calculado desde Ejemplar)
         public int CantidadDisponible { get; set; } // Ejemplares disponibles (calculado desde Ejemplar)
         public DateTime FechaRegistro { get; set; }

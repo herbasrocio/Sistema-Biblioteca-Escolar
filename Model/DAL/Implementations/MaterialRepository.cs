@@ -31,12 +31,12 @@ namespace DAL.Implementations
                 string query = @"
                     INSERT INTO Material (
                         IdMaterial, Titulo, Autor, Editorial, Tipo, Genero,
-                        ISBN, AnioPublicacion, EdadRecomendada, Descripcion,
+                        ISBN, AnioPublicacion, Nivel,
                         CantidadTotal, CantidadDisponible, FechaRegistro, Activo
                     )
                     VALUES (
                         @IdMaterial, @Titulo, @Autor, @Editorial, @Tipo, @Genero,
-                        @ISBN, @AnioPublicacion, @EdadRecomendada, @Descripcion,
+                        @ISBN, @AnioPublicacion, @Nivel,
                         @CantidadTotal, @CantidadDisponible, @FechaRegistro, @Activo
                     )";
 
@@ -50,8 +50,7 @@ namespace DAL.Implementations
                     cmd.Parameters.AddWithValue("@Genero", (object)entity.Genero ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@ISBN", (object)entity.ISBN ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@AnioPublicacion", entity.AnioPublicacion.HasValue ? (object)entity.AnioPublicacion.Value : DBNull.Value);
-                    cmd.Parameters.AddWithValue("@EdadRecomendada", (object)entity.EdadRecomendada ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Descripcion", (object)entity.Descripcion ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Nivel", (object)entity.Nivel ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@CantidadTotal", entity.CantidadTotal);
                     cmd.Parameters.AddWithValue("@CantidadDisponible", entity.CantidadDisponible);
                     cmd.Parameters.AddWithValue("@FechaRegistro", entity.FechaRegistro);
@@ -76,8 +75,7 @@ namespace DAL.Implementations
                         Genero = @Genero,
                         ISBN = @ISBN,
                         AnioPublicacion = @AnioPublicacion,
-                        EdadRecomendada = @EdadRecomendada,
-                        Descripcion = @Descripcion,
+                        Nivel = @Nivel,
                         CantidadTotal = @CantidadTotal,
                         CantidadDisponible = @CantidadDisponible,
                         Activo = @Activo
@@ -93,8 +91,7 @@ namespace DAL.Implementations
                     cmd.Parameters.AddWithValue("@Genero", (object)entity.Genero ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@ISBN", (object)entity.ISBN ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@AnioPublicacion", entity.AnioPublicacion.HasValue ? (object)entity.AnioPublicacion.Value : DBNull.Value);
-                    cmd.Parameters.AddWithValue("@EdadRecomendada", (object)entity.EdadRecomendada ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Descripcion", (object)entity.Descripcion ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Nivel", (object)entity.Nivel ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@CantidadTotal", entity.CantidadTotal);
                     cmd.Parameters.AddWithValue("@CantidadDisponible", entity.CantidadDisponible);
                     cmd.Parameters.AddWithValue("@Activo", entity.Activo);
@@ -118,7 +115,23 @@ namespace DAL.Implementations
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string query = "SELECT * FROM Material WHERE Activo = 1 ORDER BY Titulo";
+                // Consulta que calcula dinámicamente las cantidades basándose en los ejemplares reales
+                // NOTA: EstadoMaterial.Disponible = 0 (primer valor del enum)
+                string query = @"
+                    SELECT
+                        m.*,
+                        ISNULL((SELECT COUNT(*)
+                                FROM Ejemplar e
+                                WHERE e.IdMaterial = m.IdMaterial
+                                AND e.Activo = 1), 0) AS CantidadTotalCalculada,
+                        ISNULL((SELECT COUNT(*)
+                                FROM Ejemplar e
+                                WHERE e.IdMaterial = m.IdMaterial
+                                AND e.Activo = 1
+                                AND e.Estado = 0), 0) AS CantidadDisponibleCalculada
+                    FROM Material m
+                    WHERE m.Activo = 1
+                    ORDER BY m.Titulo";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -128,7 +141,13 @@ namespace DAL.Implementations
 
                     foreach (DataRow row in dt.Rows)
                     {
-                        materiales.Add(MaterialAdapter.AdaptMaterial(row));
+                        Material material = MaterialAdapter.AdaptMaterial(row);
+
+                        // Sobrescribir con los valores calculados
+                        material.CantidadTotal = Convert.ToInt32(row["CantidadTotalCalculada"]);
+                        material.CantidadDisponible = Convert.ToInt32(row["CantidadDisponibleCalculada"]);
+
+                        materiales.Add(material);
                     }
                 }
             }
@@ -141,7 +160,21 @@ namespace DAL.Implementations
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string query = "SELECT * FROM Material WHERE IdMaterial = @IdMaterial";
+                // NOTA: EstadoMaterial.Disponible = 0 (primer valor del enum)
+                string query = @"
+                    SELECT
+                        m.*,
+                        ISNULL((SELECT COUNT(*)
+                                FROM Ejemplar e
+                                WHERE e.IdMaterial = m.IdMaterial
+                                AND e.Activo = 1), 0) AS CantidadTotalCalculada,
+                        ISNULL((SELECT COUNT(*)
+                                FROM Ejemplar e
+                                WHERE e.IdMaterial = m.IdMaterial
+                                AND e.Activo = 1
+                                AND e.Estado = 0), 0) AS CantidadDisponibleCalculada
+                    FROM Material m
+                    WHERE m.IdMaterial = @IdMaterial";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -152,7 +185,13 @@ namespace DAL.Implementations
 
                     if (dt.Rows.Count > 0)
                     {
-                        return MaterialAdapter.AdaptMaterial(dt.Rows[0]);
+                        Material material = MaterialAdapter.AdaptMaterial(dt.Rows[0]);
+
+                        // Sobrescribir con los valores calculados
+                        material.CantidadTotal = Convert.ToInt32(dt.Rows[0]["CantidadTotalCalculada"]);
+                        material.CantidadDisponible = Convert.ToInt32(dt.Rows[0]["CantidadDisponibleCalculada"]);
+
+                        return material;
                     }
                 }
             }
@@ -167,13 +206,25 @@ namespace DAL.Implementations
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
+                // NOTA: EstadoMaterial.Disponible = 0 (primer valor del enum)
                 string query = @"
-                    SELECT * FROM Material
-                    WHERE Activo = 1
-                    AND (@Titulo IS NULL OR Titulo LIKE '%' + @Titulo + '%')
-                    AND (@Autor IS NULL OR Autor LIKE '%' + @Autor + '%')
-                    AND (@Tipo IS NULL OR @Tipo = 'Todos' OR Tipo = @Tipo)
-                    ORDER BY Titulo";
+                    SELECT
+                        m.*,
+                        ISNULL((SELECT COUNT(*)
+                                FROM Ejemplar e
+                                WHERE e.IdMaterial = m.IdMaterial
+                                AND e.Activo = 1), 0) AS CantidadTotalCalculada,
+                        ISNULL((SELECT COUNT(*)
+                                FROM Ejemplar e
+                                WHERE e.IdMaterial = m.IdMaterial
+                                AND e.Activo = 1
+                                AND e.Estado = 0), 0) AS CantidadDisponibleCalculada
+                    FROM Material m
+                    WHERE m.Activo = 1
+                    AND (@Titulo IS NULL OR m.Titulo LIKE '%' + @Titulo + '%')
+                    AND (@Autor IS NULL OR m.Autor LIKE '%' + @Autor + '%')
+                    AND (@Tipo IS NULL OR @Tipo = 'Todos' OR m.Tipo = @Tipo)
+                    ORDER BY m.Titulo";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -187,7 +238,13 @@ namespace DAL.Implementations
 
                     foreach (DataRow row in dt.Rows)
                     {
-                        materiales.Add(MaterialAdapter.AdaptMaterial(row));
+                        Material material = MaterialAdapter.AdaptMaterial(row);
+
+                        // Sobrescribir con los valores calculados
+                        material.CantidadTotal = Convert.ToInt32(row["CantidadTotalCalculada"]);
+                        material.CantidadDisponible = Convert.ToInt32(row["CantidadDisponibleCalculada"]);
+
+                        materiales.Add(material);
                     }
                 }
             }

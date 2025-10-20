@@ -20,6 +20,7 @@ namespace UI.WinUi.Administrador
         private Usuario _usuarioLogueado;
         private Usuario _usuarioSeleccionado;
         private bool _modoEdicion = false;
+        private const string PLACEHOLDER_PASSWORD = "••••••••";
 
         public gestionUsuarios()
         {
@@ -259,12 +260,15 @@ namespace UI.WinUi.Administrador
 
                 if (_modoEdicion && _usuarioSeleccionado != null)
                 {
+                    // Si la contraseña es el placeholder, enviar string vacío para no actualizarla
+                    string passwordToUpdate = (password == PLACEHOLDER_PASSWORD) ? "" : password;
+
                     // Actualizar usuario existente
                     UsuarioBLL.ActualizarUsuario(
                         _usuarioSeleccionado.IdUsuario,
                         nombre,
                         email,
-                        password,
+                        passwordToUpdate,  // Solo actualiza si no es el placeholder
                         rolSeleccionado.IdComponent  // Pasar ID de la Familia de rol
                     );
 
@@ -308,8 +312,47 @@ namespace UI.WinUi.Administrador
 
             _modoEdicion = true;
             DesbloquearCampos();
+
+            // Configurar el campo de contraseña para edición
+            // El usuario debe hacer click en el campo para cambiarlo
+            txtContraseña.Text = PLACEHOLDER_PASSWORD;
+            txtContraseña.ReadOnly = true;
+            txtContraseña.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
+
+            // Agregar evento para permitir cambio de contraseña al hacer click
+            txtContraseña.Enter += TxtContraseña_Enter;
+
             btnGuardar.Enabled = true;
             txtNombreUsuario.Focus();
+        }
+
+        /// <summary>
+        /// Evento que se dispara cuando el usuario hace click en el campo contraseña en modo edición
+        /// Permite cambiar la contraseña limpiando el placeholder
+        /// </summary>
+        private void TxtContraseña_Enter(object sender, EventArgs e)
+        {
+            if (_modoEdicion && txtContraseña.Text == PLACEHOLDER_PASSWORD)
+            {
+                DialogResult result = MessageBox.Show(
+                    "¿Desea cambiar la contraseña de este usuario?\n\nSi selecciona 'Sí', deberá ingresar una nueva contraseña.",
+                    "Cambiar contraseña",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    txtContraseña.ReadOnly = false;
+                    txtContraseña.Text = "";
+                    txtContraseña.BackColor = System.Drawing.Color.White;
+                    txtContraseña.UseSystemPasswordChar = true;
+                }
+                else
+                {
+                    // Devolver el foco a otro campo
+                    txtEmail.Focus();
+                }
+            }
         }
 
         private void BtnEliminar_Click(object sender, EventArgs e)
@@ -401,7 +444,11 @@ namespace UI.WinUi.Administrador
             {
                 txtNombreUsuario.Text = usuario.Nombre;
                 txtEmail.Text = usuario.Email ?? "";
-                txtContraseña.Text = ""; // No mostrar contraseña por seguridad
+
+                // Mostrar placeholder en lugar de vacío para evitar cambio accidental
+                txtContraseña.Text = PLACEHOLDER_PASSWORD;
+                txtContraseña.ReadOnly = true; // Bloquear el campo por defecto
+                txtContraseña.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
 
                 // Seleccionar el rol en el ComboBox
                 var familiaRol = usuario.ObtenerFamiliaRol();

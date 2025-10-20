@@ -78,10 +78,40 @@ namespace UI.WinUi.Administrador
                 btnGuardar.Text = LanguageManager.Translate("guardar_cambios");
                 btnEliminar.Text = LanguageManager.Translate("eliminar");
                 btnVolver.Text = LanguageManager.Translate("volver");
+
+                // Centrar botones después de cambiar el texto
+                CentrarBotones();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al aplicar traducciones: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Centra los botones horizontalmente dentro de su GroupBox contenedor
+        /// </summary>
+        private void CentrarBotones()
+        {
+            // Obtener el ancho disponible del contenedor de los botones
+            int anchoDisponible = 0;
+
+            // Si los botones están dentro del GroupBox de acciones
+            if (btnGuardar.Parent != null)
+            {
+                anchoDisponible = btnGuardar.Parent.ClientSize.Width;
+
+                // Calcular espacio total ocupado por los 3 botones + espacios entre ellos
+                int espacioEntreBotones = 10;
+                int anchoTotal = btnGuardar.Width + btnEliminar.Width + btnVolver.Width + (espacioEntreBotones * 2);
+
+                // Calcular punto de inicio para centrar
+                int inicioCentrado = (anchoDisponible - anchoTotal) / 2;
+
+                // Posicionar botones centrados
+                btnGuardar.Left = inicioCentrado;
+                btnEliminar.Left = btnGuardar.Right + espacioEntreBotones;
+                btnVolver.Left = btnEliminar.Right + espacioEntreBotones;
             }
         }
 
@@ -103,7 +133,7 @@ namespace UI.WinUi.Administrador
                 _materialActual.Genero = comboBoxGenero.SelectedItem?.ToString();
                 _materialActual.ISBN = txtISBN.Text.Trim();
                 _materialActual.AnioPublicacion = int.TryParse(txtAnioPublicacion.Text, out int anio) ? (int?)anio : null;
-                _materialActual.EdadRecomendada = comboBoxNivel.SelectedItem?.ToString();
+                _materialActual.Nivel = comboBoxNivel.SelectedItem?.ToString();
 
                 // Calcular la diferencia de cantidad para ajustar disponibles
                 int diferenciaCantidad = (int)numCantidad.Value - _materialActual.CantidadTotal;
@@ -174,8 +204,8 @@ namespace UI.WinUi.Administrador
 
         private void VerificarPermisosEdicion()
         {
-            // Verificar si el usuario tiene el permiso EditarMaterial
-            bool tienePermisoEditar = TienePermiso("EditarMaterial");
+            // Verificar si el usuario tiene el permiso Editar Material
+            bool tienePermisoEditar = TienePermiso("Editar Material");
 
             if (!tienePermisoEditar)
             {
@@ -277,7 +307,7 @@ namespace UI.WinUi.Administrador
             EstilosSistema.AplicarEstiloComboBox(comboBoxNivel);
 
             // Aplicar estilos a los botones
-            EstilosSistema.AplicarEstiloBotonPrimario(btnGuardar);
+            EstilosSistema.AplicarEstiloBotonSecundario(btnGuardar);
             EstilosSistema.AplicarEstiloBotonSecundario(btnEliminar);
             EstilosSistema.AplicarEstiloBotonSecundario(btnVolver);
         }
@@ -305,22 +335,22 @@ namespace UI.WinUi.Administrador
             comboBoxGenero.Items.Clear();
 
             var generos = new[] {
-                "Fantasía",
-                "Ciencia Ficción",
+                "Fantasia",
+                "Ciencia Ficcion",
                 "Aventura",
                 "Misterio",
                 "Romance",
                 "Terror",
-                "Histórico",
+                "Historico",
                 "Educativo",
-                "Biografía",
-                "Poesía",
+                "Biografia",
+                "Poesia",
                 "Drama",
                 "Comedia",
                 "Infantil",
                 "Juvenil",
-                "Técnico",
-                "Científico",
+                "Tecnico",
+                "Cientifico",
                 "Otro"
             };
 
@@ -378,7 +408,7 @@ namespace UI.WinUi.Administrador
                 comboBoxGenero.SelectedIndex = generoIndex;
 
             // Seleccionar nivel
-            int nivelIndex = comboBoxNivel.Items.IndexOf(_materialActual.EdadRecomendada);
+            int nivelIndex = comboBoxNivel.Items.IndexOf(_materialActual.Nivel);
             if (nivelIndex >= 0)
                 comboBoxNivel.SelectedIndex = nivelIndex;
         }

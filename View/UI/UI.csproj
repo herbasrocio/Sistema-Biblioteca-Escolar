@@ -36,6 +36,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -113,6 +114,12 @@
     <Compile Include="WinUi\Transacciones\registrarPrestamo.Designer.cs">
       <DependentUpon>registrarPrestamo.cs</DependentUpon>
     </Compile>
+    <Compile Include="WinUi\Transacciones\SeleccionarEjemplar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Transacciones\SeleccionarEjemplar.Designer.cs">
+      <DependentUpon>SeleccionarEjemplar.cs</DependentUpon>
+    </Compile>
     <Compile Include="WinUi\Transacciones\registrarDevolucion.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -152,8 +159,14 @@
     <EmbeddedResource Include="WinUi\Administración\editarAlumno.resx">
       <DependentUpon>editarAlumno.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="WinUi\Administración\RegistrarMaterial.resx">
+      <DependentUpon>RegistrarMaterial.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Transacciones\registrarPrestamo.resx">
       <DependentUpon>registrarPrestamo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinUi\Transacciones\SeleccionarEjemplar.resx">
+      <DependentUpon>SeleccionarEjemplar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Transacciones\registrarDevolucion.resx">
       <DependentUpon>registrarDevolucion.cs</DependentUpon>

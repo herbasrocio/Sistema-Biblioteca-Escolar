@@ -23,9 +23,9 @@ namespace DAL.Contracts
         List<Ejemplar> ObtenerPorEstado(EstadoMaterial estado);
 
         /// <summary>
-        /// Obtiene un ejemplar por código de barras
+        /// Obtiene un ejemplar por código de ejemplar
         /// </summary>
-        Ejemplar ObtenerPorCodigoBarras(string codigoBarras);
+        Ejemplar ObtenerPorCodigoEjemplar(string codigoEjemplar);
 
         /// <summary>
         /// Cuenta ejemplares disponibles de un material

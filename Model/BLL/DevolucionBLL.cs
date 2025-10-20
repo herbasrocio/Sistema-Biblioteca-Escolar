@@ -76,13 +76,20 @@ namespace BLL
             // Actualizar estado del préstamo a "Devuelto"
             _prestamoRepository.ActualizarEstado(prestamo.IdPrestamo, "Devuelto");
 
-            // Incrementar cantidad disponible del material
-            var material = _materialRepository.ObtenerPorId(prestamo.IdMaterial);
-            if (material != null)
+            // Cambiar estado del ejemplar a Disponible
+            if (prestamo.IdEjemplar != Guid.Empty)
             {
-                material.CantidadDisponible++;
-                _materialRepository.Update(material);
+                var ejemplarRepository = new EjemplarRepository();
+                var ejemplar = ejemplarRepository.ObtenerPorId(prestamo.IdEjemplar);
+                if (ejemplar != null)
+                {
+                    ejemplar.Estado = DomainModel.Enums.EstadoMaterial.Disponible;
+                    ejemplarRepository.Update(ejemplar);
+                }
             }
+
+            // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
+            // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
         }
 
         public void ActualizarDevolucion(Devolucion devolucion)
@@ -107,13 +114,20 @@ namespace BLL
                 string nuevoEstado = prestamo.EstaAtrasado() ? "Atrasado" : "Activo";
                 _prestamoRepository.ActualizarEstado(prestamo.IdPrestamo, nuevoEstado);
 
-                // Decrementar cantidad disponible del material
-                var material = _materialRepository.ObtenerPorId(prestamo.IdMaterial);
-                if (material != null)
+                // Cambiar estado del ejemplar a Prestado
+                if (prestamo.IdEjemplar != Guid.Empty)
                 {
-                    material.CantidadDisponible--;
-                    _materialRepository.Update(material);
+                    var ejemplarRepository = new EjemplarRepository();
+                    var ejemplar = ejemplarRepository.ObtenerPorId(prestamo.IdEjemplar);
+                    if (ejemplar != null)
+                    {
+                        ejemplar.Estado = DomainModel.Enums.EstadoMaterial.Prestado;
+                        ejemplarRepository.Update(ejemplar);
+                    }
                 }
+
+                // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
+                // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
             }
 
             _devolucionRepository.Delete(devolucion);

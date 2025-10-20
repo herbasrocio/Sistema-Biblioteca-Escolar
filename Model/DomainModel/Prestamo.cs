@@ -6,6 +6,7 @@ namespace DomainModel
     {
         public Guid IdPrestamo { get; set; }
         public Guid IdMaterial { get; set; }
+        public Guid IdEjemplar { get; set; }
         public Guid IdAlumno { get; set; }
         public Guid IdUsuario { get; set; }
         public DateTime FechaPrestamo { get; set; }
@@ -15,6 +16,7 @@ namespace DomainModel
         // Propiedades de navegación (opcional para mostrar en UI)
         public Material Material { get; set; }
         public Alumno Alumno { get; set; }
+        public Ejemplar Ejemplar { get; set; }
 
         public Prestamo()
         {

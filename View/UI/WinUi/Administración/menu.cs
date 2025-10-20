@@ -11,16 +11,16 @@ namespace UI.WinUi.Administrador
         private Usuario _usuarioLogueado;
 
         // Nombres de las patentes que controlan cada opción del menú
-        private const string PATENTE_USUARIOS = "GestionUsuarios";
-        private const string PATENTE_PERMISOS = "GestionPermisos";
-        private const string PATENTE_CONSULTAR_MATERIAL = "ConsultarMaterial";
-        private const string PATENTE_REGISTRAR_MATERIAL = "RegistrarMaterial";
-        private const string PATENTE_EDITAR_MATERIAL = "EditarMaterial";
-        private const string PATENTE_GESTIONAR_EJEMPLARES = "GestionarEjemplares";
-        private const string PATENTE_ALUMNOS = "GestionAlumnos";
-        private const string PATENTE_PRESTAMOS = "GestionPrestamos";
-        private const string PATENTE_DEVOLUCIONES = "GestionDevoluciones";
-        private const string PATENTE_REPORTES = "ConsultarReportes";
+        private const string PATENTE_USUARIOS = "Gestión Usuarios";
+        private const string PATENTE_PERMISOS = "Gestión Permisos";
+        private const string PATENTE_CONSULTAR_MATERIAL = "Consultar Material";
+        private const string PATENTE_REGISTRAR_MATERIAL = "Registrar Material";
+        private const string PATENTE_EDITAR_MATERIAL = "Editar Material";
+        private const string PATENTE_GESTIONAR_EJEMPLARES = "Gestionar Ejemplares";
+        private const string PATENTE_ALUMNOS = "Gestión Alumnos";
+        private const string PATENTE_PRESTAMOS = "Gestión Préstamos";
+        private const string PATENTE_DEVOLUCIONES = "Gestión Devoluciones";
+        private const string PATENTE_REPORTES = "Consultar Reportes";
 
         public menu()
         {
@@ -66,10 +66,22 @@ namespace UI.WinUi.Administrador
 
             // Actualizar información del usuario en el panel de bienvenida
             lblTituloPrincipal.Text = LanguageManager.Translate("sistema_biblioteca");
+
+            // Centrar el label del título después de cambiar el texto
+            CentrarLabel(lblTituloPrincipal);
+
             lblBienvenida.Text = "¡" + LanguageManager.Translate("bienvenido") + "!";
             lblNombreUsuario.Text = LanguageManager.Translate("usuario") + ": " + (_usuarioLogueado?.Nombre ?? "");
             var rol = _usuarioLogueado?.ObtenerNombreRol();
             lblRolUsuario.Text = LanguageManager.Translate("rol") + ": " + (rol ?? LanguageManager.Translate("sin_rol"));
+        }
+
+        /// <summary>
+        /// Centra un label horizontalmente en el formulario
+        /// </summary>
+        private void CentrarLabel(System.Windows.Forms.Label label)
+        {
+            label.Left = (this.ClientSize.Width - label.Width) / 2;
         }
 
         private void ConfigurarVisibilidadPorPermisos()
@@ -201,20 +213,30 @@ namespace UI.WinUi.Administrador
 
         private void prestamosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(
-                LanguageManager.Translate("funcionalidad_no_implementada"),
-                LanguageManager.Translate("informacion"),
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            try
+            {
+                UI.WinUi.Transacciones.registrarPrestamo formPrestamo = new UI.WinUi.Transacciones.registrarPrestamo(_usuarioLogueado);
+                formPrestamo.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir gestión de préstamos: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void devolucionesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(
-                LanguageManager.Translate("funcionalidad_no_implementada"),
-                LanguageManager.Translate("informacion"),
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            try
+            {
+                UI.WinUi.Transacciones.registrarDevolucion formDevolucion = new UI.WinUi.Transacciones.registrarDevolucion(_usuarioLogueado);
+                formDevolucion.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir gestión de devoluciones: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void reportesToolStripMenuItem_Click(object sender, EventArgs e)

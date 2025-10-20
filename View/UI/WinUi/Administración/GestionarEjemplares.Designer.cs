@@ -56,7 +56,7 @@ namespace UI.WinUi.Administrador
             this.groupBoxInfoMaterial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.groupBoxInfoMaterial.Location = new System.Drawing.Point(20, 60);
             this.groupBoxInfoMaterial.Name = "groupBoxInfoMaterial";
-            this.groupBoxInfoMaterial.Size = new System.Drawing.Size(960, 80);
+            this.groupBoxInfoMaterial.Size = new System.Drawing.Size(840, 80);
             this.groupBoxInfoMaterial.TabIndex = 0;
             this.groupBoxInfoMaterial.TabStop = false;
             this.groupBoxInfoMaterial.Text = "Información del Material";
@@ -109,6 +109,8 @@ namespace UI.WinUi.Administrador
             //
             this.dgvEjemplares.AllowUserToAddRows = false;
             this.dgvEjemplares.AllowUserToDeleteRows = false;
+            this.dgvEjemplares.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.None;
+            this.dgvEjemplares.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.None;
             this.dgvEjemplares.BackgroundColor = System.Drawing.Color.White;
             this.dgvEjemplares.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvEjemplares.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
@@ -120,8 +122,9 @@ namespace UI.WinUi.Administrador
             this.dgvEjemplares.Name = "dgvEjemplares";
             this.dgvEjemplares.ReadOnly = true;
             this.dgvEjemplares.RowHeadersVisible = false;
+            this.dgvEjemplares.RowTemplate.Height = 35;
             this.dgvEjemplares.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvEjemplares.Size = new System.Drawing.Size(960, 350);
+            this.dgvEjemplares.Size = new System.Drawing.Size(840, 320);
             this.dgvEjemplares.TabIndex = 1;
             //
             // groupBoxAcciones
@@ -133,9 +136,9 @@ namespace UI.WinUi.Administrador
             this.groupBoxAcciones.Controls.Add(this.btnAgregar);
             this.groupBoxAcciones.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.groupBoxAcciones.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.groupBoxAcciones.Location = new System.Drawing.Point(20, 530);
+            this.groupBoxAcciones.Location = new System.Drawing.Point(20, 500);
             this.groupBoxAcciones.Name = "groupBoxAcciones";
-            this.groupBoxAcciones.Size = new System.Drawing.Size(960, 120);
+            this.groupBoxAcciones.Size = new System.Drawing.Size(840, 120);
             this.groupBoxAcciones.TabIndex = 2;
             this.groupBoxAcciones.TabStop = false;
             this.groupBoxAcciones.Text = "Acciones";
@@ -149,7 +152,7 @@ namespace UI.WinUi.Administrador
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.btnVolver.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.btnVolver.Location = new System.Drawing.Point(800, 40);
+            this.btnVolver.Location = new System.Drawing.Point(680, 40);
             this.btnVolver.Name = "btnVolver";
             this.btnVolver.Size = new System.Drawing.Size(130, 50);
             this.btnVolver.TabIndex = 4;
@@ -164,9 +167,9 @@ namespace UI.WinUi.Administrador
             this.btnEliminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnEliminar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
             this.btnEliminar.ForeColor = System.Drawing.Color.White;
-            this.btnEliminar.Location = new System.Drawing.Point(610, 40);
+            this.btnEliminar.Location = new System.Drawing.Point(500, 40);
             this.btnEliminar.Name = "btnEliminar";
-            this.btnEliminar.Size = new System.Drawing.Size(170, 50);
+            this.btnEliminar.Size = new System.Drawing.Size(160, 50);
             this.btnEliminar.TabIndex = 3;
             this.btnEliminar.Text = "Eliminar Ejemplar";
             this.btnEliminar.UseVisualStyleBackColor = false;
@@ -179,9 +182,9 @@ namespace UI.WinUi.Administrador
             this.btnCambiarEstado.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCambiarEstado.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
             this.btnCambiarEstado.ForeColor = System.Drawing.Color.White;
-            this.btnCambiarEstado.Location = new System.Drawing.Point(420, 40);
+            this.btnCambiarEstado.Location = new System.Drawing.Point(340, 40);
             this.btnCambiarEstado.Name = "btnCambiarEstado";
-            this.btnCambiarEstado.Size = new System.Drawing.Size(170, 50);
+            this.btnCambiarEstado.Size = new System.Drawing.Size(150, 50);
             this.btnCambiarEstado.TabIndex = 2;
             this.btnCambiarEstado.Text = "Cambiar Estado";
             this.btnCambiarEstado.UseVisualStyleBackColor = false;
@@ -194,9 +197,9 @@ namespace UI.WinUi.Administrador
             this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnEditar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
             this.btnEditar.ForeColor = System.Drawing.Color.White;
-            this.btnEditar.Location = new System.Drawing.Point(220, 40);
+            this.btnEditar.Location = new System.Drawing.Point(180, 40);
             this.btnEditar.Name = "btnEditar";
-            this.btnEditar.Size = new System.Drawing.Size(170, 50);
+            this.btnEditar.Size = new System.Drawing.Size(150, 50);
             this.btnEditar.TabIndex = 1;
             this.btnEditar.Text = "Editar Ejemplar";
             this.btnEditar.UseVisualStyleBackColor = false;
@@ -211,7 +214,7 @@ namespace UI.WinUi.Administrador
             this.btnAgregar.ForeColor = System.Drawing.Color.White;
             this.btnAgregar.Location = new System.Drawing.Point(20, 40);
             this.btnAgregar.Name = "btnAgregar";
-            this.btnAgregar.Size = new System.Drawing.Size(170, 50);
+            this.btnAgregar.Size = new System.Drawing.Size(150, 50);
             this.btnAgregar.TabIndex = 0;
             this.btnAgregar.Text = "Agregar Ejemplar";
             this.btnAgregar.UseVisualStyleBackColor = false;
@@ -232,7 +235,7 @@ namespace UI.WinUi.Administrador
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.ClientSize = new System.Drawing.Size(1000, 700);
+            this.ClientSize = new System.Drawing.Size(880, 650);
             this.Controls.Add(this.lblTituloForm);
             this.Controls.Add(this.groupBoxAcciones);
             this.Controls.Add(this.dgvEjemplares);

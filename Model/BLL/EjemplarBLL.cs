@@ -12,16 +12,18 @@ namespace BLL
     {
         private readonly IEjemplarRepository _ejemplarRepository;
         private readonly IMaterialRepository _materialRepository;
+        private readonly IHistorialEstadoEjemplarRepository _historialRepository;
 
         // Constructor con inyección de dependencias
-        public EjemplarBLL(IEjemplarRepository ejemplarRepository, IMaterialRepository materialRepository)
+        public EjemplarBLL(IEjemplarRepository ejemplarRepository, IMaterialRepository materialRepository, IHistorialEstadoEjemplarRepository historialRepository)
         {
             _ejemplarRepository = ejemplarRepository ?? throw new ArgumentNullException(nameof(ejemplarRepository));
             _materialRepository = materialRepository ?? throw new ArgumentNullException(nameof(materialRepository));
+            _historialRepository = historialRepository ?? throw new ArgumentNullException(nameof(historialRepository));
         }
 
         // Constructor sin parámetros (crea las dependencias internamente)
-        public EjemplarBLL() : this(new EjemplarRepository(), new MaterialRepository()) { }
+        public EjemplarBLL() : this(new EjemplarRepository(), new MaterialRepository(), new HistorialEstadoEjemplarRepository()) { }
 
         /// <summary>
         /// Obtiene todos los ejemplares activos
@@ -58,12 +60,12 @@ namespace BLL
         /// <summary>
         /// Busca un ejemplar por código de barras
         /// </summary>
-        public Ejemplar BuscarPorCodigoBarras(string codigoBarras)
+        public Ejemplar BuscarPorCodigoEjemplar(string codigoBarras)
         {
             if (string.IsNullOrWhiteSpace(codigoBarras))
                 throw new ArgumentException("El código de barras no puede estar vacío");
 
-            return _ejemplarRepository.ObtenerPorCodigoBarras(codigoBarras);
+            return _ejemplarRepository.ObtenerPorCodigoEjemplar(codigoBarras);
         }
 
         /// <summary>
@@ -88,9 +90,9 @@ namespace BLL
                 throw new Exception($"Ya existe un ejemplar con el número {ejemplar.NumeroEjemplar} para este material");
 
             // Si tiene código de barras, verificar que sea único
-            if (!string.IsNullOrWhiteSpace(ejemplar.CodigoBarras))
+            if (!string.IsNullOrWhiteSpace(ejemplar.CodigoEjemplar))
             {
-                var ejemplarConCodigo = _ejemplarRepository.ObtenerPorCodigoBarras(ejemplar.CodigoBarras);
+                var ejemplarConCodigo = _ejemplarRepository.ObtenerPorCodigoEjemplar(ejemplar.CodigoEjemplar);
                 if (ejemplarConCodigo != null && ejemplarConCodigo.IdEjemplar != ejemplar.IdEjemplar)
                     throw new Exception("El código de barras ya está en uso por otro ejemplar");
             }
@@ -114,9 +116,9 @@ namespace BLL
                 throw new Exception("El número de ejemplar debe ser mayor a cero");
 
             // Si tiene código de barras, verificar que sea único
-            if (!string.IsNullOrWhiteSpace(ejemplar.CodigoBarras))
+            if (!string.IsNullOrWhiteSpace(ejemplar.CodigoEjemplar))
             {
-                var ejemplarConCodigo = _ejemplarRepository.ObtenerPorCodigoBarras(ejemplar.CodigoBarras);
+                var ejemplarConCodigo = _ejemplarRepository.ObtenerPorCodigoEjemplar(ejemplar.CodigoEjemplar);
                 if (ejemplarConCodigo != null && ejemplarConCodigo.IdEjemplar != ejemplar.IdEjemplar)
                     throw new Exception("El código de barras ya está en uso por otro ejemplar");
             }
@@ -128,15 +130,36 @@ namespace BLL
         }
 
         /// <summary>
-        /// Cambia el estado de un ejemplar
+        /// Cambia el estado de un ejemplar y registra el cambio en el historial
         /// </summary>
-        public void CambiarEstado(Guid idEjemplar, EstadoMaterial nuevoEstado)
+        public void CambiarEstado(Guid idEjemplar, EstadoMaterial nuevoEstado, Guid? idUsuario = null, string motivo = null)
         {
             var ejemplar = _ejemplarRepository.ObtenerPorId(idEjemplar);
             if (ejemplar == null)
                 throw new Exception("El ejemplar no existe");
 
-            _ejemplarRepository.ActualizarEstado(idEjemplar, nuevoEstado);
+            // Guardar estado anterior para el historial
+            EstadoMaterial estadoAnterior = ejemplar.Estado;
+
+            // Solo registrar si el estado realmente cambia
+            if (estadoAnterior != nuevoEstado)
+            {
+                // Actualizar estado del ejemplar
+                _ejemplarRepository.ActualizarEstado(idEjemplar, nuevoEstado);
+
+                // Registrar cambio en historial
+                var historial = new HistorialEstadoEjemplar
+                {
+                    IdEjemplar = idEjemplar,
+                    EstadoAnterior = estadoAnterior,
+                    EstadoNuevo = nuevoEstado,
+                    IdUsuario = idUsuario,
+                    Motivo = motivo,
+                    TipoCambio = TipoCambioEstado.Manual
+                };
+
+                _historialRepository.RegistrarCambio(historial);
+            }
 
             // Actualizar cantidades del material
             ActualizarCantidadesMaterial(ejemplar.IdMaterial);
@@ -259,12 +282,12 @@ namespace BLL
         /// <summary>
         /// Marca un ejemplar como prestado usando código de barras
         /// </summary>
-        public void PrestarEjemplarPorCodigoBarras(string codigoBarras)
+        public void PrestarEjemplarPorCodigoEjemplar(string codigoBarras)
         {
             if (string.IsNullOrWhiteSpace(codigoBarras))
                 throw new ArgumentException("El código de barras no puede estar vacío");
 
-            var ejemplar = _ejemplarRepository.ObtenerPorCodigoBarras(codigoBarras);
+            var ejemplar = _ejemplarRepository.ObtenerPorCodigoEjemplar(codigoBarras);
             if (ejemplar == null)
                 throw new Exception("No se encontró un ejemplar con ese código de barras");
 
@@ -297,12 +320,12 @@ namespace BLL
         /// <summary>
         /// Marca un ejemplar como disponible usando código de barras
         /// </summary>
-        public void DevolverEjemplarPorCodigoBarras(string codigoBarras)
+        public void DevolverEjemplarPorCodigoEjemplar(string codigoBarras)
         {
             if (string.IsNullOrWhiteSpace(codigoBarras))
                 throw new ArgumentException("El código de barras no puede estar vacío");
 
-            var ejemplar = _ejemplarRepository.ObtenerPorCodigoBarras(codigoBarras);
+            var ejemplar = _ejemplarRepository.ObtenerPorCodigoEjemplar(codigoBarras);
             if (ejemplar == null)
                 throw new Exception("No se encontró un ejemplar con ese código de barras");
 
@@ -325,6 +348,22 @@ namespace BLL
         public bool TieneEjemplaresDisponibles(Guid idMaterial)
         {
             return _ejemplarRepository.ContarDisponiblesPorMaterial(idMaterial) > 0;
+        }
+
+        /// <summary>
+        /// Obtiene el historial completo de cambios de estado de un ejemplar
+        /// </summary>
+        public List<HistorialEstadoEjemplar> ObtenerHistorialEstados(Guid idEjemplar)
+        {
+            return _historialRepository.ObtenerHistorialPorEjemplar(idEjemplar);
+        }
+
+        /// <summary>
+        /// Obtiene el último cambio de estado de un ejemplar
+        /// </summary>
+        public HistorialEstadoEjemplar ObtenerUltimoCambioEstado(Guid idEjemplar)
+        {
+            return _historialRepository.ObtenerUltimoCambio(idEjemplar);
         }
     }
 }

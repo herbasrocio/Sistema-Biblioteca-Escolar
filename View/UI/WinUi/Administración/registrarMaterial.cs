@@ -3,6 +3,7 @@ using DomainModel.Enums;
 using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.Services;
 using System;
+using System.Transactions;
 using System.Windows.Forms;
 using UI.Helpers;
 using BLL;
@@ -13,6 +14,7 @@ namespace UI.WinUi.Administrador
     {
         private Usuario _usuarioLogueado;
         private MaterialBLL _materialBLL;
+        private EjemplarBLL _ejemplarBLL;
 
         public RegistrarMaterial()
         {
@@ -23,6 +25,7 @@ namespace UI.WinUi.Administrador
         {
             _usuarioLogueado = usuario;
             _materialBLL = new MaterialBLL();
+            _ejemplarBLL = new EjemplarBLL();
             ConfigurarFormulario();
         }
 
@@ -41,7 +44,7 @@ namespace UI.WinUi.Administrador
             // Cargar enums en los ComboBox
             CargarTiposMaterial();
             CargarGeneros();
-            CargarEdadesRecomendadas();
+            CargarNiveles();
 
             // Inicializar con valores por defecto
             LimpiarCampos();
@@ -67,17 +70,47 @@ namespace UI.WinUi.Administrador
                 lblISBN.Text = "ISBN:";
                 lblEditorial.Text = LanguageManager.Translate("editorial");
                 lblAnioPublicacion.Text = LanguageManager.Translate("anio_publicacion");
-                lblEdadRecomendada.Text = LanguageManager.Translate("edad_recomendada");
+                lblNivel.Text = LanguageManager.Translate("nivel") + ":";
                 lblCantidad.Text = LanguageManager.Translate("cantidad");
-                lblDescripcion.Text = LanguageManager.Translate("descripcion");
+                lblUbicacion.Text = LanguageManager.Translate("ubicacion") + " (" + LanguageManager.Translate("opcional") + "):";
 
                 btnGuardar.Text = LanguageManager.Translate("guardar_material");
                 btnLimpiar.Text = LanguageManager.Translate("limpiar");
                 btnVolver.Text = LanguageManager.Translate("volver");
+
+                // Centrar botones después de cambiar el texto
+                CentrarBotones();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al aplicar traducciones: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Centra los botones horizontalmente dentro de su GroupBox contenedor
+        /// </summary>
+        private void CentrarBotones()
+        {
+            // Obtener el ancho disponible del contenedor de los botones
+            int anchoDisponible = 0;
+
+            // Si los botones están dentro del GroupBox de acciones
+            if (btnGuardar.Parent != null)
+            {
+                anchoDisponible = btnGuardar.Parent.ClientSize.Width;
+
+                // Calcular espacio total ocupado por los 3 botones + espacios entre ellos
+                int espacioEntreBotones = 10;
+                int anchoTotal = btnGuardar.Width + btnLimpiar.Width + btnVolver.Width + (espacioEntreBotones * 2);
+
+                // Calcular punto de inicio para centrar
+                int inicioCentrado = (anchoDisponible - anchoTotal) / 2;
+
+                // Posicionar botones centrados
+                btnGuardar.Left = inicioCentrado;
+                btnLimpiar.Left = btnGuardar.Right + espacioEntreBotones;
+                btnVolver.Left = btnLimpiar.Right + espacioEntreBotones;
             }
         }
 
@@ -101,22 +134,58 @@ namespace UI.WinUi.Administrador
                     Genero = comboBoxGenero.SelectedItem?.ToString(),
                     ISBN = txtISBN.Text.Trim(),
                     AnioPublicacion = int.TryParse(txtAnioPublicacion.Text, out int anio) ? (int?)anio : null,
-                    EdadRecomendada = comboBoxEdadRecomendada.SelectedItem?.ToString(),
-                    Descripcion = txtDescripcion.Text.Trim(),
+                    Nivel = comboBoxNivel.SelectedItem?.ToString(),
                     CantidadTotal = (int)numCantidad.Value,
                     CantidadDisponible = (int)numCantidad.Value // Inicialmente todo está disponible
                 };
 
-                // Guardar en la base de datos
-                _materialBLL.GuardarMaterial(nuevoMaterial);
+                string ubicacionGeneral = txtUbicacion.Text.Trim(); // Ubicación opcional para todos los ejemplares
+                int cantidadCreada = 0;
 
-                MessageBox.Show("Material registrado exitosamente",
-                    LanguageManager.Translate("exito"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                // Usar TransactionScope para garantizar atomicidad
+                // Si cualquier operación falla, todo se revierte automáticamente
+                using (TransactionScope transaction = new TransactionScope())
+                {
+                    try
+                    {
+                        // Guardar el material en la base de datos
+                        _materialBLL.GuardarMaterial(nuevoMaterial);
 
-                LimpiarCampos();
-                txtTitulo.Focus();
+                        // Crear automáticamente los ejemplares según la cantidad especificada
+                        for (int i = 1; i <= nuevoMaterial.CantidadTotal; i++)
+                        {
+                            Ejemplar nuevoEjemplar = new Ejemplar
+                            {
+                                IdMaterial = nuevoMaterial.IdMaterial,
+                                NumeroEjemplar = i,
+                                CodigoEjemplar = GenerarCodigoEjemplar(nuevoMaterial.IdMaterial, i),
+                                Estado = EstadoMaterial.Disponible,
+                                Ubicacion = ubicacionGeneral,
+                                Observaciones = string.Empty
+                            };
+
+                            _ejemplarBLL.GuardarEjemplar(nuevoEjemplar);
+                            cantidadCreada++;
+                        }
+
+                        // Si todo salió bien, confirmar la transacción
+                        transaction.Complete();
+
+                        MessageBox.Show($"Material registrado exitosamente.\n{cantidadCreada} ejemplar(es) creado(s) automáticamente.",
+                            LanguageManager.Translate("exito"),
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+
+                        LimpiarCampos();
+                        txtTitulo.Focus();
+                    }
+                    catch (Exception exTransaccion)
+                    {
+                        // Si hay algún error, la transacción se revierte automáticamente
+                        // No se llama a transaction.Complete(), por lo que se hace rollback
+                        throw new Exception($"Error durante el registro: {exTransaccion.Message}\n\nLa operación completa ha sido cancelada.", exTransaccion);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -157,9 +226,9 @@ namespace UI.WinUi.Administrador
             EstilosSistema.AplicarEstiloLabel(lblISBN);
             EstilosSistema.AplicarEstiloLabel(lblEditorial);
             EstilosSistema.AplicarEstiloLabel(lblAnioPublicacion);
-            EstilosSistema.AplicarEstiloLabel(lblEdadRecomendada);
+            EstilosSistema.AplicarEstiloLabel(lblNivel);
             EstilosSistema.AplicarEstiloLabel(lblCantidad);
-            EstilosSistema.AplicarEstiloLabel(lblDescripcion);
+            EstilosSistema.AplicarEstiloLabel(lblUbicacion);
 
             // Aplicar estilos a los TextBox
             EstilosSistema.AplicarEstiloTextBox(txtTitulo);
@@ -167,15 +236,15 @@ namespace UI.WinUi.Administrador
             EstilosSistema.AplicarEstiloTextBox(txtISBN);
             EstilosSistema.AplicarEstiloTextBox(txtEditorial);
             EstilosSistema.AplicarEstiloTextBox(txtAnioPublicacion);
-            EstilosSistema.AplicarEstiloTextBox(txtDescripcion);
+            EstilosSistema.AplicarEstiloTextBox(txtUbicacion);
 
             // Aplicar estilos a los ComboBox
             EstilosSistema.AplicarEstiloComboBox(comboBoxTipo);
             EstilosSistema.AplicarEstiloComboBox(comboBoxGenero);
-            EstilosSistema.AplicarEstiloComboBox(comboBoxEdadRecomendada);
+            EstilosSistema.AplicarEstiloComboBox(comboBoxNivel);
 
             // Aplicar estilos a los botones
-            EstilosSistema.AplicarEstiloBotonPrimario(btnGuardar);
+            EstilosSistema.AplicarEstiloBotonSecundario(btnGuardar);
             EstilosSistema.AplicarEstiloBotonSecundario(btnLimpiar);
             EstilosSistema.AplicarEstiloBotonSecundario(btnVolver);
         }
@@ -203,22 +272,22 @@ namespace UI.WinUi.Administrador
             comboBoxGenero.Items.Clear();
 
             var generos = new[] {
-                "Fantasía",
-                "Ciencia Ficción",
+                "Fantasia",
+                "Ciencia Ficcion",
                 "Aventura",
                 "Misterio",
                 "Romance",
                 "Terror",
-                "Histórico",
+                "Historico",
                 "Educativo",
-                "Biografía",
-                "Poesía",
+                "Biografia",
+                "Poesia",
                 "Drama",
                 "Comedia",
                 "Infantil",
                 "Juvenil",
-                "Técnico",
-                "Científico",
+                "Tecnico",
+                "Cientifico",
                 "Otro"
             };
 
@@ -228,24 +297,20 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void CargarEdadesRecomendadas()
+        private void CargarNiveles()
         {
-            comboBoxEdadRecomendada.Items.Clear();
+            comboBoxNivel.Items.Clear();
 
-            var edades = new[] {
-                "0-3 años",
-                "4-6 años",
-                "7-9 años",
-                "10-12 años",
-                "13-15 años",
-                "16-18 años",
-                "18+ años",
-                "Todas las edades"
+            var niveles = new[] {
+                "Inicial",
+                "Primario",
+                "Secundario",
+                "Universitario"
             };
 
-            foreach (var edad in edades)
+            foreach (var nivel in niveles)
             {
-                comboBoxEdadRecomendada.Items.Add(edad);
+                comboBoxNivel.Items.Add(nivel);
             }
         }
 
@@ -255,11 +320,11 @@ namespace UI.WinUi.Administrador
             txtAutor.Clear();
             txtISBN.Clear();
             txtEditorial.Clear();
-            txtDescripcion.Clear();
             txtAnioPublicacion.Text = DateTime.Now.Year.ToString();
+            txtUbicacion.Clear();
             comboBoxTipo.SelectedIndex = -1;
             comboBoxGenero.SelectedIndex = -1;
-            comboBoxEdadRecomendada.SelectedIndex = -1;
+            comboBoxNivel.SelectedIndex = -1;
             numCantidad.Value = 1;
         }
 
@@ -335,6 +400,23 @@ namespace UI.WinUi.Administrador
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Genera un código de barras único para un ejemplar
+        /// Formato: BIB-{8 caracteres del ID del Material}-{NumeroEjemplar con 3 dígitos}
+        /// Ejemplo: BIB-73C6CDD0-001
+        /// </summary>
+        private string GenerarCodigoEjemplar(Guid idMaterial, int numeroEjemplar)
+        {
+            // Tomar los últimos 8 caracteres del GUID del material (sin guiones)
+            string idCorto = idMaterial.ToString("N").Substring(24, 8).ToUpper();
+
+            // Formatear el número de ejemplar con 3 dígitos (001, 002, etc.)
+            string numeroFormateado = numeroEjemplar.ToString("D3");
+
+            // Retornar el código con formato BIB-XXXXXXXX-###
+            return $"BIB-{idCorto}-{numeroFormateado}";
         }
 
         #endregion

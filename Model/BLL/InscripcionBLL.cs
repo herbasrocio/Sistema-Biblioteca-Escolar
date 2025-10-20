@@ -342,6 +342,58 @@ namespace BLL
                 throw new Exception("Error al obtener estadísticas", ex);
             }
         }
+
+        /// <summary>
+        /// Obtiene todos los años lectivos disponibles en el sistema
+        /// </summary>
+        public List<int> ObtenerAniosLectivosDisponibles()
+        {
+            try
+            {
+                var todasInscripciones = _inscripcionRepository.GetAll();
+                var anios = todasInscripciones
+                    .Select(i => i.AnioLectivo)
+                    .Distinct()
+                    .OrderByDescending(a => a)
+                    .ToList();
+
+                return anios;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener años lectivos disponibles", ex);
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todas las inscripciones de un año lectivo
+        /// </summary>
+        public List<Inscripcion> ObtenerInscripcionesPorAnio(int anioLectivo)
+        {
+            try
+            {
+                return _inscripcionRepository.ObtenerPorAnioLectivo(anioLectivo);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al obtener inscripciones del año {anioLectivo}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todas las inscripciones (historial completo) de un alumno
+        /// </summary>
+        public List<Inscripcion> ObtenerInscripcionesPorAlumno(Guid idAlumno)
+        {
+            try
+            {
+                return _inscripcionRepository.ObtenerPorAlumno(idAlumno);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener inscripciones del alumno", ex);
+            }
+        }
     }
 
     /// <summary>

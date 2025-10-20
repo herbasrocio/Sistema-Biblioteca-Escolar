@@ -19,6 +19,12 @@ namespace DAL.Tools
                 Estado = row["Estado"].ToString()
             };
 
+            // IdEjemplar puede ser NULL en préstamos antiguos
+            if (row.Table.Columns.Contains("IdEjemplar") && row["IdEjemplar"] != DBNull.Value)
+            {
+                prestamo.IdEjemplar = (Guid)row["IdEjemplar"];
+            }
+
             return prestamo;
         }
 

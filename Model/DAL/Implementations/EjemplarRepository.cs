@@ -30,11 +30,11 @@ namespace DAL.Implementations
                 conn.Open();
                 string query = @"
                     INSERT INTO Ejemplar (
-                        IdEjemplar, IdMaterial, NumeroEjemplar, CodigoBarras,
+                        IdEjemplar, IdMaterial, NumeroEjemplar, CodigoEjemplar,
                         Estado, Ubicacion, Observaciones, FechaRegistro, Activo
                     )
                     VALUES (
-                        @IdEjemplar, @IdMaterial, @NumeroEjemplar, @CodigoBarras,
+                        @IdEjemplar, @IdMaterial, @NumeroEjemplar, @CodigoEjemplar,
                         @Estado, @Ubicacion, @Observaciones, @FechaRegistro, @Activo
                     )";
 
@@ -43,7 +43,7 @@ namespace DAL.Implementations
                     cmd.Parameters.AddWithValue("@IdEjemplar", entity.IdEjemplar);
                     cmd.Parameters.AddWithValue("@IdMaterial", entity.IdMaterial);
                     cmd.Parameters.AddWithValue("@NumeroEjemplar", entity.NumeroEjemplar);
-                    cmd.Parameters.AddWithValue("@CodigoBarras", (object)entity.CodigoBarras ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CodigoEjemplar", (object)entity.CodigoEjemplar ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@Estado", (int)entity.Estado);
                     cmd.Parameters.AddWithValue("@Ubicacion", (object)entity.Ubicacion ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@Observaciones", (object)entity.Observaciones ?? DBNull.Value);
@@ -63,7 +63,7 @@ namespace DAL.Implementations
                 string query = @"
                     UPDATE Ejemplar
                     SET NumeroEjemplar = @NumeroEjemplar,
-                        CodigoBarras = @CodigoBarras,
+                        CodigoEjemplar = @CodigoEjemplar,
                         Estado = @Estado,
                         Ubicacion = @Ubicacion,
                         Observaciones = @Observaciones,
@@ -74,7 +74,7 @@ namespace DAL.Implementations
                 {
                     cmd.Parameters.AddWithValue("@IdEjemplar", entity.IdEjemplar);
                     cmd.Parameters.AddWithValue("@NumeroEjemplar", entity.NumeroEjemplar);
-                    cmd.Parameters.AddWithValue("@CodigoBarras", (object)entity.CodigoBarras ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CodigoEjemplar", (object)entity.CodigoEjemplar ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@Estado", (int)entity.Estado);
                     cmd.Parameters.AddWithValue("@Ubicacion", (object)entity.Ubicacion ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@Observaciones", (object)entity.Observaciones ?? DBNull.Value);
@@ -199,19 +199,19 @@ namespace DAL.Implementations
             return ejemplares;
         }
 
-        public Ejemplar ObtenerPorCodigoBarras(string codigoBarras)
+        public Ejemplar ObtenerPorCodigoEjemplar(string codigoEjemplar)
         {
-            if (string.IsNullOrWhiteSpace(codigoBarras))
+            if (string.IsNullOrWhiteSpace(codigoEjemplar))
                 return null;
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string query = "SELECT * FROM Ejemplar WHERE CodigoBarras = @CodigoBarras AND Activo = 1";
+                string query = "SELECT * FROM Ejemplar WHERE CodigoEjemplar = @CodigoEjemplar AND Activo = 1";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@CodigoBarras", codigoBarras);
+                    cmd.Parameters.AddWithValue("@CodigoEjemplar", codigoEjemplar);
                     SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     adapter.Fill(dt);

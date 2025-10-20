@@ -60,9 +60,20 @@ namespace UI.WinUi.Administrador
         private void GestionPermisos_Load(object sender, EventArgs e)
         {
             AplicarTraducciones();
+            CargarPatentesDisponibles();
             CargarRoles();
             CargarUsuarios();
-            CargarPatentesDisponibles();
+
+            // Forzar la carga de permisos del rol Administrador si está seleccionado
+            if (cboRoles.SelectedItem != null)
+            {
+                var rolDisplay = cboRoles.SelectedItem as RolDisplay;
+                if (rolDisplay != null && rolDisplay.Familia != null)
+                {
+                    _familiaSeleccionada = rolDisplay.Familia;
+                    CargarPatentesDelRol(_familiaSeleccionada);
+                }
+            }
         }
 
         private void AplicarTraducciones()
@@ -99,16 +110,36 @@ namespace UI.WinUi.Administrador
             {
                 var roles = UsuarioBLL.ObtenerRolesDisponibles();
 
+                // Crear lista de roles con traducción
+                var rolesConTraduccion = roles.Select(r => new RolDisplay
+                {
+                    Familia = r,
+                    NombreTraducido = TraducirNombreRol(r.NombreRol)
+                }).ToList();
+
                 cboRoles.DataSource = null;
-                cboRoles.DataSource = roles.ToList();
-                cboRoles.DisplayMember = "NombreRol";
-                cboRoles.ValueMember = "IdComponent";
-                cboRoles.SelectedIndex = -1;
+                cboRoles.DataSource = rolesConTraduccion;
+                cboRoles.DisplayMember = "NombreTraducido";
+                cboRoles.ValueMember = "Familia";
+
+                // Seleccionar el rol de Administrador por defecto
+                var rolAdministrador = rolesConTraduccion.FirstOrDefault(r =>
+                    r.Familia.NombreRol != null &&
+                    r.Familia.NombreRol.Contains("Administrador"));
+
+                if (rolAdministrador != null)
+                {
+                    cboRoles.SelectedItem = rolAdministrador;
+                }
+                else
+                {
+                    cboRoles.SelectedIndex = -1;
+                }
 
                 cboNuevoRol.DataSource = null;
-                cboNuevoRol.DataSource = roles.ToList();
-                cboNuevoRol.DisplayMember = "NombreRol";
-                cboNuevoRol.ValueMember = "IdComponent";
+                cboNuevoRol.DataSource = rolesConTraduccion.ToList();
+                cboNuevoRol.DisplayMember = "NombreTraducido";
+                cboNuevoRol.ValueMember = "Familia";
                 cboNuevoRol.SelectedIndex = -1;
             }
             catch (Exception ex)
@@ -116,6 +147,45 @@ namespace UI.WinUi.Administrador
                 MessageBox.Show($"Error al cargar roles: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        /// <summary>
+        /// Traduce el nombre del rol al idioma actual
+        /// Ejemplo: "ROL_Administrador" -> "Administrator" (en inglés)
+        /// </summary>
+        private string TraducirNombreRol(string nombreRol)
+        {
+            if (string.IsNullOrEmpty(nombreRol))
+                return nombreRol;
+
+            // Mapear nombres de roles a claves de traducción
+            string claveTraduccion = string.Empty;
+
+            if (nombreRol.Contains("Administrador"))
+                claveTraduccion = "rol_administrador";
+            else if (nombreRol.Contains("Bibliotecario"))
+                claveTraduccion = "rol_bibliotecario";
+            else if (nombreRol.Contains("Docente"))
+                claveTraduccion = "rol_docente";
+
+            // Si encontramos una clave, intentar traducir
+            if (!string.IsNullOrEmpty(claveTraduccion))
+            {
+                string traduccion = LanguageManager.Translate(claveTraduccion);
+                // Si la traducción existe y es diferente a la clave, usarla
+                if (!string.IsNullOrEmpty(traduccion) && traduccion != claveTraduccion)
+                    return traduccion;
+            }
+
+            // Si no hay traducción, retornar el nombre original
+            return nombreRol;
+        }
+
+        // Clase auxiliar para mostrar roles con traducción
+        private class RolDisplay
+        {
+            public Familia Familia { get; set; }
+            public string NombreTraducido { get; set; }
         }
 
         private void CargarUsuarios()
@@ -150,8 +220,15 @@ namespace UI.WinUi.Administrador
                 checkedListPatentesRol.Items.Clear();
                 foreach (var patente in patentesMenu)
                 {
-                    // Crear un texto descriptivo: "MenuItemName - Descripcion"
-                    string textoMostrar = $"{patente.MenuItemName} - {patente.Descripcion}";
+                    // Intentar obtener traducción, si no existe usar el texto de la BD
+                    string claveTraduccion = ObtenerClaveTraduccionPermiso(patente.MenuItemName);
+                    string textoTraducido = LanguageManager.Translate(claveTraduccion);
+
+                    // Si la traducción no existe, usar el formato original
+                    string textoMostrar = !string.IsNullOrEmpty(textoTraducido) && textoTraducido != claveTraduccion
+                        ? textoTraducido
+                        : $"{patente.MenuItemName} - {patente.Descripcion}";
+
                     checkedListPatentesRol.Items.Add(new PatenteDisplay { Patente = patente, TextoMostrar = textoMostrar }, false);
                 }
 
@@ -159,7 +236,15 @@ namespace UI.WinUi.Administrador
                 checkedListPatentesUsuario.Items.Clear();
                 foreach (var patente in patentesMenu)
                 {
-                    string textoMostrar = $"{patente.MenuItemName} - {patente.Descripcion}";
+                    // Intentar obtener traducción, si no existe usar el texto de la BD
+                    string claveTraduccion = ObtenerClaveTraduccionPermiso(patente.MenuItemName);
+                    string textoTraducido = LanguageManager.Translate(claveTraduccion);
+
+                    // Si la traducción no existe, usar el formato original
+                    string textoMostrar = !string.IsNullOrEmpty(textoTraducido) && textoTraducido != claveTraduccion
+                        ? textoTraducido
+                        : $"{patente.MenuItemName} - {patente.Descripcion}";
+
                     checkedListPatentesUsuario.Items.Add(new PatenteDisplay { Patente = patente, TextoMostrar = textoMostrar }, false);
                 }
             }
@@ -168,6 +253,27 @@ namespace UI.WinUi.Administrador
                 MessageBox.Show($"Error al cargar patentes: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        /// <summary>
+        /// Convierte el nombre del permiso a su clave de traducción
+        /// Ejemplo: "Consultar Material" -> "permiso_consultar_material"
+        /// </summary>
+        private string ObtenerClaveTraduccionPermiso(string nombrePermiso)
+        {
+            if (string.IsNullOrEmpty(nombrePermiso))
+                return string.Empty;
+
+            // Convertir a minúsculas, reemplazar espacios por guiones bajos, quitar acentos
+            string clave = nombrePermiso.ToLower()
+                .Replace(" ", "_")
+                .Replace("á", "a")
+                .Replace("é", "e")
+                .Replace("í", "i")
+                .Replace("ó", "o")
+                .Replace("ú", "u");
+
+            return $"permiso_{clave}";
         }
 
         // Clase auxiliar para mostrar las patentes con formato personalizado
@@ -190,7 +296,10 @@ namespace UI.WinUi.Administrador
         {
             if (cboRoles.SelectedItem == null) return;
 
-            _familiaSeleccionada = cboRoles.SelectedItem as Familia;
+            var rolDisplay = cboRoles.SelectedItem as RolDisplay;
+            if (rolDisplay == null) return;
+
+            _familiaSeleccionada = rolDisplay.Familia;
             if (_familiaSeleccionada == null) return;
 
             CargarPatentesDelRol(_familiaSeleccionada);
@@ -276,9 +385,11 @@ namespace UI.WinUi.Administrador
         {
             try
             {
-                // Mostrar rol actual
+                // Mostrar rol actual con traducción
                 var rolActual = usuario.ObtenerFamiliaRol();
-                lblRolActualValor.Text = rolActual != null ? rolActual.NombreRol : LanguageManager.Translate("sin_rol");
+                lblRolActualValor.Text = rolActual != null
+                    ? TraducirNombreRol(rolActual.NombreRol)
+                    : LanguageManager.Translate("sin_rol");
 
                 // Obtener patentes directas del usuario (no heredadas del rol)
                 var patentesDirectas = UsuarioBLL.ObtenerPatentesDelUsuario(usuario.IdUsuario);
@@ -324,8 +435,10 @@ namespace UI.WinUi.Administrador
                     return;
                 }
 
-                var nuevoRol = cboNuevoRol.SelectedItem as Familia;
-                if (nuevoRol == null) return;
+                var nuevoRolDisplay = cboNuevoRol.SelectedItem as RolDisplay;
+                if (nuevoRolDisplay == null) return;
+
+                var nuevoRol = nuevoRolDisplay.Familia;
 
                 // Cambiar el rol del usuario
                 UsuarioBLL.CambiarRol(_usuarioSeleccionado.IdUsuario, nuevoRol.IdComponent);
@@ -400,7 +513,22 @@ namespace UI.WinUi.Administrador
             // Resetear selecciones al cambiar de tab
             if (tabControl.SelectedTab == tabGestionRoles)
             {
-                cboRoles.SelectedIndex = -1;
+                // Si no hay ningún rol seleccionado, seleccionar Administrador por defecto
+                if (cboRoles.SelectedIndex == -1)
+                {
+                    var rolesConTraduccion = cboRoles.DataSource as List<RolDisplay>;
+                    if (rolesConTraduccion != null)
+                    {
+                        var rolAdministrador = rolesConTraduccion.FirstOrDefault(r =>
+                            r.Familia.NombreRol != null &&
+                            r.Familia.NombreRol.Contains("Administrador"));
+
+                        if (rolAdministrador != null)
+                        {
+                            cboRoles.SelectedItem = rolAdministrador;
+                        }
+                    }
+                }
             }
             else if (tabControl.SelectedTab == tabGestionUsuarios)
             {

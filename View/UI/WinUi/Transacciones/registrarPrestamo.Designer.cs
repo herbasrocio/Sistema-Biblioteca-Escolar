@@ -17,239 +17,267 @@ namespace UI.WinUi.Transacciones
 
         private void InitializeComponent()
         {
-            this.groupBoxDatos = new System.Windows.Forms.GroupBox();
-            this.dtpFechaDevolucionPrevista = new System.Windows.Forms.DateTimePicker();
-            this.lblFechaDevolucion = new System.Windows.Forms.Label();
-            this.lblPrestamosActivos = new System.Windows.Forms.Label();
-            this.lblDNI = new System.Windows.Forms.Label();
-            this.lblGrado = new System.Windows.Forms.Label();
-            this.cmbAlumno = new System.Windows.Forms.ComboBox();
+            this.lblGradoDivision = new System.Windows.Forms.Label();
+            this.cmbGradoDivision = new System.Windows.Forms.ComboBox();
             this.lblAlumno = new System.Windows.Forms.Label();
-            this.lblAutor = new System.Windows.Forms.Label();
-            this.lblDisponibles = new System.Windows.Forms.Label();
-            this.cmbMaterial = new System.Windows.Forms.ComboBox();
+            this.cmbAlumno = new System.Windows.Forms.ComboBox();
             this.lblMaterial = new System.Windows.Forms.Label();
-            this.btnRegistrar = new System.Windows.Forms.Button();
-            this.btnLimpiar = new System.Windows.Forms.Button();
-            this.btnVolver = new System.Windows.Forms.Button();
-            this.groupBoxDatos.SuspendLayout();
+            this.lblFiltrarPor = new System.Windows.Forms.Label();
+            this.cmbFiltrarPor = new System.Windows.Forms.ComboBox();
+            this.lblBuscar = new System.Windows.Forms.Label();
+            this.txtBuscar = new System.Windows.Forms.TextBox();
+            this.lblSeleccionarMaterial = new System.Windows.Forms.Label();
+            this.dgvMateriales = new System.Windows.Forms.DataGridView();
+            this.lblFechaPrestamo = new System.Windows.Forms.Label();
+            this.dtpFechaPrestamo = new System.Windows.Forms.DateTimePicker();
+            this.lblFechaDevolucion = new System.Windows.Forms.Label();
+            this.dtpFechaDevolucion = new System.Windows.Forms.DateTimePicker();
+            this.lblUbicacion = new System.Windows.Forms.Label();
+            this.btnConfirmarPrestamo = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMateriales)).BeginInit();
             this.SuspendLayout();
+            // 
+            // lblGradoDivision
+            // 
+            this.lblGradoDivision.AutoSize = true;
+            this.lblGradoDivision.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.lblGradoDivision.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblGradoDivision.Location = new System.Drawing.Point(20, 20);
+            this.lblGradoDivision.Name = "lblGradoDivision";
+            this.lblGradoDivision.Size = new System.Drawing.Size(103, 17);
+            this.lblGradoDivision.TabIndex = 0;
+            this.lblGradoDivision.Text = "Grado / División";
+            // 
+            // cmbGradoDivision
+            // 
+            this.cmbGradoDivision.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbGradoDivision.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.cmbGradoDivision.FormattingEnabled = true;
+            this.cmbGradoDivision.Location = new System.Drawing.Point(130, 17);
+            this.cmbGradoDivision.Name = "cmbGradoDivision";
+            this.cmbGradoDivision.Size = new System.Drawing.Size(150, 25);
+            this.cmbGradoDivision.TabIndex = 1;
+            // 
+            // lblAlumno
+            // 
+            this.lblAlumno.AutoSize = true;
+            this.lblAlumno.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.lblAlumno.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblAlumno.Location = new System.Drawing.Point(310, 20);
+            this.lblAlumno.Name = "lblAlumno";
+            this.lblAlumno.Size = new System.Drawing.Size(52, 17);
+            this.lblAlumno.TabIndex = 2;
+            this.lblAlumno.Text = "Alumno";
+            // 
+            // cmbAlumno
+            // 
+            this.cmbAlumno.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbAlumno.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.cmbAlumno.FormattingEnabled = true;
+            this.cmbAlumno.Location = new System.Drawing.Point(420, 17);
+            this.cmbAlumno.Name = "cmbAlumno";
+            this.cmbAlumno.Size = new System.Drawing.Size(150, 25);
+            this.cmbAlumno.TabIndex = 3;
+            // 
+            // lblMaterial
+            // 
+            this.lblMaterial.AutoSize = true;
+            this.lblMaterial.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.lblMaterial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblMaterial.Location = new System.Drawing.Point(20, 56);
+            this.lblMaterial.Name = "lblMaterial";
+            this.lblMaterial.Size = new System.Drawing.Size(56, 17);
+            this.lblMaterial.TabIndex = 4;
+            this.lblMaterial.Text = "Material";
+            // 
+            // lblFiltrarPor
+            // 
+            this.lblFiltrarPor.AutoSize = true;
+            this.lblFiltrarPor.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblFiltrarPor.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblFiltrarPor.Location = new System.Drawing.Point(30, 93);
+            this.lblFiltrarPor.Name = "lblFiltrarPor";
+            this.lblFiltrarPor.Size = new System.Drawing.Size(58, 15);
+            this.lblFiltrarPor.TabIndex = 5;
+            this.lblFiltrarPor.Text = "Filtrar por";
+            // 
+            // cmbFiltrarPor
+            // 
+            this.cmbFiltrarPor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbFiltrarPor.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cmbFiltrarPor.FormattingEnabled = true;
+            this.cmbFiltrarPor.Location = new System.Drawing.Point(95, 90);
+            this.cmbFiltrarPor.Name = "cmbFiltrarPor";
+            this.cmbFiltrarPor.Size = new System.Drawing.Size(185, 23);
+            this.cmbFiltrarPor.TabIndex = 6;
+            // 
+            // lblBuscar
+            // 
+            this.lblBuscar.AutoSize = true;
+            this.lblBuscar.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblBuscar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblBuscar.Location = new System.Drawing.Point(30, 123);
+            this.lblBuscar.Name = "lblBuscar";
+            this.lblBuscar.Size = new System.Drawing.Size(42, 15);
+            this.lblBuscar.TabIndex = 7;
+            this.lblBuscar.Text = "Buscar";
+            // 
+            // txtBuscar
+            // 
+            this.txtBuscar.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtBuscar.Location = new System.Drawing.Point(95, 120);
+            this.txtBuscar.Name = "txtBuscar";
+            this.txtBuscar.Size = new System.Drawing.Size(185, 23);
+            this.txtBuscar.TabIndex = 8;
+            // 
+            // lblSeleccionarMaterial
+            // 
+            this.lblSeleccionarMaterial.AutoSize = true;
+            this.lblSeleccionarMaterial.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblSeleccionarMaterial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblSeleccionarMaterial.Location = new System.Drawing.Point(30, 168);
+            this.lblSeleccionarMaterial.Name = "lblSeleccionarMaterial";
+            this.lblSeleccionarMaterial.Size = new System.Drawing.Size(113, 15);
+            this.lblSeleccionarMaterial.TabIndex = 9;
+            this.lblSeleccionarMaterial.Text = "Seleccionar material";
+            // 
+            // dgvMateriales
             //
-            // groupBoxDatos
+            this.dgvMateriales.AllowUserToAddRows = false;
+            this.dgvMateriales.AllowUserToDeleteRows = false;
+            this.dgvMateriales.AllowUserToResizeRows = false;
+            this.dgvMateriales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvMateriales.BackgroundColor = System.Drawing.Color.White;
+            this.dgvMateriales.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.dgvMateriales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvMateriales.Location = new System.Drawing.Point(30, 186);
+            this.dgvMateriales.MultiSelect = false;
+            this.dgvMateriales.Name = "dgvMateriales";
+            this.dgvMateriales.ReadOnly = true;
+            this.dgvMateriales.RowHeadersVisible = false;
+            this.dgvMateriales.RowTemplate.Height = 25;
+            this.dgvMateriales.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvMateriales.Size = new System.Drawing.Size(540, 140);
+            this.dgvMateriales.TabIndex = 10;
+            // 
+            // lblFechaPrestamo
             //
-            this.groupBoxDatos.BackColor = System.Drawing.Color.White;
-            this.groupBoxDatos.Controls.Add(this.dtpFechaDevolucionPrevista);
-            this.groupBoxDatos.Controls.Add(this.lblFechaDevolucion);
-            this.groupBoxDatos.Controls.Add(this.lblPrestamosActivos);
-            this.groupBoxDatos.Controls.Add(this.lblDNI);
-            this.groupBoxDatos.Controls.Add(this.lblGrado);
-            this.groupBoxDatos.Controls.Add(this.cmbAlumno);
-            this.groupBoxDatos.Controls.Add(this.lblAlumno);
-            this.groupBoxDatos.Controls.Add(this.lblAutor);
-            this.groupBoxDatos.Controls.Add(this.lblDisponibles);
-            this.groupBoxDatos.Controls.Add(this.cmbMaterial);
-            this.groupBoxDatos.Controls.Add(this.lblMaterial);
-            this.groupBoxDatos.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.groupBoxDatos.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.groupBoxDatos.Location = new System.Drawing.Point(20, 20);
-            this.groupBoxDatos.Name = "groupBoxDatos";
-            this.groupBoxDatos.Size = new System.Drawing.Size(560, 320);
-            this.groupBoxDatos.TabIndex = 0;
-            this.groupBoxDatos.TabStop = false;
-            this.groupBoxDatos.Text = "Datos del Préstamo";
+            this.lblFechaPrestamo.AutoSize = true;
+            this.lblFechaPrestamo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblFechaPrestamo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblFechaPrestamo.Location = new System.Drawing.Point(30, 365);
+            this.lblFechaPrestamo.Name = "lblFechaPrestamo";
+            this.lblFechaPrestamo.Size = new System.Drawing.Size(107, 15);
+            this.lblFechaPrestamo.TabIndex = 12;
+            this.lblFechaPrestamo.Text = "Fecha de préstamo";
             //
-            // dtpFechaDevolucionPrevista
+            // dtpFechaPrestamo
             //
-            this.dtpFechaDevolucionPrevista.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.dtpFechaDevolucionPrevista.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpFechaDevolucionPrevista.Location = new System.Drawing.Point(200, 260);
-            this.dtpFechaDevolucionPrevista.Name = "dtpFechaDevolucionPrevista";
-            this.dtpFechaDevolucionPrevista.Size = new System.Drawing.Size(330, 25);
-            this.dtpFechaDevolucionPrevista.TabIndex = 10;
+            this.dtpFechaPrestamo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.dtpFechaPrestamo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpFechaPrestamo.Location = new System.Drawing.Point(145, 362);
+            this.dtpFechaPrestamo.Name = "dtpFechaPrestamo";
+            this.dtpFechaPrestamo.Size = new System.Drawing.Size(120, 23);
+            this.dtpFechaPrestamo.TabIndex = 13;
             //
             // lblFechaDevolucion
             //
             this.lblFechaDevolucion.AutoSize = true;
-            this.lblFechaDevolucion.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lblFechaDevolucion.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblFechaDevolucion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblFechaDevolucion.Location = new System.Drawing.Point(30, 264);
+            this.lblFechaDevolucion.Location = new System.Drawing.Point(285, 365);
             this.lblFechaDevolucion.Name = "lblFechaDevolucion";
-            this.lblFechaDevolucion.Size = new System.Drawing.Size(167, 17);
-            this.lblFechaDevolucion.TabIndex = 9;
-            this.lblFechaDevolucion.Text = "Fecha Devolución Prevista:";
+            this.lblFechaDevolucion.Size = new System.Drawing.Size(116, 15);
+            this.lblFechaDevolucion.TabIndex = 14;
+            this.lblFechaDevolucion.Text = "Fecha de devolución";
             //
-            // lblPrestamosActivos
+            // dtpFechaDevolucion
             //
-            this.lblPrestamosActivos.AutoSize = true;
-            this.lblPrestamosActivos.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point);
-            this.lblPrestamosActivos.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
-            this.lblPrestamosActivos.Location = new System.Drawing.Point(200, 220);
-            this.lblPrestamosActivos.Name = "lblPrestamosActivos";
-            this.lblPrestamosActivos.Size = new System.Drawing.Size(0, 17);
-            this.lblPrestamosActivos.TabIndex = 8;
+            this.dtpFechaDevolucion.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.dtpFechaDevolucion.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpFechaDevolucion.Location = new System.Drawing.Point(405, 362);
+            this.dtpFechaDevolucion.Name = "dtpFechaDevolucion";
+            this.dtpFechaDevolucion.Size = new System.Drawing.Size(120, 23);
+            this.dtpFechaDevolucion.TabIndex = 15;
             //
-            // lblDNI
+            // lblUbicacion
             //
-            this.lblDNI.AutoSize = true;
-            this.lblDNI.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point);
-            this.lblDNI.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
-            this.lblDNI.Location = new System.Drawing.Point(200, 200);
-            this.lblDNI.Name = "lblDNI";
-            this.lblDNI.Size = new System.Drawing.Size(0, 17);
-            this.lblDNI.TabIndex = 7;
+            this.lblUbicacion.AutoSize = true;
+            this.lblUbicacion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(126)))), ((int)(((byte)(34)))));
+            this.lblUbicacion.Location = new System.Drawing.Point(30, 335);
+            this.lblUbicacion.Name = "lblUbicacion";
+            this.lblUbicacion.Size = new System.Drawing.Size(0, 15);
+            this.lblUbicacion.TabIndex = 11;
+            this.lblUbicacion.Text = "";
             //
-            // lblGrado
+            // btnConfirmarPrestamo
             //
-            this.lblGrado.AutoSize = true;
-            this.lblGrado.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point);
-            this.lblGrado.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
-            this.lblGrado.Location = new System.Drawing.Point(200, 180);
-            this.lblGrado.Name = "lblGrado";
-            this.lblGrado.Size = new System.Drawing.Size(0, 17);
-            this.lblGrado.TabIndex = 6;
-            //
-            // cmbAlumno
-            //
-            this.cmbAlumno.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbAlumno.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.cmbAlumno.FormattingEnabled = true;
-            this.cmbAlumno.Location = new System.Drawing.Point(200, 145);
-            this.cmbAlumno.Name = "cmbAlumno";
-            this.cmbAlumno.Size = new System.Drawing.Size(330, 25);
-            this.cmbAlumno.TabIndex = 5;
-            //
-            // lblAlumno
-            //
-            this.lblAlumno.AutoSize = true;
-            this.lblAlumno.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lblAlumno.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblAlumno.Location = new System.Drawing.Point(30, 148);
-            this.lblAlumno.Name = "lblAlumno";
-            this.lblAlumno.Size = new System.Drawing.Size(60, 17);
-            this.lblAlumno.TabIndex = 4;
-            this.lblAlumno.Text = "Alumno:";
-            //
-            // lblAutor
-            //
-            this.lblAutor.AutoSize = true;
-            this.lblAutor.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point);
-            this.lblAutor.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
-            this.lblAutor.Location = new System.Drawing.Point(200, 100);
-            this.lblAutor.Name = "lblAutor";
-            this.lblAutor.Size = new System.Drawing.Size(0, 17);
-            this.lblAutor.TabIndex = 3;
-            //
-            // lblDisponibles
-            //
-            this.lblDisponibles.AutoSize = true;
-            this.lblDisponibles.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point);
-            this.lblDisponibles.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(174)))), ((int)(((byte)(96)))));
-            this.lblDisponibles.Location = new System.Drawing.Point(200, 80);
-            this.lblDisponibles.Name = "lblDisponibles";
-            this.lblDisponibles.Size = new System.Drawing.Size(0, 17);
-            this.lblDisponibles.TabIndex = 2;
-            //
-            // cmbMaterial
-            //
-            this.cmbMaterial.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbMaterial.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.cmbMaterial.FormattingEnabled = true;
-            this.cmbMaterial.Location = new System.Drawing.Point(200, 45);
-            this.cmbMaterial.Name = "cmbMaterial";
-            this.cmbMaterial.Size = new System.Drawing.Size(330, 25);
-            this.cmbMaterial.TabIndex = 1;
-            //
-            // lblMaterial
-            //
-            this.lblMaterial.AutoSize = true;
-            this.lblMaterial.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lblMaterial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblMaterial.Location = new System.Drawing.Point(30, 48);
-            this.lblMaterial.Name = "lblMaterial";
-            this.lblMaterial.Size = new System.Drawing.Size(61, 17);
-            this.lblMaterial.TabIndex = 0;
-            this.lblMaterial.Text = "Material:";
-            //
-            // btnRegistrar
-            //
-            this.btnRegistrar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.btnRegistrar.FlatAppearance.BorderSize = 0;
-            this.btnRegistrar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnRegistrar.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnRegistrar.ForeColor = System.Drawing.Color.White;
-            this.btnRegistrar.Location = new System.Drawing.Point(20, 360);
-            this.btnRegistrar.Name = "btnRegistrar";
-            this.btnRegistrar.Size = new System.Drawing.Size(140, 35);
-            this.btnRegistrar.TabIndex = 1;
-            this.btnRegistrar.Text = "Registrar";
-            this.btnRegistrar.UseVisualStyleBackColor = false;
-            //
-            // btnLimpiar
-            //
-            this.btnLimpiar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
-            this.btnLimpiar.FlatAppearance.BorderSize = 0;
-            this.btnLimpiar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnLimpiar.ForeColor = System.Drawing.Color.White;
-            this.btnLimpiar.Location = new System.Drawing.Point(230, 360);
-            this.btnLimpiar.Name = "btnLimpiar";
-            this.btnLimpiar.Size = new System.Drawing.Size(140, 35);
-            this.btnLimpiar.TabIndex = 2;
-            this.btnLimpiar.Text = "Limpiar";
-            this.btnLimpiar.UseVisualStyleBackColor = false;
-            //
-            // btnVolver
-            //
-            this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
-            this.btnVolver.FlatAppearance.BorderSize = 0;
-            this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnVolver.ForeColor = System.Drawing.Color.White;
-            this.btnVolver.Location = new System.Drawing.Point(440, 360);
-            this.btnVolver.Name = "btnVolver";
-            this.btnVolver.Size = new System.Drawing.Size(140, 35);
-            this.btnVolver.TabIndex = 3;
-            this.btnVolver.Text = "Volver";
-            this.btnVolver.UseVisualStyleBackColor = false;
-            //
+            this.btnConfirmarPrestamo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
+            this.btnConfirmarPrestamo.FlatAppearance.BorderSize = 0;
+            this.btnConfirmarPrestamo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnConfirmarPrestamo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnConfirmarPrestamo.ForeColor = System.Drawing.Color.White;
+            this.btnConfirmarPrestamo.Location = new System.Drawing.Point(200, 405);
+            this.btnConfirmarPrestamo.Name = "btnConfirmarPrestamo";
+            this.btnConfirmarPrestamo.Size = new System.Drawing.Size(200, 35);
+            this.btnConfirmarPrestamo.TabIndex = 16;
+            this.btnConfirmarPrestamo.Text = "Confirmar préstamo";
+            this.btnConfirmarPrestamo.UseVisualStyleBackColor = false;
+            // 
             // registrarPrestamo
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.ClientSize = new System.Drawing.Size(600, 415);
-            this.Controls.Add(this.btnVolver);
-            this.Controls.Add(this.btnLimpiar);
-            this.Controls.Add(this.btnRegistrar);
-            this.Controls.Add(this.groupBoxDatos);
+            this.BackColor = System.Drawing.Color.White;
+            this.ClientSize = new System.Drawing.Size(600, 460);
+            this.Controls.Add(this.lblUbicacion);
+            this.Controls.Add(this.btnConfirmarPrestamo);
+            this.Controls.Add(this.dtpFechaDevolucion);
+            this.Controls.Add(this.lblFechaDevolucion);
+            this.Controls.Add(this.dtpFechaPrestamo);
+            this.Controls.Add(this.lblFechaPrestamo);
+            this.Controls.Add(this.dgvMateriales);
+            this.Controls.Add(this.lblSeleccionarMaterial);
+            this.Controls.Add(this.txtBuscar);
+            this.Controls.Add(this.lblBuscar);
+            this.Controls.Add(this.cmbFiltrarPor);
+            this.Controls.Add(this.lblFiltrarPor);
+            this.Controls.Add(this.lblMaterial);
+            this.Controls.Add(this.cmbAlumno);
+            this.Controls.Add(this.lblAlumno);
+            this.Controls.Add(this.cmbGradoDivision);
+            this.Controls.Add(this.lblGradoDivision);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Name = "registrarPrestamo";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Registrar Préstamo";
-            this.groupBoxDatos.ResumeLayout(false);
-            this.groupBoxDatos.PerformLayout();
+            this.Text = "Registrar préstamo";
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMateriales)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.GroupBox groupBoxDatos;
-        private System.Windows.Forms.Label lblMaterial;
-        private System.Windows.Forms.ComboBox cmbMaterial;
-        private System.Windows.Forms.Label lblDisponibles;
-        private System.Windows.Forms.Label lblAutor;
-        private System.Windows.Forms.ComboBox cmbAlumno;
+        private System.Windows.Forms.Label lblGradoDivision;
+        private System.Windows.Forms.ComboBox cmbGradoDivision;
         private System.Windows.Forms.Label lblAlumno;
-        private System.Windows.Forms.Label lblGrado;
-        private System.Windows.Forms.Label lblDNI;
-        private System.Windows.Forms.Label lblPrestamosActivos;
-        private System.Windows.Forms.DateTimePicker dtpFechaDevolucionPrevista;
+        private System.Windows.Forms.ComboBox cmbAlumno;
+        private System.Windows.Forms.Label lblMaterial;
+        private System.Windows.Forms.Label lblFiltrarPor;
+        private System.Windows.Forms.ComboBox cmbFiltrarPor;
+        private System.Windows.Forms.Label lblBuscar;
+        private System.Windows.Forms.TextBox txtBuscar;
+        private System.Windows.Forms.Label lblSeleccionarMaterial;
+        private System.Windows.Forms.DataGridView dgvMateriales;
+        private System.Windows.Forms.Label lblFechaPrestamo;
+        private System.Windows.Forms.DateTimePicker dtpFechaPrestamo;
         private System.Windows.Forms.Label lblFechaDevolucion;
-        private System.Windows.Forms.Button btnRegistrar;
-        private System.Windows.Forms.Button btnLimpiar;
-        private System.Windows.Forms.Button btnVolver;
+        private System.Windows.Forms.DateTimePicker dtpFechaDevolucion;
+        private System.Windows.Forms.Label lblUbicacion;
+        private System.Windows.Forms.Button btnConfirmarPrestamo;
     }
 }

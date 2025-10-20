@@ -12,7 +12,7 @@ namespace DomainModel
         public Guid IdEjemplar { get; set; }
         public Guid IdMaterial { get; set; }
         public int NumeroEjemplar { get; set; } // Número secuencial (1, 2, 3, etc.)
-        public string CodigoBarras { get; set; } // Código de barras único opcional
+        public string CodigoEjemplar { get; set; } // Código único del ejemplar (escrito en etiqueta física)
         public EstadoMaterial Estado { get; set; }
         public string Ubicacion { get; set; } // Ubicación física en la biblioteca (ej: "Estante A3")
         public string Observaciones { get; set; }

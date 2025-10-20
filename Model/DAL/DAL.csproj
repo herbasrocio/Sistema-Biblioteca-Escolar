@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>ec9a79a4-c4b2-4011-9203-b704d6f49273</ProjectGuid>
+    <ProjectGuid>{EC9A79A4-C4B2-4011-9203-B704D6F49273}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DAL</RootNamespace>
@@ -31,39 +31,35 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System"/>
-    
-    <Reference Include="System.Core"/>
-    <Reference Include="System.Xml.Linq"/>
-    <Reference Include="System.Data.DataSetExtensions"/>
-    
-    
-    <Reference Include="Microsoft.CSharp"/>
-    
-    <Reference Include="System.Data"/>
-    
-    <Reference Include="System.Net.Http"/>
-    
-    <Reference Include="System.Xml"/>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Contracts\IAlumnoRepository.cs" />
     <Compile Include="Contracts\IDevolucionRepository.cs" />
     <Compile Include="Contracts\IEjemplarRepository.cs" />
     <Compile Include="Contracts\IGenericRepository.cs" />
+    <Compile Include="Contracts\IHistorialEstadoEjemplarRepository.cs" />
     <Compile Include="Contracts\IInscripcionRepository.cs" />
     <Compile Include="Contracts\IMaterialRepository.cs" />
     <Compile Include="Contracts\IPrestamoRepository.cs" />
     <Compile Include="Implementations\AlumnoRepository.cs" />
     <Compile Include="Implementations\DevolucionRepository.cs" />
     <Compile Include="Implementations\EjemplarRepository.cs" />
+    <Compile Include="Implementations\HistorialEstadoEjemplarRepository.cs" />
     <Compile Include="Implementations\InscripcionRepository.cs" />
     <Compile Include="Implementations\MaterialRepository.cs" />
     <Compile Include="Implementations\PrestamoRepository.cs" />
     <Compile Include="Tools\AlumnoAdapter.cs" />
     <Compile Include="Tools\DevolucionAdapter.cs" />
     <Compile Include="Tools\EjemplarAdapter.cs" />
+    <Compile Include="Tools\HistorialEstadoEjemplarAdapter.cs" />
     <Compile Include="Tools\InscripcionAdapter.cs" />
     <Compile Include="Tools\MaterialAdapter.cs" />
     <Compile Include="Tools\PrestamoAdapter.cs" />
@@ -79,4 +75,4 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
- </Project>
+</Project>

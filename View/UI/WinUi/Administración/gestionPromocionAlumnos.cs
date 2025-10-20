@@ -268,9 +268,19 @@ namespace UI.WinUi.Administrador
             catch (Exception ex)
             {
                 Cursor = Cursors.Default;
+
+                string errorDetallado = $"Error al promocionar grado:\n\n{ex.Message}";
+
+                if (ex.InnerException != null)
+                {
+                    errorDetallado += $"\n\nDetalle: {ex.InnerException.Message}";
+                }
+
+                errorDetallado += $"\n\nStack Trace:\n{ex.StackTrace}";
+
                 MessageBox.Show(
-                    $"Error al promocionar grado: {ex.Message}",
-                    "Error",
+                    errorDetallado,
+                    "Error Detallado",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -349,9 +359,19 @@ namespace UI.WinUi.Administrador
             catch (Exception ex)
             {
                 Cursor = Cursors.Default;
+
+                string errorDetallado = $"Error al realizar promoción masiva:\n\n{ex.Message}";
+
+                if (ex.InnerException != null)
+                {
+                    errorDetallado += $"\n\nDetalle: {ex.InnerException.Message}";
+                }
+
+                errorDetallado += $"\n\nStack Trace:\n{ex.StackTrace}";
+
                 MessageBox.Show(
-                    $"Error al realizar promoción masiva: {ex.Message}",
-                    "Error",
+                    errorDetallado,
+                    "Error Detallado",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
