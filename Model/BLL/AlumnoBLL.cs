@@ -5,6 +5,7 @@ using DAL.Implementations;
 using DomainModel;
 using DomainModel.Exceptions;
 /// desde notebook
+/// desde compu
 namespace BLL
 {
     /// <summary>
