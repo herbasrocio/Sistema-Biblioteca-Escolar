@@ -36,7 +36,7 @@ sqlcmd -S localhost -E -i "Database\02_CrearTablas.sql"
 sqlcmd -S localhost -E -i "Database\03_DatosIniciales.sql"
 
 # Business database setup (inscriptions, materials, etc.)
-sqlcmd -S localhost -E -i "Database\Negocio\00_CrearBDNegocio.sql"
+sqlcmd -S localhost -E -i "Database\Negocio\00_EJECUTAR_TODO_NEGOCIO.sql"
 ```
 
 **Default Admin Credentials:**

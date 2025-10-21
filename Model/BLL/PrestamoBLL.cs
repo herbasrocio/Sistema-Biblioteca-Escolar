@@ -168,5 +168,49 @@ namespace BLL
                 }
             }
         }
+
+        /// <summary>
+        /// Obtiene todos los préstamos que están activos o atrasados (pendientes de devolución)
+        /// </summary>
+        public List<Prestamo> ObtenerPrestamosActivosYVencidos()
+        {
+            var prestamos = _prestamoRepository.GetAll();
+            return prestamos
+                .Where(p => p.Estado == "Activo" || p.Estado == "Atrasado")
+                .OrderBy(p => p.FechaDevolucionPrevista)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Busca un préstamo activo por código de ejemplar
+        /// </summary>
+        public Prestamo BuscarPrestamoPorCodigoEjemplar(string codigoEjemplar)
+        {
+            if (string.IsNullOrWhiteSpace(codigoEjemplar))
+                return null;
+
+            var prestamosActivos = ObtenerPrestamosActivosYVencidos();
+
+            foreach (var prestamo in prestamosActivos)
+            {
+                if (prestamo.IdEjemplar != Guid.Empty)
+                {
+                    var ejemplar = _ejemplarRepository.ObtenerPorId(prestamo.IdEjemplar);
+                    if (ejemplar != null && ejemplar.CodigoEjemplar != null)
+                    {
+                        if (ejemplar.CodigoEjemplar.Equals(codigoEjemplar, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Cargar datos relacionados
+                            prestamo.Material = _materialRepository.ObtenerPorId(prestamo.IdMaterial);
+                            prestamo.Alumno = _alumnoRepository.ObtenerPorId(prestamo.IdAlumno);
+                            prestamo.Ejemplar = ejemplar;
+                            return prestamo;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 }
