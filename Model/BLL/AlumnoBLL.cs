@@ -4,12 +4,13 @@ using DAL.Contracts;
 using DAL.Implementations;
 using DomainModel;
 using DomainModel.Exceptions;
-
+/// desde notebook
 namespace BLL
 {
     /// <summary>
     /// Capa de lógica de negocio para la gestión de Alumnos
     /// </summary>
+    /// 
     public class AlumnoBLL
     {
         private readonly IAlumnoRepository _alumnoRepository;
