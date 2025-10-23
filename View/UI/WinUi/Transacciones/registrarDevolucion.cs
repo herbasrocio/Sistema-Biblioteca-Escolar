@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using ServicesSecurity.DomainModel.Security.Composite;
@@ -19,6 +20,8 @@ namespace UI.WinUi.Transacciones
         private EjemplarBLL _ejemplarBLL;
         private InscripcionBLL _inscripcionBLL;
         private List<Alumno> _alumnosGrado;
+        private Timer _searchTimer;
+        private const int SEARCH_DELAY = 500; // 500ms de delay para búsqueda en tiempo real
 
         // Clase auxiliar para mostrar préstamos con detalles
         private class PrestamoDetalle
@@ -63,6 +66,16 @@ namespace UI.WinUi.Transacciones
             btnVolver.Click += BtnVolver_Click;
             dgvPrestamos.SelectionChanged += DgvPrestamos_SelectionChanged;
 
+            // Configurar búsqueda en tiempo real
+            txtBuscarAlumno.TextChanged += TxtBuscar_TextChanged;
+            txtBuscarTitulo.TextChanged += TxtBuscar_TextChanged;
+            txtBuscarEjemplar.TextChanged += TxtBuscar_TextChanged;
+
+            // Configurar Timer para búsqueda con delay
+            _searchTimer = new Timer();
+            _searchTimer.Interval = SEARCH_DELAY;
+            _searchTimer.Tick += SearchTimer_Tick;
+
             // Configurar DataGridView
             dgvPrestamos.ReadOnly = true;
             dgvPrestamos.AllowUserToAddRows = false;
@@ -90,7 +103,27 @@ namespace UI.WinUi.Transacciones
         private void RegistrarDevolucion_Load(object sender, EventArgs e)
         {
             AplicarTraducciones();
-            CargarPrestamosActivos();
+            BuscarYCargarPrestamos();
+        }
+
+        /// <summary>
+        /// Evento que se dispara cuando el usuario escribe en los campos de búsqueda
+        /// </summary>
+        private void TxtBuscar_TextChanged(object sender, EventArgs e)
+        {
+            // Detener el timer anterior
+            _searchTimer.Stop();
+            // Reiniciar el timer (espera 500ms después de que el usuario deja de escribir)
+            _searchTimer.Start();
+        }
+
+        /// <summary>
+        /// Evento del timer que ejecuta la búsqueda después del delay
+        /// </summary>
+        private void SearchTimer_Tick(object sender, EventArgs e)
+        {
+            _searchTimer.Stop();
+            BuscarYCargarPrestamos();
         }
 
         private void AplicarTraducciones()
@@ -111,138 +144,135 @@ namespace UI.WinUi.Transacciones
         }
 
         /// <summary>
-        /// Carga todos los préstamos activos y vencidos en el DataGridView
+        /// Busca y carga préstamos activos con filtros de búsqueda en tiempo real
         /// </summary>
-        private void CargarPrestamosActivos()
+        private void BuscarYCargarPrestamos()
         {
             try
             {
-                var prestamosActivos = _prestamoBLL.ObtenerPrestamosActivosYVencidos();
+                string nombreAlumno = txtBuscarAlumno.Text.Trim();
+                string tituloMaterial = txtBuscarTitulo.Text.Trim();
+                string codigoEjemplar = txtBuscarEjemplar.Text.Trim();
 
-                if (prestamosActivos.Count == 0)
+                // Si los campos están vacíos, pasar null para obtener todos los préstamos
+                if (string.IsNullOrWhiteSpace(nombreAlumno)) nombreAlumno = null;
+                if (string.IsNullOrWhiteSpace(tituloMaterial)) tituloMaterial = null;
+                if (string.IsNullOrWhiteSpace(codigoEjemplar)) codigoEjemplar = null;
+
+                // Buscar préstamos usando el nuevo método optimizado
+                DataTable dtPrestamos = _prestamoBLL.BuscarPrestamosActivos(nombreAlumno, tituloMaterial, codigoEjemplar);
+
+                if (dtPrestamos.Rows.Count == 0)
                 {
-                    MessageBox.Show("No hay préstamos activos en este momento", "Información",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                     dgvPrestamos.DataSource = null;
-                    lblResultados.Text = "No hay préstamos pendientes";
+                    lblResultados.Text = "No se encontraron préstamos con los criterios especificados";
+                    lblResultados.ForeColor = System.Drawing.Color.FromArgb(127, 140, 141);
                     return;
                 }
 
-                // Crear lista de detalles con información completa
-                List<PrestamoDetalle> detalles = new List<PrestamoDetalle>();
-
-                foreach (var prestamo in prestamosActivos)
-                {
-                    // Obtener datos relacionados
-                    var material = _materialBLL.ObtenerMaterialPorId(prestamo.IdMaterial);
-                    var alumno = _alumnoBLL.ObtenerAlumnoPorId(prestamo.IdAlumno);
-
-                    string codigoEjemplar = "N/A";
-                    int numeroEjemplar = 0;
-                    string ubicacion = "No registrada";
-
-                    if (prestamo.IdEjemplar != Guid.Empty)
-                    {
-                        var ejemplar = _ejemplarBLL.ObtenerEjemplarPorId(prestamo.IdEjemplar);
-                        if (ejemplar != null)
-                        {
-                            codigoEjemplar = ejemplar.CodigoEjemplar ?? "N/A";
-                            numeroEjemplar = ejemplar.NumeroEjemplar;
-                            ubicacion = ejemplar.Ubicacion ?? "No registrada";
-                        }
-                    }
-
-                    int diasAtraso = prestamo.DiasRestantes() < 0 ? Math.Abs(prestamo.DiasRestantes()) : 0;
-
-                    detalles.Add(new PrestamoDetalle
-                    {
-                        IdPrestamo = prestamo.IdPrestamo,
-                        Alumno = alumno?.NombreCompleto ?? "Desconocido",
-                        TituloMaterial = material?.Titulo ?? "Material no encontrado",
-                        CodigoEjemplar = codigoEjemplar,
-                        NumeroEjemplar = numeroEjemplar,
-                        Ubicacion = ubicacion,
-                        FechaPrestamo = prestamo.FechaPrestamo,
-                        FechaDevolucionPrevista = prestamo.FechaDevolucionPrevista,
-                        DiasAtraso = diasAtraso,
-                        Estado = prestamo.Estado,
-                        EstaVencido = prestamo.EstaAtrasado(),
-                        PrestamoOriginal = prestamo
-                    });
-                }
-
-                dgvPrestamos.DataSource = detalles;
-                ConfigurarColumnasDataGridView();
+                // Configurar DataGridView con el DataTable directamente
+                dgvPrestamos.DataSource = dtPrestamos;
+                ConfigurarColumnasDataGridViewOptimizado();
 
                 // Colorear filas vencidas
                 foreach (DataGridViewRow row in dgvPrestamos.Rows)
                 {
-                    var detalle = (PrestamoDetalle)row.DataBoundItem;
-                    if (detalle.EstaVencido)
+                    if (row.DataBoundItem is DataRowView dataRow)
                     {
-                        row.DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(255, 220, 220);
-                        row.DefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(180, 0, 0);
-                        row.DefaultCellStyle.Font = new System.Drawing.Font(dgvPrestamos.Font, System.Drawing.FontStyle.Bold);
+                        bool estaVencido = Convert.ToBoolean(dataRow["EstaVencido"]);
+                        if (estaVencido)
+                        {
+                            row.DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(255, 220, 220);
+                            row.DefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(180, 0, 0);
+                            row.DefaultCellStyle.Font = new System.Drawing.Font(dgvPrestamos.Font, System.Drawing.FontStyle.Bold);
+                        }
                     }
                 }
 
-                lblResultados.Text = $"Préstamos activos: {prestamosActivos.Count} | Vencidos: {detalles.Count(d => d.EstaVencido)}";
+                int totalPrestamos = dtPrestamos.Rows.Count;
+                int prestamosVencidos = dtPrestamos.AsEnumerable().Count(row => Convert.ToBoolean(row["EstaVencido"]));
+
+                lblResultados.Text = $"Resultados: {totalPrestamos} préstamos | Vencidos: {prestamosVencidos}";
+                lblResultados.ForeColor = totalPrestamos > 0 ? System.Drawing.Color.FromArgb(39, 174, 96) : System.Drawing.Color.FromArgb(127, 140, 141);
                 lblResultados.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar préstamos: {ex.Message}", "Error",
+                MessageBox.Show($"Error al buscar préstamos: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         /// <summary>
-        /// Configura las columnas del DataGridView
+        /// Carga todos los préstamos activos y vencidos en el DataGridView (mantener para compatibilidad)
         /// </summary>
-        private void ConfigurarColumnasDataGridView()
+        private void CargarPrestamosActivos()
+        {
+            txtBuscarAlumno.Clear();
+            txtBuscarTitulo.Clear();
+            txtBuscarEjemplar.Clear();
+            BuscarYCargarPrestamos();
+        }
+
+        /// <summary>
+        /// Configura las columnas del DataGridView (versión optimizada para DataTable)
+        /// </summary>
+        private void ConfigurarColumnasDataGridViewOptimizado()
         {
             if (dgvPrestamos.Columns.Count > 0)
             {
+                // Ocultar columnas técnicas
                 dgvPrestamos.Columns["IdPrestamo"].Visible = false;
-                dgvPrestamos.Columns["PrestamoOriginal"].Visible = false;
-                dgvPrestamos.Columns["Ubicacion"].Visible = false;
+                dgvPrestamos.Columns["IdMaterial"].Visible = false;
+                dgvPrestamos.Columns["IdEjemplar"].Visible = false;
+                dgvPrestamos.Columns["IdAlumno"].Visible = false;
+                dgvPrestamos.Columns["IdUsuario"].Visible = false;
+                dgvPrestamos.Columns["FechaPrestamo"].Visible = false;
                 dgvPrestamos.Columns["EstaVencido"].Visible = false;
+                dgvPrestamos.Columns["Autor"].Visible = false;
+                dgvPrestamos.Columns["DNIAlumno"].Visible = false;
+                dgvPrestamos.Columns["Ubicacion"].Visible = false;
+                dgvPrestamos.Columns["DiasRestantes"].Visible = false;
 
-                dgvPrestamos.Columns["Alumno"].HeaderText = LanguageManager.Translate("alumno");
-                dgvPrestamos.Columns["Alumno"].Width = 150;
-                dgvPrestamos.Columns["Alumno"].DisplayIndex = 0;
+                // Configurar columnas visibles (ajustadas para evitar scroll horizontal)
+                dgvPrestamos.Columns["NombreAlumno"].HeaderText = LanguageManager.Translate("alumno");
+                dgvPrestamos.Columns["NombreAlumno"].Width = 140;
+                dgvPrestamos.Columns["NombreAlumno"].DisplayIndex = 0;
 
                 dgvPrestamos.Columns["TituloMaterial"].HeaderText = LanguageManager.Translate("material");
-                dgvPrestamos.Columns["TituloMaterial"].Width = 150;
+                dgvPrestamos.Columns["TituloMaterial"].Width = 180;
                 dgvPrestamos.Columns["TituloMaterial"].DisplayIndex = 1;
 
-                dgvPrestamos.Columns["NumeroEjemplar"].HeaderText = "Ej.#";
-                dgvPrestamos.Columns["NumeroEjemplar"].Width = 45;
-                dgvPrestamos.Columns["NumeroEjemplar"].DisplayIndex = 2;
-                dgvPrestamos.Columns["NumeroEjemplar"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                dgvPrestamos.Columns["NumeroEjemplar"].Visible = false; // Ocultar columna no relevante
 
-                dgvPrestamos.Columns["CodigoEjemplar"].HeaderText = LanguageManager.Translate("codigo_ejemplar");
-                dgvPrestamos.Columns["CodigoEjemplar"].Width = 110;
-                dgvPrestamos.Columns["CodigoEjemplar"].DisplayIndex = 3;
+                dgvPrestamos.Columns["CodigoEjemplar"].HeaderText = "Código";
+                dgvPrestamos.Columns["CodigoEjemplar"].Width = 125;
+                dgvPrestamos.Columns["CodigoEjemplar"].DisplayIndex = 2;
 
-                dgvPrestamos.Columns["FechaDevolucionPrevista"].HeaderText = "F. Vencimiento";
-                dgvPrestamos.Columns["FechaDevolucionPrevista"].Width = 100;
-                dgvPrestamos.Columns["FechaDevolucionPrevista"].DisplayIndex = 4;
-                dgvPrestamos.Columns["FechaDevolucionPrevista"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                dgvPrestamos.Columns["FechaDevolucionPrevista"].HeaderText = "F. Venc.";
+                dgvPrestamos.Columns["FechaDevolucionPrevista"].Width = 90;
+                dgvPrestamos.Columns["FechaDevolucionPrevista"].DisplayIndex = 3;
+                dgvPrestamos.Columns["FechaDevolucionPrevista"].DefaultCellStyle.Format = "dd/MM/yy";
                 dgvPrestamos.Columns["FechaDevolucionPrevista"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-                dgvPrestamos.Columns["DiasAtraso"].HeaderText = "Días Atraso";
-                dgvPrestamos.Columns["DiasAtraso"].Width = 40;
-                dgvPrestamos.Columns["DiasAtraso"].DisplayIndex = 5;
+                dgvPrestamos.Columns["DiasAtraso"].HeaderText = "Días";
+                dgvPrestamos.Columns["DiasAtraso"].Width = 50;
+                dgvPrestamos.Columns["DiasAtraso"].DisplayIndex = 4;
                 dgvPrestamos.Columns["DiasAtraso"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
                 dgvPrestamos.Columns["Estado"].HeaderText = LanguageManager.Translate("estado");
-                dgvPrestamos.Columns["Estado"].Width = 75;
-                dgvPrestamos.Columns["Estado"].DisplayIndex = 6;
+                dgvPrestamos.Columns["Estado"].Width = 90;
+                dgvPrestamos.Columns["Estado"].DisplayIndex = 5;
                 dgvPrestamos.Columns["Estado"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-
-                dgvPrestamos.Columns["FechaPrestamo"].Visible = false;
             }
+        }
+
+        /// <summary>
+        /// Configura las columnas del DataGridView (mantener para compatibilidad)
+        /// </summary>
+        private void ConfigurarColumnasDataGridView()
+        {
+            ConfigurarColumnasDataGridViewOptimizado();
         }
 
         // Este método ya no se usa - los préstamos se cargan automáticamente al abrir la ventana
@@ -250,17 +280,20 @@ namespace UI.WinUi.Transacciones
 
         private void DgvPrestamos_SelectionChanged(object sender, EventArgs e)
         {
-            if (dgvPrestamos.SelectedRows.Count > 0)
+            if (dgvPrestamos.SelectedRows.Count > 0 && dgvPrestamos.SelectedRows[0].DataBoundItem is DataRowView dataRow)
             {
-                var detalle = (PrestamoDetalle)dgvPrestamos.SelectedRows[0].DataBoundItem;
-                var prestamo = detalle.PrestamoOriginal;
+                DateTime fechaPrestamo = Convert.ToDateTime(dataRow["FechaPrestamo"]);
+                DateTime fechaDevolucionPrevista = Convert.ToDateTime(dataRow["FechaDevolucionPrevista"]);
+                int diasRestantes = Convert.ToInt32(dataRow["DiasRestantes"]);
+                int diasAtraso = Convert.ToInt32(dataRow["DiasAtraso"]);
+                string codigoEjemplar = dataRow["CodigoEjemplar"].ToString();
+                string ubicacion = dataRow["Ubicacion"].ToString();
+                bool estaVencido = Convert.ToBoolean(dataRow["EstaVencido"]);
 
-                // Calcular días de atraso
-                int diasRestantes = prestamo.DiasRestantes();
-
-                if (diasRestantes < 0)
+                // Mostrar estado
+                if (estaVencido)
                 {
-                    lblEstado.Text = $"Estado: ATRASADO ({Math.Abs(diasRestantes)} días)";
+                    lblEstado.Text = $"Estado: ATRASADO ({diasAtraso} días)";
                     lblEstado.ForeColor = System.Drawing.Color.FromArgb(231, 76, 60);
                 }
                 else
@@ -269,18 +302,18 @@ namespace UI.WinUi.Transacciones
                     lblEstado.ForeColor = System.Drawing.Color.FromArgb(39, 174, 96);
                 }
 
-                lblFechaPrestamo.Text = $"Fecha préstamo: {prestamo.FechaPrestamo:dd/MM/yyyy}";
-                lblFechaDevolucionPrevista.Text = $"Devolución prevista: {prestamo.FechaDevolucionPrevista:dd/MM/yyyy}";
+                lblFechaPrestamo.Text = $"Fecha préstamo: {fechaPrestamo:dd/MM/yyyy}";
+                lblFechaDevolucionPrevista.Text = $"Devolución prevista: {fechaDevolucionPrevista:dd/MM/yyyy}";
 
-                // Mostrar ubicación del ejemplar desde el detalle ya cargado
-                if (!string.IsNullOrEmpty(detalle.Ubicacion) && detalle.Ubicacion != "No registrada")
+                // Mostrar ubicación del ejemplar
+                if (!string.IsNullOrEmpty(ubicacion) && ubicacion != "No registrada")
                 {
-                    lblUbicacion.Text = $"UBICAR EN: {detalle.Ubicacion.ToUpper()}  |  Código: {detalle.CodigoEjemplar}";
+                    lblUbicacion.Text = $"UBICAR EN: {ubicacion.ToUpper()}  |  Código: {codigoEjemplar}";
                     lblUbicacion.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
                 }
                 else
                 {
-                    lblUbicacion.Text = $"Código: {detalle.CodigoEjemplar}  |  Ubicación: No registrada";
+                    lblUbicacion.Text = $"Código: {codigoEjemplar}  |  Ubicación: No registrada";
                     lblUbicacion.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
                 }
             }
@@ -303,8 +336,76 @@ namespace UI.WinUi.Transacciones
                     return;
                 }
 
-                var detalleSeleccionado = (PrestamoDetalle)dgvPrestamos.SelectedRows[0].DataBoundItem;
-                var prestamo = detalleSeleccionado.PrestamoOriginal;
+                if (!(dgvPrestamos.SelectedRows[0].DataBoundItem is DataRowView dataRow))
+                {
+                    MessageBox.Show("Error al obtener los datos del préstamo seleccionado", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Obtener datos del DataRow
+                Guid idPrestamo = (Guid)dataRow["IdPrestamo"];
+                string nombreAlumno = dataRow["NombreAlumno"].ToString();
+                string tituloMaterial = dataRow["TituloMaterial"].ToString();
+                int numeroEjemplar = Convert.ToInt32(dataRow["NumeroEjemplar"]);
+                string codigoEjemplar = dataRow["CodigoEjemplar"].ToString();
+                string ubicacion = dataRow["Ubicacion"].ToString();
+                int diasAtraso = Convert.ToInt32(dataRow["DiasAtraso"]);
+                DateTime fechaPrestamo = Convert.ToDateTime(dataRow["FechaPrestamo"]);
+                DateTime fechaDevolucionPrevista = Convert.ToDateTime(dataRow["FechaDevolucionPrevista"]);
+
+                // ═══════════════════════════════════════════════════════════════
+                // CONFIRMACIÓN ANTES DE REGISTRAR DEVOLUCIÓN
+                // ═══════════════════════════════════════════════════════════════
+
+                string mensajeConfirmacion = "¿CONFIRMAR DEVOLUCIÓN?\n\n";
+                mensajeConfirmacion += "═══════════════════════════════════════\n\n";
+                mensajeConfirmacion += $"Alumno: {nombreAlumno}\n";
+                mensajeConfirmacion += $"Material: {tituloMaterial}\n";
+                mensajeConfirmacion += $"Ejemplar: #{numeroEjemplar} ({codigoEjemplar})\n\n";
+                mensajeConfirmacion += $"Fecha préstamo: {fechaPrestamo:dd/MM/yyyy}\n";
+                mensajeConfirmacion += $"Fecha vencimiento: {fechaDevolucionPrevista:dd/MM/yyyy}\n\n";
+
+                if (diasAtraso > 0)
+                {
+                    mensajeConfirmacion += $"⚠️  ATENCIÓN: {diasAtraso} DÍA(S) DE ATRASO\n\n";
+                }
+                else
+                {
+                    mensajeConfirmacion += "✓ Devolución a tiempo\n\n";
+                }
+
+                if (!string.IsNullOrEmpty(ubicacion) && ubicacion != "No registrada")
+                {
+                    mensajeConfirmacion += $"Ubicar en: {ubicacion}\n\n";
+                }
+
+                mensajeConfirmacion += "═══════════════════════════════════════\n\n";
+                mensajeConfirmacion += "¿Desea registrar esta devolución?";
+
+                DialogResult confirmacion = MessageBox.Show(
+                    mensajeConfirmacion,
+                    "Confirmar Devolución",
+                    MessageBoxButtons.YesNo,
+                    diasAtraso > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button2  // Por defecto en "No" para mayor seguridad
+                );
+
+                if (confirmacion != DialogResult.Yes)
+                {
+                    return; // Usuario canceló
+                }
+
+                // ═══════════════════════════════════════════════════════════════
+                // PROCEDER CON EL REGISTRO
+                // ═══════════════════════════════════════════════════════════════
+
+                // Obtener el préstamo completo desde BLL
+                var prestamo = _prestamoBLL.ObtenerPrestamoPorId(idPrestamo);
+                if (prestamo == null)
+                {
+                    MessageBox.Show("No se encontró el préstamo seleccionado", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
                 Devolucion devolucion = new Devolucion
                 {
@@ -318,7 +419,6 @@ namespace UI.WinUi.Transacciones
                 _devolucionBLL.RegistrarDevolucion(devolucion);
 
                 // Construir mensaje de éxito con formato mejorado
-                int diasAtraso = devolucion.DiasDeAtraso();
                 string titulo;
                 string encabezado;
 
@@ -335,13 +435,13 @@ namespace UI.WinUi.Transacciones
 
                 string mensaje = encabezado;
                 mensaje += "═══════════════════════════════════════\n\n";
-                mensaje += $"Material: {detalleSeleccionado.TituloMaterial}\n";
-                mensaje += $"Ejemplar #{detalleSeleccionado.NumeroEjemplar}\n";
-                mensaje += $"Código: {detalleSeleccionado.CodigoEjemplar}\n";
+                mensaje += $"Material: {tituloMaterial}\n";
+                mensaje += $"Ejemplar #{numeroEjemplar}\n";
+                mensaje += $"Código: {codigoEjemplar}\n";
 
-                if (!string.IsNullOrEmpty(detalleSeleccionado.Ubicacion) && detalleSeleccionado.Ubicacion != "No registrada")
+                if (!string.IsNullOrEmpty(ubicacion) && ubicacion != "No registrada")
                 {
-                    mensaje += $"\nUBICAR EN: {detalleSeleccionado.Ubicacion.ToUpper()}\n";
+                    mensaje += $"\nUBICAR EN: {ubicacion.ToUpper()}\n";
                 }
 
                 mensaje += "\n═══════════════════════════════════════\n";
@@ -349,8 +449,8 @@ namespace UI.WinUi.Transacciones
 
                 MessageBox.Show(mensaje, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Recargar la lista de préstamos activos
-                CargarPrestamosActivos();
+                // Recargar la lista de préstamos activos con los filtros actuales
+                BuscarYCargarPrestamos();
 
                 // Limpiar observaciones
                 txtObservaciones.Clear();

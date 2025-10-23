@@ -108,6 +108,12 @@
     <Compile Include="WinUi\Administración\editarAlumno.Designer.cs">
       <DependentUpon>editarAlumno.cs</DependentUpon>
     </Compile>
+    <Compile Include="WinUi\Transacciones\Form1gestionPrestamos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Transacciones\Form1gestionPrestamos.Designer.cs">
+      <DependentUpon>Form1gestionPrestamos.cs</DependentUpon>
+    </Compile>
     <Compile Include="WinUi\Transacciones\registrarPrestamo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -125,6 +131,12 @@
     </Compile>
     <Compile Include="WinUi\Transacciones\registrarDevolucion.Designer.cs">
       <DependentUpon>registrarDevolucion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WinUi\Transacciones\renovarPrestamo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Transacciones\renovarPrestamo.Designer.cs">
+      <DependentUpon>renovarPrestamo.cs</DependentUpon>
     </Compile>
     <Compile Include="WinUi\Administración\Login.cs">
       <SubType>Form</SubType>
@@ -170,6 +182,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Transacciones\registrarDevolucion.resx">
       <DependentUpon>registrarDevolucion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinUi\Transacciones\renovarPrestamo.resx">
+      <DependentUpon>renovarPrestamo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Administración\Login.resx">
       <DependentUpon>Login.cs</DependentUpon>

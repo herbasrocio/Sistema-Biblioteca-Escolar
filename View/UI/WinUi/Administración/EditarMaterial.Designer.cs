@@ -79,9 +79,9 @@ namespace UI.WinUi.Administrador
             this.groupBoxDatosMaterial.Controls.Add(this.lblTitulo);
             this.groupBoxDatosMaterial.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxDatosMaterial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
-            this.groupBoxDatosMaterial.Location = new System.Drawing.Point(30, 30);
+            this.groupBoxDatosMaterial.Location = new System.Drawing.Point(30, 20);
             this.groupBoxDatosMaterial.Name = "groupBoxDatosMaterial";
-            this.groupBoxDatosMaterial.Size = new System.Drawing.Size(310, 460);
+            this.groupBoxDatosMaterial.Size = new System.Drawing.Size(310, 380);
             this.groupBoxDatosMaterial.TabIndex = 0;
             this.groupBoxDatosMaterial.TabStop = false;
             this.groupBoxDatosMaterial.Text = "Datos del Material";
@@ -287,7 +287,7 @@ namespace UI.WinUi.Administrador
             this.groupBoxAcciones.Controls.Add(this.btnGuardar);
             this.groupBoxAcciones.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxAcciones.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
-            this.groupBoxAcciones.Location = new System.Drawing.Point(30, 505);
+            this.groupBoxAcciones.Location = new System.Drawing.Point(30, 410);
             this.groupBoxAcciones.Name = "groupBoxAcciones";
             this.groupBoxAcciones.Size = new System.Drawing.Size(310, 80);
             this.groupBoxAcciones.TabIndex = 1;
@@ -296,10 +296,10 @@ namespace UI.WinUi.Administrador
             //
             // btnVolver
             //
-            this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
+            this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.btnVolver.ForeColor = System.Drawing.Color.White;
+            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular);
+            this.btnVolver.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.btnVolver.Location = new System.Drawing.Point(210, 28);
             this.btnVolver.Name = "btnVolver";
             this.btnVolver.Size = new System.Drawing.Size(85, 35);
@@ -322,9 +322,9 @@ namespace UI.WinUi.Administrador
             //
             // btnGuardar
             //
-            this.btnGuardar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
+            this.btnGuardar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnGuardar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnGuardar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
             this.btnGuardar.ForeColor = System.Drawing.Color.White;
             this.btnGuardar.Location = new System.Drawing.Point(15, 28);
             this.btnGuardar.Name = "btnGuardar";
@@ -338,7 +338,7 @@ namespace UI.WinUi.Administrador
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.ClientSize = new System.Drawing.Size(370, 615);
+            this.ClientSize = new System.Drawing.Size(370, 510);
             this.Controls.Add(this.groupBoxAcciones);
             this.Controls.Add(this.groupBoxDatosMaterial);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;

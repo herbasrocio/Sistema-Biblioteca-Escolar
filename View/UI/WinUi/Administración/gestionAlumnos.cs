@@ -1972,5 +1972,10 @@ namespace UI.WinUi.Administrador
         }
 
         #endregion
+
+        private void lblGradoHistorial_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

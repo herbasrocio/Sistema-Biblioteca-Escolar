@@ -179,7 +179,7 @@ namespace UI.WinUi.Administrador
             this.lblEstadisticas.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblEstadisticas.Location = new System.Drawing.Point(10, 15);
             this.lblEstadisticas.Name = "lblEstadisticas";
-            this.lblEstadisticas.Size = new System.Drawing.Size(109, 15);
+            this.lblEstadisticas.Size = new System.Drawing.Size(108, 15);
             this.lblEstadisticas.TabIndex = 0;
             this.lblEstadisticas.Text = "📊 Total: 0 alumnos";
             // 
@@ -387,6 +387,7 @@ namespace UI.WinUi.Administrador
             this.lblGradoHistorial.Size = new System.Drawing.Size(44, 15);
             this.lblGradoHistorial.TabIndex = 2;
             this.lblGradoHistorial.Text = "Grado:";
+            this.lblGradoHistorial.Click += new System.EventHandler(this.lblGradoHistorial_Click);
             // 
             // cmbGradoHistorial
             // 
@@ -473,12 +474,12 @@ namespace UI.WinUi.Administrador
             this.btnVerTrayectoria.TabIndex = 8;
             this.btnVerTrayectoria.Text = "📋 Ver Trayectoria";
             this.btnVerTrayectoria.UseVisualStyleBackColor = false;
-            //
+            // 
             // menuImportarExportar
-            //
+            // 
             this.menuImportarExportar.Name = "menuImportarExportar";
             this.menuImportarExportar.Size = new System.Drawing.Size(61, 4);
-            //
+            // 
             // gestionAlumnos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);

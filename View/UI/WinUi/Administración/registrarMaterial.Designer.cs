@@ -83,10 +83,10 @@ namespace UI.WinUi.Administrador
             this.groupBoxDatosMaterial.Controls.Add(this.lblTitulo);
             this.groupBoxDatosMaterial.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold);
             this.groupBoxDatosMaterial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
-            this.groupBoxDatosMaterial.Location = new System.Drawing.Point(20, 20);
+            this.groupBoxDatosMaterial.Location = new System.Drawing.Point(20, 15);
             this.groupBoxDatosMaterial.Name = "groupBoxDatosMaterial";
             this.groupBoxDatosMaterial.Padding = new System.Windows.Forms.Padding(15);
-            this.groupBoxDatosMaterial.Size = new System.Drawing.Size(340, 500);
+            this.groupBoxDatosMaterial.Size = new System.Drawing.Size(340, 400);
             this.groupBoxDatosMaterial.TabIndex = 0;
             this.groupBoxDatosMaterial.TabStop = false;
             this.groupBoxDatosMaterial.Text = "Datos del Material";
@@ -321,7 +321,7 @@ namespace UI.WinUi.Administrador
             this.groupBoxAcciones.Controls.Add(this.btnGuardar);
             this.groupBoxAcciones.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold);
             this.groupBoxAcciones.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
-            this.groupBoxAcciones.Location = new System.Drawing.Point(20, 537);
+            this.groupBoxAcciones.Location = new System.Drawing.Point(20, 425);
             this.groupBoxAcciones.Name = "groupBoxAcciones";
             this.groupBoxAcciones.Padding = new System.Windows.Forms.Padding(15);
             this.groupBoxAcciones.Size = new System.Drawing.Size(340, 90);
@@ -330,12 +330,12 @@ namespace UI.WinUi.Administrador
             this.groupBoxAcciones.Text = "Acciones";
             // 
             // btnVolver
-            // 
-            this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
+            //
+            this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
             this.btnVolver.FlatAppearance.BorderSize = 0;
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.btnVolver.ForeColor = System.Drawing.Color.White;
+            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular);
+            this.btnVolver.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.btnVolver.Location = new System.Drawing.Point(238, 38);
             this.btnVolver.Name = "btnVolver";
             this.btnVolver.Size = new System.Drawing.Size(77, 35);
@@ -344,12 +344,12 @@ namespace UI.WinUi.Administrador
             this.btnVolver.UseVisualStyleBackColor = false;
             // 
             // btnLimpiar
-            // 
-            this.btnLimpiar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(156)))), ((int)(((byte)(18)))));
+            //
+            this.btnLimpiar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
             this.btnLimpiar.FlatAppearance.BorderSize = 0;
             this.btnLimpiar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.btnLimpiar.ForeColor = System.Drawing.Color.White;
+            this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular);
+            this.btnLimpiar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.btnLimpiar.Location = new System.Drawing.Point(132, 38);
             this.btnLimpiar.Name = "btnLimpiar";
             this.btnLimpiar.Size = new System.Drawing.Size(77, 35);
@@ -358,11 +358,11 @@ namespace UI.WinUi.Administrador
             this.btnLimpiar.UseVisualStyleBackColor = false;
             // 
             // btnGuardar
-            // 
-            this.btnGuardar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
+            //
+            this.btnGuardar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.btnGuardar.FlatAppearance.BorderSize = 0;
             this.btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnGuardar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnGuardar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
             this.btnGuardar.ForeColor = System.Drawing.Color.White;
             this.btnGuardar.Location = new System.Drawing.Point(25, 38);
             this.btnGuardar.Name = "btnGuardar";
@@ -376,7 +376,7 @@ namespace UI.WinUi.Administrador
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.ClientSize = new System.Drawing.Size(380, 644);
+            this.ClientSize = new System.Drawing.Size(380, 535);
             this.Controls.Add(this.groupBoxAcciones);
             this.Controls.Add(this.groupBoxDatosMaterial);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;

@@ -212,5 +212,109 @@ namespace BLL
 
             return null;
         }
+
+        /// <summary>
+        /// Busca préstamos activos con filtros en tiempo real
+        /// </summary>
+        /// <param name="nombreAlumno">Nombre del alumno (búsqueda parcial)</param>
+        /// <param name="tituloMaterial">Título del material (búsqueda parcial)</param>
+        /// <param name="codigoEjemplar">Código del ejemplar (búsqueda parcial)</param>
+        /// <returns>DataTable con información completa de préstamos activos</returns>
+        public System.Data.DataTable BuscarPrestamosActivos(string nombreAlumno = null, string tituloMaterial = null, string codigoEjemplar = null)
+        {
+            return _prestamoRepository.BuscarPrestamosActivos(nombreAlumno, tituloMaterial, codigoEjemplar);
+        }
+
+        /// <summary>
+        /// Renueva un préstamo existente, extendiendo su fecha de devolución
+        /// </summary>
+        /// <param name="idPrestamo">ID del préstamo a renovar</param>
+        /// <param name="diasExtension">Días a extender desde HOY</param>
+        /// <param name="idUsuario">ID del usuario que procesa la renovación</param>
+        /// <param name="maxRenovaciones">Máximo de renovaciones permitidas (default: 2)</param>
+        /// <param name="maxDiasAtraso">Máximo de días de atraso para permitir renovación (default: 7)</param>
+        /// <param name="observaciones">Observaciones opcionales</param>
+        public void RenovarPrestamo(Guid idPrestamo, int diasExtension, Guid idUsuario, int maxRenovaciones = 2, int maxDiasAtraso = 7, string observaciones = null)
+        {
+            // Validaciones
+            if (idPrestamo == Guid.Empty)
+                throw new Exception("ID de préstamo inválido");
+
+            if (idUsuario == Guid.Empty)
+                throw new Exception("Usuario no válido");
+
+            if (diasExtension <= 0)
+                throw new Exception("La extensión debe ser al menos 1 día");
+
+            // Obtener el préstamo
+            var prestamo = _prestamoRepository.ObtenerPorId(idPrestamo);
+            if (prestamo == null)
+                throw new Exception("El préstamo no existe");
+
+            // Validar que el préstamo esté activo
+            if (prestamo.Estado != "Activo" && prestamo.Estado != "Atrasado")
+                throw new Exception($"No se puede renovar un préstamo con estado '{prestamo.Estado}'. Solo se pueden renovar préstamos activos.");
+
+            // Validar límite de renovaciones
+            if (prestamo.CantidadRenovaciones >= maxRenovaciones)
+                throw new Exception($"Este préstamo ya alcanzó el límite máximo de {maxRenovaciones} renovaciones.");
+
+            // Validar que no esté demasiado atrasado
+            if (prestamo.Estado == "Atrasado")
+            {
+                int diasAtraso = Math.Abs((DateTime.Now - prestamo.FechaDevolucionPrevista).Days);
+                if (diasAtraso > maxDiasAtraso)
+                    throw new Exception($"Este préstamo tiene {diasAtraso} días de atraso. No se puede renovar préstamos con más de {maxDiasAtraso} días de atraso.");
+            }
+
+            // Verificar que el alumno no tenga otros préstamos muy atrasados
+            var prestamosAlumno = _prestamoRepository.ObtenerPorAlumno(prestamo.IdAlumno);
+            foreach (var p in prestamosAlumno)
+            {
+                if (p.IdPrestamo != idPrestamo && p.Estado == "Atrasado")
+                {
+                    int diasAtraso = Math.Abs((DateTime.Now - p.FechaDevolucionPrevista).Days);
+                    if (diasAtraso > maxDiasAtraso)
+                    {
+                        var alumno = _alumnoRepository.ObtenerPorId(prestamo.IdAlumno);
+                        throw new Exception($"El alumno {alumno.NombreCompleto} tiene otros préstamos con más de {maxDiasAtraso} días de atraso. Debe devolverlos antes de renovar.");
+                    }
+                }
+            }
+
+            // Verificar que el ejemplar siga existiendo y no esté en mal estado
+            if (prestamo.IdEjemplar != Guid.Empty)
+            {
+                var ejemplar = _ejemplarRepository.ObtenerPorId(prestamo.IdEjemplar);
+                if (ejemplar == null)
+                    throw new Exception("El ejemplar asociado ya no existe en el sistema");
+
+                if (ejemplar.Estado == DomainModel.Enums.EstadoMaterial.NoDisponible)
+                    throw new Exception("No se puede renovar un préstamo de un ejemplar reportado como no disponible");
+
+                if (ejemplar.Estado == DomainModel.Enums.EstadoMaterial.EnReparacion)
+                    throw new Exception("No se puede renovar un préstamo de un ejemplar en reparación");
+            }
+
+            // Calcular nueva fecha de devolución (desde HOY, no desde fecha original)
+            DateTime nuevaFechaDevolucion = DateTime.Now.Date.AddDays(diasExtension);
+
+            // Ejecutar la renovación (transacción atómica en el repository)
+            _prestamoRepository.RenovarPrestamo(idPrestamo, nuevaFechaDevolucion, idUsuario, observaciones);
+
+            // Si el préstamo estaba "Atrasado", actualizarlo a "Activo" ahora que se renovó
+            if (prestamo.Estado == "Atrasado")
+            {
+                _prestamoRepository.ActualizarEstado(idPrestamo, "Activo");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el historial de renovaciones de un préstamo
+        /// </summary>
+        public List<RenovacionPrestamo> ObtenerHistorialRenovaciones(Guid idPrestamo)
+        {
+            return _prestamoRepository.ObtenerRenovacionesPorPrestamo(idPrestamo);
+        }
     }
 }

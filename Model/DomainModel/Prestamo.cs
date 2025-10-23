@@ -12,6 +12,8 @@ namespace DomainModel
         public DateTime FechaPrestamo { get; set; }
         public DateTime FechaDevolucionPrevista { get; set; }
         public string Estado { get; set; } // Activo, Devuelto, Atrasado
+        public int CantidadRenovaciones { get; set; }
+        public DateTime? FechaUltimaRenovacion { get; set; }
 
         // Propiedades de navegación (opcional para mostrar en UI)
         public Material Material { get; set; }
@@ -23,6 +25,8 @@ namespace DomainModel
             IdPrestamo = Guid.NewGuid();
             FechaPrestamo = DateTime.Now;
             Estado = "Activo";
+            CantidadRenovaciones = 0;
+            FechaUltimaRenovacion = null;
         }
 
         public bool EstaAtrasado()
@@ -34,6 +38,11 @@ namespace DomainModel
         {
             if (Estado != "Activo") return 0;
             return (FechaDevolucionPrevista - DateTime.Now).Days;
+        }
+
+        public bool PuedeRenovarse(int maxRenovaciones = 2)
+        {
+            return Estado == "Activo" && CantidadRenovaciones < maxRenovaciones;
         }
     }
 }

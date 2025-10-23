@@ -88,6 +88,59 @@ namespace ServicesSecurity.DomainModel.Security.Composite
         }
 
         /// <summary>
+        /// Verifica si el usuario tiene un permiso específico
+        /// IMPORTANTE: Los administradores tienen acceso a TODOS los permisos automáticamente
+        /// </summary>
+        /// <param name="nombrePatente">Nombre del permiso (FormName o MenuItemName)</param>
+        /// <returns>True si tiene el permiso o es Administrador</returns>
+        public bool TienePermiso(string nombrePatente)
+        {
+            // Los administradores tienen acceso a TODO
+            if (TieneRol("Administrador"))
+                return true;
+
+            // Para otros usuarios, buscar el permiso en su árbol de permisos
+            if (Permisos == null)
+                return false;
+
+            foreach (var componente in Permisos)
+            {
+                if (TienePermisoRecursivo(componente, nombrePatente))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Método recursivo para buscar un permiso en el árbol de componentes
+        /// </summary>
+        private bool TienePermisoRecursivo(Component componente, string nombrePatente)
+        {
+            if (componente == null)
+                return false;
+
+            // Si es una Patente, verificar coincidencia por FormName o MenuItemName
+            if (componente is Patente patente)
+            {
+                return (patente.FormName != null && patente.FormName.Equals(nombrePatente, StringComparison.OrdinalIgnoreCase)) ||
+                       (patente.MenuItemName != null && patente.MenuItemName.Equals(nombrePatente, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Si es una Familia, buscar recursivamente en sus hijos
+            if (componente is Familia familia)
+            {
+                foreach (var hijo in familia.GetChildrens())
+                {
+                    if (hijo != null && TienePermisoRecursivo(hijo, nombrePatente))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Retornar las patentes únicas de acuerdo a mi modelo
         /// (Para el armado del menú)
         /// </summary>

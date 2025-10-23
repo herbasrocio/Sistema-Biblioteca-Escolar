@@ -60,6 +60,8 @@ namespace UI.WinUi.Administrador
             registrarMaterialToolStripMenuItem.Text = LanguageManager.Translate("registrar_material");
             alumnosToolStripMenuItem.Text = LanguageManager.Translate("alumnos");
             prestamosToolStripMenuItem.Text = LanguageManager.Translate("prestamos");
+            registrarPrestamoToolStripMenuItem.Text = LanguageManager.Translate("registrar_prestamo");
+            renovarPrestamoToolStripMenuItem.Text = LanguageManager.Translate("renovar_prestamo");
             devolucionesToolStripMenuItem.Text = LanguageManager.Translate("devoluciones");
             reportesToolStripMenuItem.Text = LanguageManager.Translate("reportes");
             cerrarSesionToolStripMenuItem.Text = LanguageManager.Translate("cerrar_sesion");
@@ -98,47 +100,21 @@ namespace UI.WinUi.Administrador
             registrarMaterialToolStripMenuItem.Visible = tieneRegistrar;
 
             alumnosToolStripMenuItem.Visible = TienePermiso(PATENTE_ALUMNOS);
-            prestamosToolStripMenuItem.Visible = TienePermiso(PATENTE_PRESTAMOS);
+
+            // Préstamos: visible si tiene el permiso (incluye Registrar y Renovar)
+            bool tienePrestamos = TienePermiso(PATENTE_PRESTAMOS);
+            prestamosToolStripMenuItem.Visible = tienePrestamos;
+            registrarPrestamoToolStripMenuItem.Visible = tienePrestamos;
+            renovarPrestamoToolStripMenuItem.Visible = tienePrestamos;
+
             devolucionesToolStripMenuItem.Visible = TienePermiso(PATENTE_DEVOLUCIONES);
             reportesToolStripMenuItem.Visible = TienePermiso(PATENTE_REPORTES);
         }
 
         private bool TienePermiso(string nombrePatente)
         {
-            if (_usuarioLogueado?.Permisos == null)
-                return false;
-
-            foreach (var componente in _usuarioLogueado.Permisos)
-            {
-                if (TienePermisoRecursivo(componente, nombrePatente))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool TienePermisoRecursivo(Component componente, string nombrePatente)
-        {
-            if (componente == null)
-                return false;
-
-            // Si es una Patente, verificar si coincide con el nombre
-            if (componente is Patente patente)
-            {
-                return patente.MenuItemName != null && patente.MenuItemName.Equals(nombrePatente, StringComparison.OrdinalIgnoreCase);
-            }
-
-            // Si es una Familia, buscar recursivamente en sus hijos
-            if (componente is Familia familia)
-            {
-                foreach (var hijo in familia.GetChildrens())
-                {
-                    if (hijo != null && TienePermisoRecursivo(hijo, nombrePatente))
-                        return true;
-                }
-            }
-
-            return false;
+            // Usar el método centralizado del Usuario que maneja el bypass de Administrador
+            return _usuarioLogueado?.TienePermiso(nombrePatente) ?? false;
         }
 
         private void usuariosToolStripMenuItem_Click(object sender, EventArgs e)
@@ -211,7 +187,7 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void prestamosToolStripMenuItem_Click(object sender, EventArgs e)
+        private void registrarPrestamoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -220,7 +196,21 @@ namespace UI.WinUi.Administrador
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al abrir gestión de préstamos: {ex.Message}",
+                MessageBox.Show($"Error al abrir registro de préstamos: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void renovarPrestamoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UI.WinUi.Transacciones.renovarPrestamo formRenovar = new UI.WinUi.Transacciones.renovarPrestamo(_usuarioLogueado);
+                formRenovar.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir renovación de préstamos: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -234,7 +224,7 @@ namespace UI.WinUi.Administrador
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al abrir gestión de devoluciones: {ex.Message}",
+                MessageBox.Show($"Error al abrir registro de devoluciones: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

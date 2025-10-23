@@ -708,40 +708,8 @@ namespace UI.WinUi.Administrador
 
         private bool TienePermiso(string nombrePatente)
         {
-            if (_usuarioLogueado?.Permisos == null)
-                return false;
-
-            foreach (var componente in _usuarioLogueado.Permisos)
-            {
-                if (TienePermisoRecursivo(componente, nombrePatente))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool TienePermisoRecursivo(ServicesSecurity.DomainModel.Security.Composite.Component componente, string nombrePatente)
-        {
-            if (componente == null)
-                return false;
-
-            // Si es una Patente, verificar si coincide con el nombre
-            if (componente is Patente patente)
-            {
-                return patente.MenuItemName != null && patente.MenuItemName.Equals(nombrePatente, StringComparison.OrdinalIgnoreCase);
-            }
-
-            // Si es una Familia, buscar recursivamente en sus hijos
-            if (componente is Familia familia)
-            {
-                foreach (var hijo in familia.GetChildrens())
-                {
-                    if (hijo != null && TienePermisoRecursivo(hijo, nombrePatente))
-                        return true;
-                }
-            }
-
-            return false;
+            // Usar el método centralizado del Usuario que maneja el bypass de Administrador
+            return _usuarioLogueado?.TienePermiso(nombrePatente) ?? false;
         }
 
         private void dgvMateriales_CellContentClick(object sender, DataGridViewCellEventArgs e)

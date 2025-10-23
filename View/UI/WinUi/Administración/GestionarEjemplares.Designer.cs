@@ -124,7 +124,7 @@ namespace UI.WinUi.Administrador
             this.dgvEjemplares.RowHeadersVisible = false;
             this.dgvEjemplares.RowTemplate.Height = 35;
             this.dgvEjemplares.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvEjemplares.Size = new System.Drawing.Size(840, 320);
+            this.dgvEjemplares.Size = new System.Drawing.Size(840, 280);
             this.dgvEjemplares.TabIndex = 1;
             //
             // groupBoxAcciones
@@ -136,9 +136,9 @@ namespace UI.WinUi.Administrador
             this.groupBoxAcciones.Controls.Add(this.btnAgregar);
             this.groupBoxAcciones.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.groupBoxAcciones.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.groupBoxAcciones.Location = new System.Drawing.Point(20, 500);
+            this.groupBoxAcciones.Location = new System.Drawing.Point(20, 455);
             this.groupBoxAcciones.Name = "groupBoxAcciones";
-            this.groupBoxAcciones.Size = new System.Drawing.Size(840, 120);
+            this.groupBoxAcciones.Size = new System.Drawing.Size(840, 100);
             this.groupBoxAcciones.TabIndex = 2;
             this.groupBoxAcciones.TabStop = false;
             this.groupBoxAcciones.Text = "Acciones";
@@ -152,9 +152,9 @@ namespace UI.WinUi.Administrador
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.btnVolver.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.btnVolver.Location = new System.Drawing.Point(680, 40);
+            this.btnVolver.Location = new System.Drawing.Point(680, 30);
             this.btnVolver.Name = "btnVolver";
-            this.btnVolver.Size = new System.Drawing.Size(130, 50);
+            this.btnVolver.Size = new System.Drawing.Size(130, 45);
             this.btnVolver.TabIndex = 4;
             this.btnVolver.Text = "Volver";
             this.btnVolver.UseVisualStyleBackColor = false;
@@ -165,11 +165,11 @@ namespace UI.WinUi.Administrador
             this.btnEliminar.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnEliminar.FlatAppearance.BorderSize = 0;
             this.btnEliminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEliminar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
+            this.btnEliminar.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnEliminar.ForeColor = System.Drawing.Color.White;
-            this.btnEliminar.Location = new System.Drawing.Point(500, 40);
+            this.btnEliminar.Location = new System.Drawing.Point(500, 30);
             this.btnEliminar.Name = "btnEliminar";
-            this.btnEliminar.Size = new System.Drawing.Size(160, 50);
+            this.btnEliminar.Size = new System.Drawing.Size(160, 45);
             this.btnEliminar.TabIndex = 3;
             this.btnEliminar.Text = "Eliminar Ejemplar";
             this.btnEliminar.UseVisualStyleBackColor = false;
@@ -180,11 +180,11 @@ namespace UI.WinUi.Administrador
             this.btnCambiarEstado.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnCambiarEstado.FlatAppearance.BorderSize = 0;
             this.btnCambiarEstado.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCambiarEstado.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
+            this.btnCambiarEstado.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnCambiarEstado.ForeColor = System.Drawing.Color.White;
-            this.btnCambiarEstado.Location = new System.Drawing.Point(340, 40);
+            this.btnCambiarEstado.Location = new System.Drawing.Point(340, 30);
             this.btnCambiarEstado.Name = "btnCambiarEstado";
-            this.btnCambiarEstado.Size = new System.Drawing.Size(150, 50);
+            this.btnCambiarEstado.Size = new System.Drawing.Size(150, 45);
             this.btnCambiarEstado.TabIndex = 2;
             this.btnCambiarEstado.Text = "Cambiar Estado";
             this.btnCambiarEstado.UseVisualStyleBackColor = false;
@@ -195,11 +195,11 @@ namespace UI.WinUi.Administrador
             this.btnEditar.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnEditar.FlatAppearance.BorderSize = 0;
             this.btnEditar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEditar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
+            this.btnEditar.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnEditar.ForeColor = System.Drawing.Color.White;
-            this.btnEditar.Location = new System.Drawing.Point(180, 40);
+            this.btnEditar.Location = new System.Drawing.Point(180, 30);
             this.btnEditar.Name = "btnEditar";
-            this.btnEditar.Size = new System.Drawing.Size(150, 50);
+            this.btnEditar.Size = new System.Drawing.Size(150, 45);
             this.btnEditar.TabIndex = 1;
             this.btnEditar.Text = "Editar Ejemplar";
             this.btnEditar.UseVisualStyleBackColor = false;
@@ -210,11 +210,11 @@ namespace UI.WinUi.Administrador
             this.btnAgregar.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnAgregar.FlatAppearance.BorderSize = 0;
             this.btnAgregar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnAgregar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
+            this.btnAgregar.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnAgregar.ForeColor = System.Drawing.Color.White;
-            this.btnAgregar.Location = new System.Drawing.Point(20, 40);
+            this.btnAgregar.Location = new System.Drawing.Point(20, 30);
             this.btnAgregar.Name = "btnAgregar";
-            this.btnAgregar.Size = new System.Drawing.Size(150, 50);
+            this.btnAgregar.Size = new System.Drawing.Size(150, 45);
             this.btnAgregar.TabIndex = 0;
             this.btnAgregar.Text = "Agregar Ejemplar";
             this.btnAgregar.UseVisualStyleBackColor = false;
@@ -235,7 +235,7 @@ namespace UI.WinUi.Administrador
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.ClientSize = new System.Drawing.Size(880, 650);
+            this.ClientSize = new System.Drawing.Size(800, 520);
             this.Controls.Add(this.lblTituloForm);
             this.Controls.Add(this.groupBoxAcciones);
             this.Controls.Add(this.dgvEjemplares);

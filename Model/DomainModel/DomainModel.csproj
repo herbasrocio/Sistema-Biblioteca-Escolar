@@ -52,6 +52,7 @@
     <Compile Include="Inscripcion.cs" />
     <Compile Include="Material.cs" />
     <Compile Include="Prestamo.cs" />
+    <Compile Include="RenovacionPrestamo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

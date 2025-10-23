@@ -21,6 +21,8 @@ namespace UI.WinUi.Transacciones
         private List<Alumno> _alumnosGrado;
         private Ejemplar _ejemplarSeleccionado; // Ejemplar seleccionado por el usuario
         private bool _permitirSeleccion = false; // Controlar cuándo se puede abrir el diálogo
+        private Timer _searchTimer; // Timer para búsqueda con delay
+        private const int SEARCH_DELAY = 500; // Delay en milisegundos
 
         // Clase auxiliar para mostrar materiales con ubicación
         private class MaterialDetalle
@@ -56,8 +58,14 @@ namespace UI.WinUi.Transacciones
             this.Load += RegistrarPrestamo_Load;
             btnConfirmarPrestamo.Click += BtnConfirmarPrestamo_Click;
             cmbGradoDivision.SelectedIndexChanged += CmbGradoDivision_SelectedIndexChanged;
+            cmbAlumno.SelectedIndexChanged += CmbAlumno_SelectedIndexChanged;
             cmbFiltrarPor.SelectedIndexChanged += CmbFiltrarPor_SelectedIndexChanged;
             txtBuscar.TextChanged += TxtBuscar_TextChanged;
+
+            // Configurar Timer para búsqueda con delay
+            _searchTimer = new Timer();
+            _searchTimer.Interval = SEARCH_DELAY;
+            _searchTimer.Tick += SearchTimer_Tick;
             dgvMateriales.SelectionChanged += DgvMateriales_SelectionChanged;
 
             // Configurar DataGridView
@@ -232,6 +240,56 @@ namespace UI.WinUi.Transacciones
             }
         }
 
+        private void CmbAlumno_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ValidarEstadoAlumno();
+        }
+
+        private void ValidarEstadoAlumno()
+        {
+            // Limpiar advertencias previas
+            lblUbicacion.Text = "";
+            lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(44, 62, 80);
+
+            if (cmbAlumno.SelectedIndex <= 0 || cmbAlumno.SelectedValue == null)
+                return;
+
+            try
+            {
+                Guid idAlumno = (Guid)cmbAlumno.SelectedValue;
+                var todosPrestamos = _prestamoBLL.ObtenerPorAlumno(idAlumno);
+                var prestamosActivos = todosPrestamos.Where(p => p.Estado == "Activo" || p.Estado == "Atrasado").ToList();
+
+                int cantidadActivos = prestamosActivos.Count;
+                int cantidadVencidos = prestamosActivos.Count(p => p.FechaDevolucionPrevista < DateTime.Now);
+
+                if (cantidadVencidos > 0)
+                {
+                    lblUbicacion.Text = $"⚠ Alumno tiene {cantidadVencidos} préstamo(s) vencido(s)";
+                    lblUbicacion.ForeColor = System.Drawing.Color.Red;
+                }
+                else if (cantidadActivos >= 5)
+                {
+                    lblUbicacion.Text = $"⚠ Alumno alcanzó el límite de préstamos ({cantidadActivos}/5)";
+                    lblUbicacion.ForeColor = System.Drawing.Color.Orange;
+                }
+                else if (cantidadActivos > 0)
+                {
+                    lblUbicacion.Text = $"ℹ Préstamos activos: {cantidadActivos}/5";
+                    lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
+                }
+                else
+                {
+                    lblUbicacion.Text = "✓ Sin préstamos activos";
+                    lblUbicacion.ForeColor = System.Drawing.Color.Green;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al validar estado del alumno: {ex.Message}");
+            }
+        }
+
         private void CargarAlumnosPorGrado(string grado, string division)
         {
             try
@@ -297,6 +355,17 @@ namespace UI.WinUi.Transacciones
 
         private void TxtBuscar_TextChanged(object sender, EventArgs e)
         {
+            // Detener el timer si está corriendo
+            _searchTimer.Stop();
+            // Iniciar el timer nuevamente
+            _searchTimer.Start();
+        }
+
+        private void SearchTimer_Tick(object sender, EventArgs e)
+        {
+            // Detener el timer
+            _searchTimer.Stop();
+            // Ejecutar la búsqueda
             CargarMateriales();
         }
 

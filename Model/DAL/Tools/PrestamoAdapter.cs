@@ -25,6 +25,17 @@ namespace DAL.Tools
                 prestamo.IdEjemplar = (Guid)row["IdEjemplar"];
             }
 
+            // Campos de renovación
+            if (row.Table.Columns.Contains("CantidadRenovaciones") && row["CantidadRenovaciones"] != DBNull.Value)
+            {
+                prestamo.CantidadRenovaciones = Convert.ToInt32(row["CantidadRenovaciones"]);
+            }
+
+            if (row.Table.Columns.Contains("FechaUltimaRenovacion") && row["FechaUltimaRenovacion"] != DBNull.Value)
+            {
+                prestamo.FechaUltimaRenovacion = Convert.ToDateTime(row["FechaUltimaRenovacion"]);
+            }
+
             return prestamo;
         }
 

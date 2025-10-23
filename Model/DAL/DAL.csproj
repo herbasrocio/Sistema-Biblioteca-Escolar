@@ -63,6 +63,7 @@
     <Compile Include="Tools\InscripcionAdapter.cs" />
     <Compile Include="Tools\MaterialAdapter.cs" />
     <Compile Include="Tools\PrestamoAdapter.cs" />
+    <Compile Include="Tools\RenovacionPrestamoAdapter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
