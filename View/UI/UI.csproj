@@ -174,6 +174,18 @@
     <Compile Include="WinUi\Reportes\ReporteUsoPorGrado.Designer.cs">
       <DependentUpon>ReporteUsoPorGrado.cs</DependentUpon>
     </Compile>
+    <Compile Include="WinUi\Reportes\ConsultarBitacoraAdmin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Reportes\ConsultarBitacoraAdmin.Designer.cs">
+      <DependentUpon>ConsultarBitacoraAdmin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WinUi\Reportes\ConsultarBitacoraBibliotecario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Reportes\ConsultarBitacoraBibliotecario.Designer.cs">
+      <DependentUpon>ConsultarBitacoraBibliotecario.cs</DependentUpon>
+    </Compile>
     <Compile Include="WinUi\Administración\Login.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -233,6 +245,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Reportes\ReporteUsoPorGrado.resx">
       <DependentUpon>ReporteUsoPorGrado.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinUi\Reportes\ConsultarBitacoraAdmin.resx">
+      <DependentUpon>ConsultarBitacoraAdmin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinUi\Reportes\ConsultarBitacoraBibliotecario.resx">
+      <DependentUpon>ConsultarBitacoraBibliotecario.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Administración\Login.resx">
       <DependentUpon>Login.cs</DependentUpon>
