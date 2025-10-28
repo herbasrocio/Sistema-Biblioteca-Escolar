@@ -21,6 +21,11 @@ namespace UI.WinUi.Administrador
         private const string PATENTE_PRESTAMOS = "Gestión Préstamos";
         private const string PATENTE_DEVOLUCIONES = "Gestión Devoluciones";
         private const string PATENTE_REPORTES = "Consultar Reportes";
+        private const string PATENTE_REPORTE_PRESTAMOS_ACTIVOS = "reportePrestamosActivos";
+        private const string PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS = "reporteMaterialesMasPrestados";
+        private const string PATENTE_REPORTE_USO_POR_GRADO = "reporteUsoPorGrado";
+        private const string PATENTE_BITACORA_ADMIN = "consultarBitacoraAdmin";
+        private const string PATENTE_BITACORA_BIBLIOTECARIO = "consultarBitacoraBibliotecario";
 
         public menu()
         {
@@ -64,6 +69,8 @@ namespace UI.WinUi.Administrador
             renovarPrestamoToolStripMenuItem.Text = LanguageManager.Translate("renovar_prestamo");
             devolucionesToolStripMenuItem.Text = LanguageManager.Translate("devoluciones");
             reportesToolStripMenuItem.Text = LanguageManager.Translate("reportes");
+            consultarBitacoraAdminToolStripMenuItem.Text = LanguageManager.Translate("bitacora_admin_titulo");
+            consultarBitacoraBibliotecarioToolStripMenuItem.Text = LanguageManager.Translate("bitacora_bibliotecario_titulo");
             cerrarSesionToolStripMenuItem.Text = LanguageManager.Translate("cerrar_sesion");
 
             // Actualizar información del usuario en el panel de bienvenida
@@ -108,7 +115,19 @@ namespace UI.WinUi.Administrador
             renovarPrestamoToolStripMenuItem.Visible = tienePrestamos;
 
             devolucionesToolStripMenuItem.Visible = TienePermiso(PATENTE_DEVOLUCIONES);
-            reportesToolStripMenuItem.Visible = TienePermiso(PATENTE_REPORTES);
+
+            // Reportes: visible si tiene al menos uno de los submenús
+            bool tieneReportePrestamos = TienePermiso(PATENTE_REPORTE_PRESTAMOS_ACTIVOS);
+            bool tieneReporteMateriales = TienePermiso(PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS);
+            bool tieneReporteGrado = TienePermiso(PATENTE_REPORTE_USO_POR_GRADO);
+            bool tieneBitacoraAdmin = TienePermiso(PATENTE_BITACORA_ADMIN);
+            bool tieneBitacoraBibliotecario = TienePermiso(PATENTE_BITACORA_BIBLIOTECARIO);
+            reportesToolStripMenuItem.Visible = tieneReportePrestamos || tieneReporteMateriales || tieneReporteGrado || tieneBitacoraAdmin || tieneBitacoraBibliotecario;
+            reportePrestamosActivosToolStripMenuItem.Visible = tieneReportePrestamos;
+            reporteMaterialesMasPrestadosToolStripMenuItem.Visible = tieneReporteMateriales;
+            reporteUsoPorGradoToolStripMenuItem.Visible = tieneReporteGrado;
+            consultarBitacoraAdminToolStripMenuItem.Visible = tieneBitacoraAdmin;
+            consultarBitacoraBibliotecarioToolStripMenuItem.Visible = tieneBitacoraBibliotecario;
         }
 
         private bool TienePermiso(string nombrePatente)
@@ -229,13 +248,74 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void reportesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void reportePrestamosActivosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(
-                LanguageManager.Translate("funcionalidad_no_implementada"),
-                LanguageManager.Translate("informacion"),
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            try
+            {
+                UI.WinUi.Reportes.ReportePrestamosActivos formReporte = new UI.WinUi.Reportes.ReportePrestamosActivos(_usuarioLogueado);
+                formReporte.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir reporte de préstamos activos: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void reporteMaterialesMasPrestadosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UI.WinUi.Reportes.ReporteMaterialesMasPrestados formReporte = new UI.WinUi.Reportes.ReporteMaterialesMasPrestados(_usuarioLogueado);
+                formReporte.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir reporte de materiales más prestados: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void reporteUsoPorGradoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UI.WinUi.Reportes.ReporteUsoPorGrado formReporte = new UI.WinUi.Reportes.ReporteUsoPorGrado(_usuarioLogueado);
+                formReporte.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir reporte de uso por grado: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void consultarBitacoraAdminToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UI.WinUi.Reportes.ConsultarBitacoraAdmin formBitacoraAdmin = new UI.WinUi.Reportes.ConsultarBitacoraAdmin(_usuarioLogueado);
+                formBitacoraAdmin.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir bitácora de administrador: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void consultarBitacoraBibliotecarioToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UI.WinUi.Reportes.ConsultarBitacoraBibliotecario formBitacoraBibliotecario = new UI.WinUi.Reportes.ConsultarBitacoraBibliotecario(_usuarioLogueado);
+                formBitacoraBibliotecario.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir bitácora de bibliotecario: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void cerrarSesionToolStripMenuItem_Click(object sender, EventArgs e)

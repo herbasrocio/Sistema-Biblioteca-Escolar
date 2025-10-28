@@ -168,9 +168,9 @@ namespace UI.WinUi.Transacciones
             this.lblAdvertencia.ForeColor = System.Drawing.Color.Red;
             this.lblAdvertencia.Location = new System.Drawing.Point(520, 25);
             this.lblAdvertencia.Name = "lblAdvertencia";
-            this.lblAdvertencia.Size = new System.Drawing.Size(141, 15);
+            this.lblAdvertencia.Size = new System.Drawing.Size(121, 15);
             this.lblAdvertencia.TabIndex = 18;
-            this.lblAdvertencia.Text = "⚠ Préstamo vencido";
+            this.lblAdvertencia.Text = "Préstamo vencido";
             this.lblAdvertencia.Visible = false;
             // 
             // lblObservaciones
@@ -282,7 +282,7 @@ namespace UI.WinUi.Transacciones
             this.txtFechaDevolucionActual.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // btnRenovar
-            //
+            // 
             this.btnRenovar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.btnRenovar.Enabled = false;
             this.btnRenovar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -296,10 +296,10 @@ namespace UI.WinUi.Transacciones
             this.btnRenovar.UseVisualStyleBackColor = false;
             // 
             // btnLimpiar
-            //
+            // 
             this.btnLimpiar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
             this.btnLimpiar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular);
+            this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.btnLimpiar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.btnLimpiar.Location = new System.Drawing.Point(270, 560);
             this.btnLimpiar.Name = "btnLimpiar";
@@ -309,10 +309,10 @@ namespace UI.WinUi.Transacciones
             this.btnLimpiar.UseVisualStyleBackColor = false;
             // 
             // btnVolver
-            //
+            // 
             this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular);
+            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.btnVolver.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.btnVolver.Location = new System.Drawing.Point(752, 560);
             this.btnVolver.Name = "btnVolver";
@@ -320,9 +320,9 @@ namespace UI.WinUi.Transacciones
             this.btnVolver.TabIndex = 4;
             this.btnVolver.Text = "Volver";
             this.btnVolver.UseVisualStyleBackColor = false;
-            //
+            // 
             // renovarPrestamo
-            //
+            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));

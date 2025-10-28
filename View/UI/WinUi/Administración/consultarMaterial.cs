@@ -12,6 +12,7 @@ using ServicesSecurity.Services;
 using BLL;
 using DomainModel;
 using DomainModel.Enums;
+using System.Threading;
 
 namespace UI.WinUi.Administrador
 {
@@ -19,6 +20,8 @@ namespace UI.WinUi.Administrador
     {
         private Usuario _usuarioLogueado;
         private MaterialBLL _materialBLL;
+        private System.Threading.Timer _debounceTimer;
+        private const int DEBOUNCE_DELAY = 300; // milisegundos
 
         public consultarMaterial()
         {
@@ -35,11 +38,17 @@ namespace UI.WinUi.Administrador
         private void ConfigurarFormulario()
         {
             this.Load += ConsultarMaterial_Load;
-            btnBuscar.Click += BtnBuscar_Click;
             btnLimpiar.Click += BtnLimpiar_Click;
             btnVolver.Click += BtnVolver_Click;
             btnEditar.Click += BtnEditar_Click;
             btnGestionarEjemplares.Click += BtnGestionarEjemplares_Click;
+
+            // BÚSQUEDA EN TIEMPO REAL: Agregar eventos para filtrado automático
+            txtTitulo.TextChanged += FiltrosCambiados;
+            txtAutor.TextChanged += FiltrosCambiados;
+            cmbTipo.SelectedIndexChanged += FiltrosCambiados;
+            cmbGenero.SelectedIndexChanged += FiltrosCambiados;
+            cmbNivel.SelectedIndexChanged += FiltrosCambiados;
 
             // Configurar DataGridView para solo lectura
             dgvMateriales.ReadOnly = true;
@@ -47,6 +56,12 @@ namespace UI.WinUi.Administrador
             dgvMateriales.AllowUserToDeleteRows = false;
             dgvMateriales.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvMateriales.MultiSelect = false;
+
+            // OPTIMIZACIÓN: Habilitar DoubleBuffer para evitar parpadeos al scrollear
+            System.Reflection.PropertyInfo dgvDoubleBuffered = dgvMateriales.GetType().GetProperty(
+                "DoubleBuffered",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            dgvDoubleBuffered?.SetValue(dgvMateriales, true, null);
 
             // Agregar evento para traducir valores de celdas
             dgvMateriales.CellFormatting += DgvMateriales_CellFormatting;
@@ -97,7 +112,7 @@ namespace UI.WinUi.Administrador
                 lblTipo.Text = LanguageManager.Translate("tipo") + ":";
                 lblGenero.Text = LanguageManager.Translate("genero") + ":";
                 lblNivel.Text = LanguageManager.Translate("nivel") + ":";
-                btnBuscar.Text = LanguageManager.Translate("buscar");
+                // btnBuscar eliminado - ahora es búsqueda en tiempo real
                 btnLimpiar.Text = LanguageManager.Translate("limpiar");
                 btnEditar.Text = LanguageManager.Translate("editar_material");
                 btnGestionarEjemplares.Text = LanguageManager.Translate("gestionar_ejemplares");
@@ -162,123 +177,158 @@ namespace UI.WinUi.Administrador
             cmbNivel.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Cache de ejemplares para evitar consultas repetidas a la BD
+        /// </summary>
+        private Dictionary<Guid, List<Ejemplar>> _ejemplaresPorMaterialCache = null;
+        private bool _columnasConfiguradas = false;
+
+        // OPTIMIZACIÓN: Cache de traducciones para evitar traducciones repetidas
+        private Dictionary<string, string> _cacheTraduccionesTipo = new Dictionary<string, string>();
+        private Dictionary<string, string> _cacheTraduccionesGenero = new Dictionary<string, string>();
+
         private void ConfigurarColumnasVisibles()
         {
             if (dgvMateriales.Columns.Count == 0)
                 return;
 
-            // Ocultar columnas que no queremos mostrar
-            dgvMateriales.Columns["IdMaterial"].Visible = false;
-            dgvMateriales.Columns["FechaRegistro"].Visible = false;
-            dgvMateriales.Columns["Activo"].Visible = false;
-
-            // Ocultar columna Nivel (solo la usamos en filtros)
-            if (dgvMateriales.Columns.Contains("Nivel"))
-                dgvMateriales.Columns["Nivel"].Visible = false;
-
-            // Configurar orden de columnas visibles
-            dgvMateriales.Columns["Titulo"].DisplayIndex = 0;
-            dgvMateriales.Columns["Autor"].DisplayIndex = 1;
-            dgvMateriales.Columns["Editorial"].DisplayIndex = 2;
-            dgvMateriales.Columns["Tipo"].DisplayIndex = 3;
-            dgvMateriales.Columns["Genero"].DisplayIndex = 4;
-            dgvMateriales.Columns["ISBN"].DisplayIndex = 5;
-            dgvMateriales.Columns["AnioPublicacion"].DisplayIndex = 6;
-            dgvMateriales.Columns["CantidadTotal"].DisplayIndex = 7;
-            dgvMateriales.Columns["CantidadDisponible"].DisplayIndex = 8;
-
-            // Agregar columnas calculadas para cada estado
-            if (!dgvMateriales.Columns.Contains("CantidadPrestada"))
+            // OPTIMIZACIÓN 1: Solo configurar columnas una vez
+            if (!_columnasConfiguradas)
             {
-                DataGridViewTextBoxColumn colPrestada = new DataGridViewTextBoxColumn();
-                colPrestada.Name = "CantidadPrestada";
-                colPrestada.HeaderText = LanguageManager.Translate("cant_prestada");
-                colPrestada.ReadOnly = true;
-                dgvMateriales.Columns.Add(colPrestada);
+                // Ocultar columnas que no queremos mostrar
+                dgvMateriales.Columns["IdMaterial"].Visible = false;
+                dgvMateriales.Columns["FechaRegistro"].Visible = false;
+                dgvMateriales.Columns["Activo"].Visible = false;
+
+                // Ocultar columna Nivel (solo la usamos en filtros)
+                if (dgvMateriales.Columns.Contains("Nivel"))
+                    dgvMateriales.Columns["Nivel"].Visible = false;
+
+                // Configurar orden de columnas visibles
+                dgvMateriales.Columns["Titulo"].DisplayIndex = 0;
+                dgvMateriales.Columns["Autor"].DisplayIndex = 1;
+                dgvMateriales.Columns["Editorial"].DisplayIndex = 2;
+                dgvMateriales.Columns["Tipo"].DisplayIndex = 3;
+                dgvMateriales.Columns["Genero"].DisplayIndex = 4;
+                dgvMateriales.Columns["ISBN"].DisplayIndex = 5;
+                dgvMateriales.Columns["AnioPublicacion"].DisplayIndex = 6;
+                dgvMateriales.Columns["CantidadTotal"].DisplayIndex = 7;
+                dgvMateriales.Columns["CantidadDisponible"].DisplayIndex = 8;
+
+                // Agregar columnas calculadas para cada estado
+                if (!dgvMateriales.Columns.Contains("CantidadPrestada"))
+                {
+                    DataGridViewTextBoxColumn colPrestada = new DataGridViewTextBoxColumn();
+                    colPrestada.Name = "CantidadPrestada";
+                    colPrestada.HeaderText = LanguageManager.Translate("cant_prestada");
+                    colPrestada.ReadOnly = true;
+                    dgvMateriales.Columns.Add(colPrestada);
+                }
+
+                if (!dgvMateriales.Columns.Contains("CantidadEnReparacion"))
+                {
+                    DataGridViewTextBoxColumn colEnReparacion = new DataGridViewTextBoxColumn();
+                    colEnReparacion.Name = "CantidadEnReparacion";
+                    colEnReparacion.HeaderText = LanguageManager.Translate("cant_en_reparacion");
+                    colEnReparacion.ReadOnly = true;
+                    dgvMateriales.Columns.Add(colEnReparacion);
+                }
+
+                if (!dgvMateriales.Columns.Contains("CantidadNoDisponible"))
+                {
+                    DataGridViewTextBoxColumn colNoDisponible = new DataGridViewTextBoxColumn();
+                    colNoDisponible.Name = "CantidadNoDisponible";
+                    colNoDisponible.HeaderText = LanguageManager.Translate("cant_no_disponible");
+                    colNoDisponible.ReadOnly = true;
+                    dgvMateriales.Columns.Add(colNoDisponible);
+                }
+
+                dgvMateriales.Columns["CantidadPrestada"].DisplayIndex = 9;
+                dgvMateriales.Columns["CantidadEnReparacion"].DisplayIndex = 10;
+                dgvMateriales.Columns["CantidadNoDisponible"].DisplayIndex = 11;
+
+                // Configurar encabezados de columnas
+                dgvMateriales.Columns["Titulo"].HeaderText = LanguageManager.Translate("titulo");
+                dgvMateriales.Columns["Autor"].HeaderText = LanguageManager.Translate("autor");
+                dgvMateriales.Columns["Editorial"].HeaderText = LanguageManager.Translate("editorial");
+                dgvMateriales.Columns["Tipo"].HeaderText = LanguageManager.Translate("tipo");
+                dgvMateriales.Columns["Genero"].HeaderText = LanguageManager.Translate("genero");
+                dgvMateriales.Columns["ISBN"].HeaderText = "ISBN";
+                dgvMateriales.Columns["AnioPublicacion"].HeaderText = LanguageManager.Translate("anio_publicacion_col");
+                dgvMateriales.Columns["CantidadTotal"].HeaderText = LanguageManager.Translate("cant_total");
+                dgvMateriales.Columns["CantidadDisponible"].HeaderText = LanguageManager.Translate("cant_disp");
+
+                // Ajustar ancho de columnas
+                dgvMateriales.Columns["Titulo"].Width = 190;
+                dgvMateriales.Columns["Autor"].Width = 150;
+                dgvMateriales.Columns["Editorial"].Width = 150;
+                dgvMateriales.Columns["Tipo"].Width = 80;
+                dgvMateriales.Columns["Genero"].Width = 90;
+                dgvMateriales.Columns["ISBN"].Width = 100;
+                dgvMateriales.Columns["AnioPublicacion"].Width = 90;
+                dgvMateriales.Columns["CantidadTotal"].Width = 70;
+                dgvMateriales.Columns["CantidadDisponible"].Width = 70;
+                dgvMateriales.Columns["CantidadPrestada"].Width = 70;
+                dgvMateriales.Columns["CantidadEnReparacion"].Width = 70;
+                dgvMateriales.Columns["CantidadNoDisponible"].Width = 70;
+
+                _columnasConfiguradas = true;
             }
 
-            if (!dgvMateriales.Columns.Contains("CantidadEnReparacion"))
+            // OPTIMIZACIÓN 2: Cargar ejemplares solo si el cache está vacío
+            if (_ejemplaresPorMaterialCache == null)
             {
-                DataGridViewTextBoxColumn colEnReparacion = new DataGridViewTextBoxColumn();
-                colEnReparacion.Name = "CantidadEnReparacion";
-                colEnReparacion.HeaderText = LanguageManager.Translate("cant_en_reparacion");
-                colEnReparacion.ReadOnly = true;
-                dgvMateriales.Columns.Add(colEnReparacion);
+                EjemplarBLL ejemplarBLL = new EjemplarBLL();
+                List<Ejemplar> todosLosEjemplares = ejemplarBLL.ObtenerTodosEjemplares();
+
+                // Agrupar ejemplares por IdMaterial en memoria para acceso rápido
+                _ejemplaresPorMaterialCache = todosLosEjemplares
+                    .GroupBy(e => e.IdMaterial)
+                    .ToDictionary(g => g.Key, g => g.ToList());
             }
 
-            if (!dgvMateriales.Columns.Contains("CantidadNoDisponible"))
-            {
-                DataGridViewTextBoxColumn colNoDisponible = new DataGridViewTextBoxColumn();
-                colNoDisponible.Name = "CantidadNoDisponible";
-                colNoDisponible.HeaderText = LanguageManager.Translate("cant_no_disponible");
-                colNoDisponible.ReadOnly = true;
-                dgvMateriales.Columns.Add(colNoDisponible);
-            }
-
-            dgvMateriales.Columns["CantidadPrestada"].DisplayIndex = 9;
-            dgvMateriales.Columns["CantidadEnReparacion"].DisplayIndex = 10;
-            dgvMateriales.Columns["CantidadNoDisponible"].DisplayIndex = 11;
-
-            // OPTIMIZACIÓN: Cargar todos los ejemplares en una sola consulta
-            // para evitar el problema N+1 (N consultas para N materiales)
-            EjemplarBLL ejemplarBLL = new EjemplarBLL();
-            List<Ejemplar> todosLosEjemplares = ejemplarBLL.ObtenerTodosEjemplares();
-
-            // Agrupar ejemplares por IdMaterial en memoria para acceso rápido
-            var ejemplaresPorMaterial = todosLosEjemplares
-                .GroupBy(e => e.IdMaterial)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            // Calcular cantidades por estado para cada fila
+            // OPTIMIZACIÓN 3: Solo calcular cantidades si las columnas tienen valores null
+            // Esto evita recalcular en cada scroll
             foreach (DataGridViewRow row in dgvMateriales.Rows)
             {
                 if (row.DataBoundItem is Material material)
                 {
-                    // Obtener ejemplares desde el diccionario (en memoria, sin consulta adicional)
-                    List<Ejemplar> ejemplares = ejemplaresPorMaterial.ContainsKey(material.IdMaterial)
-                        ? ejemplaresPorMaterial[material.IdMaterial]
-                        : new List<Ejemplar>();
+                    // Solo calcular si la celda está vacía (primera vez)
+                    if (row.Cells["CantidadPrestada"].Value == null)
+                    {
+                        // Obtener ejemplares desde el cache (en memoria)
+                        List<Ejemplar> ejemplares = _ejemplaresPorMaterialCache.ContainsKey(material.IdMaterial)
+                            ? _ejemplaresPorMaterialCache[material.IdMaterial]
+                            : new List<Ejemplar>();
 
-                    int cantidadPrestada = ejemplares.Count(e => e.Estado == EstadoMaterial.Prestado);
-                    int cantidadEnReparacion = ejemplares.Count(e => e.Estado == EstadoMaterial.EnReparacion);
-                    int cantidadNoDisponible = ejemplares.Count(e => e.Estado == EstadoMaterial.NoDisponible);
+                        int cantidadPrestada = ejemplares.Count(e => e.Estado == EstadoMaterial.Prestado);
+                        int cantidadEnReparacion = ejemplares.Count(e => e.Estado == EstadoMaterial.EnReparacion);
+                        int cantidadNoDisponible = ejemplares.Count(e => e.Estado == EstadoMaterial.NoDisponible);
 
-                    row.Cells["CantidadPrestada"].Value = cantidadPrestada;
-                    row.Cells["CantidadEnReparacion"].Value = cantidadEnReparacion;
-                    row.Cells["CantidadNoDisponible"].Value = cantidadNoDisponible;
+                        row.Cells["CantidadPrestada"].Value = cantidadPrestada;
+                        row.Cells["CantidadEnReparacion"].Value = cantidadEnReparacion;
+                        row.Cells["CantidadNoDisponible"].Value = cantidadNoDisponible;
+                    }
                 }
             }
+        }
 
-            // Configurar encabezados de columnas
-            dgvMateriales.Columns["Titulo"].HeaderText = LanguageManager.Translate("titulo");
-            dgvMateriales.Columns["Autor"].HeaderText = LanguageManager.Translate("autor");
-            dgvMateriales.Columns["Editorial"].HeaderText = LanguageManager.Translate("editorial");
-            dgvMateriales.Columns["Tipo"].HeaderText = LanguageManager.Translate("tipo");
-            dgvMateriales.Columns["Genero"].HeaderText = LanguageManager.Translate("genero");
-            dgvMateriales.Columns["ISBN"].HeaderText = "ISBN";
-            dgvMateriales.Columns["AnioPublicacion"].HeaderText = LanguageManager.Translate("anio_publicacion_col");
-            dgvMateriales.Columns["CantidadTotal"].HeaderText = LanguageManager.Translate("cant_total");
-            dgvMateriales.Columns["CantidadDisponible"].HeaderText = LanguageManager.Translate("cant_disp");
-
-            // Ajustar ancho de columnas
-            dgvMateriales.Columns["Titulo"].Width = 190;
-            dgvMateriales.Columns["Autor"].Width = 150;
-            dgvMateriales.Columns["Editorial"].Width = 150;
-            dgvMateriales.Columns["Tipo"].Width = 80;
-            dgvMateriales.Columns["Genero"].Width = 90;
-            dgvMateriales.Columns["ISBN"].Width = 100;
-            dgvMateriales.Columns["AnioPublicacion"].Width = 90;
-            dgvMateriales.Columns["CantidadTotal"].Width = 70;
-            dgvMateriales.Columns["CantidadDisponible"].Width = 70;
-            dgvMateriales.Columns["CantidadPrestada"].Width = 70;
-            dgvMateriales.Columns["CantidadEnReparacion"].Width = 70;
-            dgvMateriales.Columns["CantidadNoDisponible"].Width = 70;
+        /// <summary>
+        /// Invalida el cache de ejemplares para forzar recarga
+        /// Debe llamarse después de operaciones que modifiquen ejemplares
+        /// </summary>
+        private void InvalidarCacheEjemplares()
+        {
+            _ejemplaresPorMaterialCache = null;
         }
 
         private void CargarTodosMateriales()
         {
             try
             {
+                // OPTIMIZACIÓN: Suspender rendering durante la carga inicial
+                dgvMateriales.SuspendLayout();
+
                 List<Material> materiales = _materialBLL.ObtenerTodosMateriales();
                 dgvMateriales.DataSource = materiales;
 
@@ -291,12 +341,41 @@ namespace UI.WinUi.Administrador
                 MessageBox.Show($"Error al cargar materiales: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            finally
+            {
+                // OPTIMIZACIÓN: Reanudar rendering después de la carga
+                dgvMateriales.ResumeLayout(true);
+            }
         }
 
-        private void BtnBuscar_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Evento que se dispara cuando cambia cualquier filtro de búsqueda
+        /// Implementa debounce para evitar búsquedas excesivas
+        /// </summary>
+        private void FiltrosCambiados(object sender, EventArgs e)
+        {
+            // Cancelar timer anterior si existe
+            _debounceTimer?.Dispose();
+
+            // Crear nuevo timer que ejecutará la búsqueda después del delay
+            _debounceTimer = new System.Threading.Timer(
+                callback: _ => this.Invoke((Action)EjecutarBusqueda),
+                state: null,
+                dueTime: DEBOUNCE_DELAY,
+                period: Timeout.Infinite
+            );
+        }
+
+        /// <summary>
+        /// Ejecuta la búsqueda con los filtros actuales (sin botón)
+        /// </summary>
+        private void EjecutarBusqueda()
         {
             try
             {
+                // OPTIMIZACIÓN: Suspender rendering durante la actualización
+                dgvMateriales.SuspendLayout();
+
                 string titulo = txtTitulo.Text.Trim();
                 string autor = txtAutor.Text.Trim();
                 string tipoTraducido = cmbTipo.SelectedItem?.ToString();
@@ -333,11 +412,26 @@ namespace UI.WinUi.Administrador
                 MessageBox.Show($"Error al buscar: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            finally
+            {
+                // OPTIMIZACIÓN: Reanudar rendering después de la actualización
+                dgvMateriales.ResumeLayout(true);
+            }
+        }
+
+        /// <summary>
+        /// Método obsoleto - mantenido para compatibilidad con código existente
+        /// La búsqueda ahora es automática en tiempo real
+        /// </summary>
+        private void BtnBuscar_Click(object sender, EventArgs e)
+        {
+            EjecutarBusqueda();
         }
 
         /// <summary>
         /// Evento que se dispara al formatear cada celda del DataGridView
         /// Permite traducir los valores de Tipo y Género sin modificar los datos subyacentes
+        /// OPTIMIZADO: Usa cache de traducciones para evitar procesamiento repetido
         /// </summary>
         private void DgvMateriales_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -350,20 +444,32 @@ namespace UI.WinUi.Administrador
                 // Obtener el nombre de la columna
                 string columnName = dgvMateriales.Columns[e.ColumnIndex].Name;
 
-                // Traducir columna Tipo
+                // Traducir columna Tipo con cache
                 if (columnName == "Tipo")
                 {
                     string tipoOriginal = e.Value.ToString();
-                    string tipoTraducido = TraducirTipoDesdeOriginal(tipoOriginal);
-                    e.Value = tipoTraducido;
+
+                    // Verificar cache primero
+                    if (!_cacheTraduccionesTipo.ContainsKey(tipoOriginal))
+                    {
+                        _cacheTraduccionesTipo[tipoOriginal] = TraducirTipoDesdeOriginal(tipoOriginal);
+                    }
+
+                    e.Value = _cacheTraduccionesTipo[tipoOriginal];
                     e.FormattingApplied = true;
                 }
-                // Traducir columna Género
+                // Traducir columna Género con cache
                 else if (columnName == "Genero")
                 {
                     string generoOriginal = e.Value.ToString();
-                    string generoTraducido = TraducirGeneroDesdeOriginal(generoOriginal);
-                    e.Value = generoTraducido;
+
+                    // Verificar cache primero
+                    if (!_cacheTraduccionesGenero.ContainsKey(generoOriginal))
+                    {
+                        _cacheTraduccionesGenero[generoOriginal] = TraducirGeneroDesdeOriginal(generoOriginal);
+                    }
+
+                    e.Value = _cacheTraduccionesGenero[generoOriginal];
                     e.FormattingApplied = true;
                 }
             }
@@ -581,6 +687,9 @@ namespace UI.WinUi.Administrador
                 // Si se guardaron cambios, recargar la grilla
                 if (resultado == DialogResult.OK)
                 {
+                    // Invalidar cache para que se recalculen los estados
+                    InvalidarCacheEjemplares();
+
                     if (string.IsNullOrWhiteSpace(txtTitulo.Text) &&
                         string.IsNullOrWhiteSpace(txtAutor.Text) &&
                         cmbTipo.SelectedIndex == 0 &&
@@ -591,7 +700,7 @@ namespace UI.WinUi.Administrador
                     }
                     else
                     {
-                        BtnBuscar_Click(sender, e);
+                        EjecutarBusqueda();
                     }
 
                     // Restaurar la selección del material
@@ -647,6 +756,9 @@ namespace UI.WinUi.Administrador
                 // Si se guardaron cambios, recargar la grilla
                 if (resultado == DialogResult.OK)
                 {
+                    // Invalidar cache para que se recalculen los estados
+                    InvalidarCacheEjemplares();
+
                     if (string.IsNullOrWhiteSpace(txtTitulo.Text) &&
                         string.IsNullOrWhiteSpace(txtAutor.Text) &&
                         cmbTipo.SelectedIndex == 0 &&
@@ -657,7 +769,7 @@ namespace UI.WinUi.Administrador
                     }
                     else
                     {
-                        BtnBuscar_Click(sender, e);
+                        EjecutarBusqueda();
                     }
 
                     // Restaurar la selección del material

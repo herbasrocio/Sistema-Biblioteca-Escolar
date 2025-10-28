@@ -58,7 +58,7 @@ namespace BLL
 
         public void RegistrarPrestamo(Prestamo prestamo)
         {
-            // Validaciones
+            // Validaciones previas (no requieren transacción)
             if (prestamo.IdMaterial == Guid.Empty)
                 throw new Exception("Debe seleccionar un material");
 
@@ -105,19 +105,36 @@ namespace BLL
             if (ejemplarSeleccionado.Estado != DomainModel.Enums.EstadoMaterial.Disponible)
                 throw new Exception($"El ejemplar seleccionado no está disponible. Estado actual: {ejemplarSeleccionado.Estado}");
 
-            // Cambiar estado del ejemplar a Prestado
-            ejemplarSeleccionado.Estado = DomainModel.Enums.EstadoMaterial.Prestado;
-            _ejemplarRepository.Update(ejemplarSeleccionado);
-
             // Generar GUID para el préstamo si no existe
             if (prestamo.IdPrestamo == Guid.Empty)
                 prestamo.IdPrestamo = Guid.NewGuid();
 
-            // Registrar préstamo
-            _prestamoRepository.Add(prestamo);
+            // OPERACIONES TRANSACCIONALES: Usar Unit of Work para garantizar atomicidad
+            using (var uow = new UnitOfWork())
+            {
+                uow.BeginTransaction();
+                try
+                {
+                    // Cambiar estado del ejemplar a Prestado
+                    ejemplarSeleccionado.Estado = DomainModel.Enums.EstadoMaterial.Prestado;
+                    uow.Ejemplares.Update(ejemplarSeleccionado);
 
-            // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
-            // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
+                    // Registrar préstamo
+                    uow.Prestamos.Add(prestamo);
+
+                    // Confirmar transacción - ambas operaciones se confirman juntas
+                    uow.Commit();
+
+                    // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
+                    // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
+                }
+                catch
+                {
+                    // Rollback automático al salir del using si no se llamó Commit()
+                    uow.Rollback();
+                    throw;
+                }
+            }
         }
 
         public void ActualizarEstadoPrestamo(Guid idPrestamo, string nuevoEstado)
@@ -131,6 +148,7 @@ namespace BLL
 
         public void MarcarComoDevuelto(Guid idPrestamo)
         {
+            // Validaciones previas
             var prestamo = _prestamoRepository.ObtenerPorId(idPrestamo);
             if (prestamo == null)
                 throw new Exception("El préstamo no existe");
@@ -138,22 +156,39 @@ namespace BLL
             if (prestamo.Estado == "Devuelto")
                 throw new Exception("Este préstamo ya fue devuelto");
 
-            // Cambiar estado del ejemplar a Disponible
-            if (prestamo.IdEjemplar != Guid.Empty)
+            // OPERACIONES TRANSACCIONALES: Usar Unit of Work para garantizar atomicidad
+            using (var uow = new UnitOfWork())
             {
-                var ejemplar = _ejemplarRepository.ObtenerPorId(prestamo.IdEjemplar);
-                if (ejemplar != null)
+                uow.BeginTransaction();
+                try
                 {
-                    ejemplar.Estado = DomainModel.Enums.EstadoMaterial.Disponible;
-                    _ejemplarRepository.Update(ejemplar);
+                    // Cambiar estado del ejemplar a Disponible
+                    if (prestamo.IdEjemplar != Guid.Empty)
+                    {
+                        var ejemplar = uow.Ejemplares.ObtenerPorId(prestamo.IdEjemplar);
+                        if (ejemplar != null)
+                        {
+                            ejemplar.Estado = DomainModel.Enums.EstadoMaterial.Disponible;
+                            uow.Ejemplares.Update(ejemplar);
+                        }
+                    }
+
+                    // Actualizar estado del préstamo
+                    uow.Prestamos.ActualizarEstado(idPrestamo, "Devuelto");
+
+                    // Confirmar transacción - ambas operaciones se confirman juntas
+                    uow.Commit();
+
+                    // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
+                    // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
+                }
+                catch
+                {
+                    // Rollback automático al salir del using si no se llamó Commit()
+                    uow.Rollback();
+                    throw;
                 }
             }
-
-            // Actualizar estado del préstamo
-            _prestamoRepository.ActualizarEstado(idPrestamo, "Devuelto");
-
-            // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
-            // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
         }
 
         public void ActualizarPrestamosAtrasados()

@@ -4,8 +4,7 @@ using DAL.Contracts;
 using DAL.Implementations;
 using DomainModel;
 using DomainModel.Exceptions;
-/// desde notebook
-/// desde compu
+
 namespace BLL
 {
     /// <summary>
@@ -226,12 +225,15 @@ namespace BLL
                     throw new ValidacionException("El alumno que intenta eliminar no existe");
                 }
 
-                // TODO: Validar que no tenga préstamos activos cuando exista PrestamoBLL
-                // var prestamosActivos = prestamoBLL.ObtenerPrestamosActivosPorAlumno(alumno.IdAlumno);
-                // if (prestamosActivos.Count > 0)
-                // {
-                //     throw new ValidacionException($"No se puede eliminar el alumno porque tiene {prestamosActivos.Count} préstamo(s) activo(s)");
-                // }
+                // Validar que no tenga préstamos activos
+                var prestamoBLL = new PrestamoBLL();
+                var prestamosAlumno = prestamoBLL.ObtenerPorAlumno(alumno.IdAlumno);
+                var prestamosActivos = prestamosAlumno.FindAll(p => p.Estado == "Activo");
+
+                if (prestamosActivos.Count > 0)
+                {
+                    throw new ValidacionException($"No se puede eliminar el alumno porque tiene {prestamosActivos.Count} préstamo(s) activo(s)");
+                }
 
                 // Eliminar (marca como inactivo)
                 _alumnoRepository.Delete(alumno);
@@ -255,11 +257,11 @@ namespace BLL
         {
             try
             {
-                // TODO: Implementar cuando exista PrestamoBLL
-                // var prestamosActivos = prestamoBLL.ObtenerPrestamosActivosPorAlumno(idAlumno);
-                // return prestamosActivos.Count == 0;
+                var prestamoBLL = new PrestamoBLL();
+                var prestamosAlumno = prestamoBLL.ObtenerPorAlumno(idAlumno);
+                var prestamosActivos = prestamosAlumno.FindAll(p => p.Estado == "Activo");
 
-                return true; // Por ahora siempre retorna true
+                return prestamosActivos.Count == 0;
             }
             catch (Exception ex)
             {

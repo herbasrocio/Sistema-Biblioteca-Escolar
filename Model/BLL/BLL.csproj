@@ -47,6 +47,7 @@
     <Compile Include="InscripcionBLL.cs" />
     <Compile Include="MaterialBLL.cs" />
     <Compile Include="PrestamoBLL.cs" />
+    <Compile Include="ReporteBLL.cs" />
     <Compile Include="ValidationBLL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

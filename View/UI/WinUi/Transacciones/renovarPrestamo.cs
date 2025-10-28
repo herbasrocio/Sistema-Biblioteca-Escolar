@@ -207,7 +207,7 @@ namespace UI.WinUi.Transacciones
                 {
                     dgvPrestamos.Columns["TituloMaterial"].Visible = true;
                     dgvPrestamos.Columns["TituloMaterial"].HeaderText = "Título";
-                    dgvPrestamos.Columns["TituloMaterial"].Width = 200;
+                    dgvPrestamos.Columns["TituloMaterial"].Width = 150;
                     dgvPrestamos.Columns["TituloMaterial"].DisplayIndex = displayIndex++;
                 }
 
@@ -251,9 +251,9 @@ namespace UI.WinUi.Transacciones
                 if (dgvPrestamos.Columns.Contains("DiasRestantes"))
                 {
                     dgvPrestamos.Columns["DiasRestantes"].Visible = true;
-                    dgvPrestamos.Columns["DiasRestantes"].HeaderText = "Días Restantes";
+                    dgvPrestamos.Columns["DiasRestantes"].HeaderText = "Días Rest.";
                     dgvPrestamos.Columns["DiasRestantes"].DisplayIndex = displayIndex++;
-                    dgvPrestamos.Columns["DiasRestantes"].Width = 80;
+                    dgvPrestamos.Columns["DiasRestantes"].Width = 50;
                 }
 
                 if (dgvPrestamos.Columns.Contains("CantidadRenovaciones"))

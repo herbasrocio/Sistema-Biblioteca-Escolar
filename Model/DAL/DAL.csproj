@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,13 +50,17 @@
     <Compile Include="Contracts\IInscripcionRepository.cs" />
     <Compile Include="Contracts\IMaterialRepository.cs" />
     <Compile Include="Contracts\IPrestamoRepository.cs" />
+    <Compile Include="Contracts\IUnitOfWork.cs" />
     <Compile Include="Implementations\AlumnoRepository.cs" />
+    <Compile Include="Implementations\BaseRepository.cs" />
     <Compile Include="Implementations\DevolucionRepository.cs" />
     <Compile Include="Implementations\EjemplarRepository.cs" />
     <Compile Include="Implementations\HistorialEstadoEjemplarRepository.cs" />
     <Compile Include="Implementations\InscripcionRepository.cs" />
     <Compile Include="Implementations\MaterialRepository.cs" />
     <Compile Include="Implementations\PrestamoRepository.cs" />
+    <Compile Include="Implementations\ReporteRepository.cs" />
+    <Compile Include="Implementations\UnitOfWork.cs" />
     <Compile Include="Tools\AlumnoAdapter.cs" />
     <Compile Include="Tools\DevolucionAdapter.cs" />
     <Compile Include="Tools\EjemplarAdapter.cs" />

@@ -44,6 +44,10 @@
     <Compile Include="Alumno.cs" />
     <Compile Include="AnioLectivo.cs" />
     <Compile Include="Devolucion.cs" />
+    <Compile Include="DTOs\ReportePrestamo.cs" />
+    <Compile Include="DTOs\ReporteEstadisticaMaterial.cs" />
+    <Compile Include="DTOs\ReporteInventarioEjemplar.cs" />
+    <Compile Include="DTOs\ReporteUsoPorGrado.cs" />
     <Compile Include="Ejemplar.cs" />
     <Compile Include="Enums\EstadoMaterial.cs" />
     <Compile Include="Enums\TipoMaterial.cs" />

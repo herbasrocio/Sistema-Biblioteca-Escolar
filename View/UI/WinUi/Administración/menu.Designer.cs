@@ -40,6 +40,11 @@
             this.renovarPrestamoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.devolucionesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reportesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportePrestamosActivosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reporteMaterialesMasPrestadosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reporteUsoPorGradoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.consultarBitacoraAdminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.consultarBitacoraBibliotecarioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cerrarSesionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelBienvenida = new System.Windows.Forms.Panel();
             this.lblBienvenida = new System.Windows.Forms.Label();
@@ -149,15 +154,55 @@
             this.devolucionesToolStripMenuItem.Size = new System.Drawing.Size(105, 23);
             this.devolucionesToolStripMenuItem.Text = "Devoluciones";
             this.devolucionesToolStripMenuItem.Click += new System.EventHandler(this.devolucionesToolStripMenuItem_Click);
-            // 
+            //
             // reportesToolStripMenuItem
-            // 
+            //
+            this.reportesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.reportePrestamosActivosToolStripMenuItem,
+            this.reporteMaterialesMasPrestadosToolStripMenuItem,
+            this.reporteUsoPorGradoToolStripMenuItem,
+            this.consultarBitacoraAdminToolStripMenuItem,
+            this.consultarBitacoraBibliotecarioToolStripMenuItem});
             this.reportesToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.reportesToolStripMenuItem.Name = "reportesToolStripMenuItem";
             this.reportesToolStripMenuItem.Size = new System.Drawing.Size(75, 23);
             this.reportesToolStripMenuItem.Text = "Reportes";
-            this.reportesToolStripMenuItem.Click += new System.EventHandler(this.reportesToolStripMenuItem_Click);
-            // 
+            //
+            // reportePrestamosActivosToolStripMenuItem
+            //
+            this.reportePrestamosActivosToolStripMenuItem.Name = "reportePrestamosActivosToolStripMenuItem";
+            this.reportePrestamosActivosToolStripMenuItem.Size = new System.Drawing.Size(250, 24);
+            this.reportePrestamosActivosToolStripMenuItem.Text = "Préstamos Activos";
+            this.reportePrestamosActivosToolStripMenuItem.Click += new System.EventHandler(this.reportePrestamosActivosToolStripMenuItem_Click);
+            //
+            // reporteMaterialesMasPrestadosToolStripMenuItem
+            //
+            this.reporteMaterialesMasPrestadosToolStripMenuItem.Name = "reporteMaterialesMasPrestadosToolStripMenuItem";
+            this.reporteMaterialesMasPrestadosToolStripMenuItem.Size = new System.Drawing.Size(250, 24);
+            this.reporteMaterialesMasPrestadosToolStripMenuItem.Text = "Materiales Más Prestados";
+            this.reporteMaterialesMasPrestadosToolStripMenuItem.Click += new System.EventHandler(this.reporteMaterialesMasPrestadosToolStripMenuItem_Click);
+            //
+            // reporteUsoPorGradoToolStripMenuItem
+            //
+            this.reporteUsoPorGradoToolStripMenuItem.Name = "reporteUsoPorGradoToolStripMenuItem";
+            this.reporteUsoPorGradoToolStripMenuItem.Size = new System.Drawing.Size(250, 24);
+            this.reporteUsoPorGradoToolStripMenuItem.Text = "Uso por Grado/División";
+            this.reporteUsoPorGradoToolStripMenuItem.Click += new System.EventHandler(this.reporteUsoPorGradoToolStripMenuItem_Click);
+            //
+            // consultarBitacoraAdminToolStripMenuItem
+            //
+            this.consultarBitacoraAdminToolStripMenuItem.Name = "consultarBitacoraAdminToolStripMenuItem";
+            this.consultarBitacoraAdminToolStripMenuItem.Size = new System.Drawing.Size(280, 24);
+            this.consultarBitacoraAdminToolStripMenuItem.Text = "Consultar Bitácora Admin";
+            this.consultarBitacoraAdminToolStripMenuItem.Click += new System.EventHandler(this.consultarBitacoraAdminToolStripMenuItem_Click);
+            //
+            // consultarBitacoraBibliotecarioToolStripMenuItem
+            //
+            this.consultarBitacoraBibliotecarioToolStripMenuItem.Name = "consultarBitacoraBibliotecarioToolStripMenuItem";
+            this.consultarBitacoraBibliotecarioToolStripMenuItem.Size = new System.Drawing.Size(280, 24);
+            this.consultarBitacoraBibliotecarioToolStripMenuItem.Text = "Consultar Bitácora Bibliotecario";
+            this.consultarBitacoraBibliotecarioToolStripMenuItem.Click += new System.EventHandler(this.consultarBitacoraBibliotecarioToolStripMenuItem_Click);
+            //
             // cerrarSesionToolStripMenuItem
             //
             this.cerrarSesionToolStripMenuItem.ForeColor = System.Drawing.Color.White;
@@ -259,6 +304,11 @@
         private System.Windows.Forms.ToolStripMenuItem renovarPrestamoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem devolucionesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem reportesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reportePrestamosActivosToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reporteMaterialesMasPrestadosToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reporteUsoPorGradoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem consultarBitacoraAdminToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem consultarBitacoraBibliotecarioToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cerrarSesionToolStripMenuItem;
         private System.Windows.Forms.Panel panelBienvenida;
         private System.Windows.Forms.Label lblBienvenida;

@@ -384,9 +384,9 @@ namespace UI.WinUi.Administrador
             this.lblGradoHistorial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.lblGradoHistorial.Location = new System.Drawing.Point(250, 20);
             this.lblGradoHistorial.Name = "lblGradoHistorial";
-            this.lblGradoHistorial.Size = new System.Drawing.Size(44, 15);
+            this.lblGradoHistorial.Size = new System.Drawing.Size(93, 15);
             this.lblGradoHistorial.TabIndex = 2;
-            this.lblGradoHistorial.Text = "Grado:";
+            this.lblGradoHistorial.Text = "Grado/División:";
             this.lblGradoHistorial.Click += new System.EventHandler(this.lblGradoHistorial_Click);
             // 
             // cmbGradoHistorial
@@ -394,9 +394,9 @@ namespace UI.WinUi.Administrador
             this.cmbGradoHistorial.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbGradoHistorial.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.cmbGradoHistorial.FormattingEnabled = true;
-            this.cmbGradoHistorial.Location = new System.Drawing.Point(305, 17);
+            this.cmbGradoHistorial.Location = new System.Drawing.Point(354, 17);
             this.cmbGradoHistorial.Name = "cmbGradoHistorial";
-            this.cmbGradoHistorial.Size = new System.Drawing.Size(140, 23);
+            this.cmbGradoHistorial.Size = new System.Drawing.Size(95, 23);
             this.cmbGradoHistorial.TabIndex = 3;
             // 
             // btnLimpiarFiltrosHistorial
@@ -407,7 +407,7 @@ namespace UI.WinUi.Administrador
             this.btnLimpiarFiltrosHistorial.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLimpiarFiltrosHistorial.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.btnLimpiarFiltrosHistorial.ForeColor = System.Drawing.Color.White;
-            this.btnLimpiarFiltrosHistorial.Location = new System.Drawing.Point(460, 16);
+            this.btnLimpiarFiltrosHistorial.Location = new System.Drawing.Point(463, 16);
             this.btnLimpiarFiltrosHistorial.Name = "btnLimpiarFiltrosHistorial";
             this.btnLimpiarFiltrosHistorial.Size = new System.Drawing.Size(90, 25);
             this.btnLimpiarFiltrosHistorial.TabIndex = 4;

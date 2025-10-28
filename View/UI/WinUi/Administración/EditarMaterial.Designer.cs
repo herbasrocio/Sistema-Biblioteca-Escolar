@@ -55,9 +55,9 @@ namespace UI.WinUi.Administrador
             ((System.ComponentModel.ISupportInitialize)(this.numCantidad)).BeginInit();
             this.groupBoxAcciones.SuspendLayout();
             this.SuspendLayout();
-            //
+            // 
             // groupBoxDatosMaterial
-            //
+            // 
             this.groupBoxDatosMaterial.BackColor = System.Drawing.Color.Transparent;
             this.groupBoxDatosMaterial.Controls.Add(this.numCantidad);
             this.groupBoxDatosMaterial.Controls.Add(this.lblCantidad);
@@ -81,13 +81,13 @@ namespace UI.WinUi.Administrador
             this.groupBoxDatosMaterial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.groupBoxDatosMaterial.Location = new System.Drawing.Point(30, 20);
             this.groupBoxDatosMaterial.Name = "groupBoxDatosMaterial";
-            this.groupBoxDatosMaterial.Size = new System.Drawing.Size(310, 380);
+            this.groupBoxDatosMaterial.Size = new System.Drawing.Size(310, 394);
             this.groupBoxDatosMaterial.TabIndex = 0;
             this.groupBoxDatosMaterial.TabStop = false;
             this.groupBoxDatosMaterial.Text = "Datos del Material";
-            //
+            // 
             // numCantidad
-            //
+            // 
             this.numCantidad.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.numCantidad.Location = new System.Drawing.Point(140, 405);
             this.numCantidad.Maximum = new decimal(new int[] {
@@ -108,20 +108,20 @@ namespace UI.WinUi.Administrador
             0,
             0,
             0});
-            //
+            // 
             // lblCantidad
-            //
+            // 
             this.lblCantidad.AutoSize = true;
             this.lblCantidad.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblCantidad.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblCantidad.Location = new System.Drawing.Point(20, 408);
             this.lblCantidad.Name = "lblCantidad";
-            this.lblCantidad.Size = new System.Drawing.Size(59, 15);
+            this.lblCantidad.Size = new System.Drawing.Size(58, 15);
             this.lblCantidad.TabIndex = 16;
             this.lblCantidad.Text = "Cantidad:";
-            //
+            // 
             // comboBoxNivel
-            //
+            // 
             this.comboBoxNivel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxNivel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.comboBoxNivel.FormattingEnabled = true;
@@ -129,48 +129,48 @@ namespace UI.WinUi.Administrador
             this.comboBoxNivel.Name = "comboBoxNivel";
             this.comboBoxNivel.Size = new System.Drawing.Size(150, 23);
             this.comboBoxNivel.TabIndex = 15;
-            //
+            // 
             // lblNivel
-            //
+            // 
             this.lblNivel.AutoSize = true;
             this.lblNivel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblNivel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblNivel.Location = new System.Drawing.Point(20, 363);
             this.lblNivel.Name = "lblNivel";
-            this.lblNivel.Size = new System.Drawing.Size(38, 15);
+            this.lblNivel.Size = new System.Drawing.Size(37, 15);
             this.lblNivel.TabIndex = 14;
             this.lblNivel.Text = "Nivel:";
-            //
+            // 
             // txtAnioPublicacion
-            //
+            // 
             this.txtAnioPublicacion.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtAnioPublicacion.Location = new System.Drawing.Point(140, 315);
             this.txtAnioPublicacion.MaxLength = 4;
             this.txtAnioPublicacion.Name = "txtAnioPublicacion";
             this.txtAnioPublicacion.Size = new System.Drawing.Size(150, 23);
             this.txtAnioPublicacion.TabIndex = 13;
-            //
+            // 
             // lblAnioPublicacion
-            //
+            // 
             this.lblAnioPublicacion.AutoSize = true;
             this.lblAnioPublicacion.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblAnioPublicacion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             this.lblAnioPublicacion.Location = new System.Drawing.Point(20, 318);
             this.lblAnioPublicacion.Name = "lblAnioPublicacion";
-            this.lblAnioPublicacion.Size = new System.Drawing.Size(108, 15);
+            this.lblAnioPublicacion.Size = new System.Drawing.Size(113, 15);
             this.lblAnioPublicacion.TabIndex = 12;
             this.lblAnioPublicacion.Text = "Año de Publicación:";
-            //
+            // 
             // txtEditorial
-            //
+            // 
             this.txtEditorial.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtEditorial.Location = new System.Drawing.Point(140, 270);
             this.txtEditorial.Name = "txtEditorial";
             this.txtEditorial.Size = new System.Drawing.Size(150, 23);
             this.txtEditorial.TabIndex = 11;
-            //
+            // 
             // lblEditorial
-            //
+            // 
             this.lblEditorial.AutoSize = true;
             this.lblEditorial.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblEditorial.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
@@ -179,9 +179,9 @@ namespace UI.WinUi.Administrador
             this.lblEditorial.Size = new System.Drawing.Size(53, 15);
             this.lblEditorial.TabIndex = 10;
             this.lblEditorial.Text = "Editorial:";
-            //
+            // 
             // comboBoxGenero
-            //
+            // 
             this.comboBoxGenero.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxGenero.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.comboBoxGenero.FormattingEnabled = true;
@@ -189,9 +189,9 @@ namespace UI.WinUi.Administrador
             this.comboBoxGenero.Name = "comboBoxGenero";
             this.comboBoxGenero.Size = new System.Drawing.Size(150, 23);
             this.comboBoxGenero.TabIndex = 9;
-            //
+            // 
             // lblGenero
-            //
+            // 
             this.lblGenero.AutoSize = true;
             this.lblGenero.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblGenero.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
@@ -200,9 +200,9 @@ namespace UI.WinUi.Administrador
             this.lblGenero.Size = new System.Drawing.Size(48, 15);
             this.lblGenero.TabIndex = 8;
             this.lblGenero.Text = "Género:";
-            //
+            // 
             // comboBoxTipo
-            //
+            // 
             this.comboBoxTipo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTipo.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.comboBoxTipo.FormattingEnabled = true;
@@ -210,33 +210,33 @@ namespace UI.WinUi.Administrador
             this.comboBoxTipo.Name = "comboBoxTipo";
             this.comboBoxTipo.Size = new System.Drawing.Size(150, 23);
             this.comboBoxTipo.TabIndex = 7;
-            //
+            // 
             // txtISBN
-            //
+            // 
             this.txtISBN.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtISBN.Location = new System.Drawing.Point(140, 225);
             this.txtISBN.Name = "txtISBN";
             this.txtISBN.Size = new System.Drawing.Size(150, 23);
             this.txtISBN.TabIndex = 6;
-            //
+            // 
             // txtAutor
-            //
+            // 
             this.txtAutor.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtAutor.Location = new System.Drawing.Point(20, 90);
             this.txtAutor.Name = "txtAutor";
             this.txtAutor.Size = new System.Drawing.Size(270, 23);
             this.txtAutor.TabIndex = 5;
-            //
+            // 
             // txtTitulo
-            //
+            // 
             this.txtTitulo.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtTitulo.Location = new System.Drawing.Point(20, 45);
             this.txtTitulo.Name = "txtTitulo";
             this.txtTitulo.Size = new System.Drawing.Size(270, 23);
             this.txtTitulo.TabIndex = 4;
-            //
+            // 
             // lblTipo
-            //
+            // 
             this.lblTipo.AutoSize = true;
             this.lblTipo.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblTipo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
@@ -245,9 +245,9 @@ namespace UI.WinUi.Administrador
             this.lblTipo.Size = new System.Drawing.Size(33, 15);
             this.lblTipo.TabIndex = 3;
             this.lblTipo.Text = "Tipo:";
-            //
+            // 
             // lblISBN
-            //
+            // 
             this.lblISBN.AutoSize = true;
             this.lblISBN.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblISBN.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
@@ -256,9 +256,9 @@ namespace UI.WinUi.Administrador
             this.lblISBN.Size = new System.Drawing.Size(35, 15);
             this.lblISBN.TabIndex = 2;
             this.lblISBN.Text = "ISBN:";
-            //
+            // 
             // lblAutor
-            //
+            // 
             this.lblAutor.AutoSize = true;
             this.lblAutor.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblAutor.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
@@ -267,9 +267,9 @@ namespace UI.WinUi.Administrador
             this.lblAutor.Size = new System.Drawing.Size(40, 15);
             this.lblAutor.TabIndex = 1;
             this.lblAutor.Text = "Autor:";
-            //
+            // 
             // lblTitulo
-            //
+            // 
             this.lblTitulo.AutoSize = true;
             this.lblTitulo.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblTitulo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
@@ -278,27 +278,27 @@ namespace UI.WinUi.Administrador
             this.lblTitulo.Size = new System.Drawing.Size(40, 15);
             this.lblTitulo.TabIndex = 0;
             this.lblTitulo.Text = "Título:";
-            //
+            // 
             // groupBoxAcciones
-            //
+            // 
             this.groupBoxAcciones.BackColor = System.Drawing.Color.Transparent;
             this.groupBoxAcciones.Controls.Add(this.btnVolver);
             this.groupBoxAcciones.Controls.Add(this.btnEliminar);
             this.groupBoxAcciones.Controls.Add(this.btnGuardar);
             this.groupBoxAcciones.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxAcciones.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
-            this.groupBoxAcciones.Location = new System.Drawing.Point(30, 410);
+            this.groupBoxAcciones.Location = new System.Drawing.Point(30, 420);
             this.groupBoxAcciones.Name = "groupBoxAcciones";
             this.groupBoxAcciones.Size = new System.Drawing.Size(310, 80);
             this.groupBoxAcciones.TabIndex = 1;
             this.groupBoxAcciones.TabStop = false;
             this.groupBoxAcciones.Text = "Acciones";
-            //
+            // 
             // btnVolver
-            //
+            // 
             this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular);
+            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.btnVolver.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.btnVolver.Location = new System.Drawing.Point(210, 28);
             this.btnVolver.Name = "btnVolver";
@@ -306,9 +306,9 @@ namespace UI.WinUi.Administrador
             this.btnVolver.TabIndex = 2;
             this.btnVolver.Text = "Volver";
             this.btnVolver.UseVisualStyleBackColor = false;
-            //
+            // 
             // btnEliminar
-            //
+            // 
             this.btnEliminar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
             this.btnEliminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnEliminar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
@@ -319,9 +319,9 @@ namespace UI.WinUi.Administrador
             this.btnEliminar.TabIndex = 1;
             this.btnEliminar.Text = "Eliminar";
             this.btnEliminar.UseVisualStyleBackColor = false;
-            //
+            // 
             // btnGuardar
-            //
+            // 
             this.btnGuardar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnGuardar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
@@ -332,9 +332,9 @@ namespace UI.WinUi.Administrador
             this.btnGuardar.TabIndex = 0;
             this.btnGuardar.Text = "Guardar";
             this.btnGuardar.UseVisualStyleBackColor = false;
-            //
+            // 
             // EditarMaterial
-            //
+            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));

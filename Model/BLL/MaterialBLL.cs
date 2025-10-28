@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DAL.Contracts;
 using DAL.Implementations;
 using DomainModel;
+using DomainModel.Exceptions;
 
 namespace BLL
 {
@@ -91,7 +92,14 @@ namespace BLL
         public void EliminarMaterial(Material material)
         {
             // Validar que no tenga préstamos activos
-            // TODO: Implementar validación con préstamos cuando exista esa funcionalidad
+            var prestamoBLL = new PrestamoBLL();
+            var prestamosMaterial = prestamoBLL.ObtenerPorMaterial(material.IdMaterial);
+            var prestamosActivos = prestamosMaterial.FindAll(p => p.Estado == "Activo");
+
+            if (prestamosActivos.Count > 0)
+            {
+                throw new ValidacionException($"No se puede eliminar el material porque tiene {prestamosActivos.Count} préstamo(s) activo(s)");
+            }
 
             _materialRepository.Delete(material);
         }

@@ -243,10 +243,11 @@ namespace UI.WinUi.Administrador
             EstilosSistema.AplicarEstiloComboBox(comboBoxGenero);
             EstilosSistema.AplicarEstiloComboBox(comboBoxNivel);
 
-            // Aplicar estilos a los botones
-            EstilosSistema.AplicarEstiloBotonSecundario(btnGuardar);
-            EstilosSistema.AplicarEstiloBotonSecundario(btnLimpiar);
-            EstilosSistema.AplicarEstiloBotonSecundario(btnVolver);
+            // NO aplicar estilos a los botones para mantener colores personalizados del Designer
+            // Los colores están definidos en registrarMaterial.Designer.cs
+            // btnGuardar: Azul (52, 152, 219)
+            // btnLimpiar: Rojo (231, 76, 60)
+            // btnVolver: Gris (189, 195, 199)
         }
 
         private void CargarTiposMaterial()

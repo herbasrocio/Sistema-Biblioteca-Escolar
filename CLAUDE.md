@@ -4,662 +4,547 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Sistema Biblioteca Escolar** - A comprehensive school library management system built with C# .NET Framework 4.7.2 and Windows Forms. The system manages library catalog, student enrollment, material loans, returns, and includes a sophisticated role-based permission system.
+Sistema Biblioteca Escolar is a comprehensive school library management system built with C# .NET Framework 4.7.2, WinForms, and SQL Server. It follows a layered architecture with separate concerns for security, business logic, data access, and presentation.
 
-## Build and Run Commands
+## Build & Run Commands
 
-### Build Solution
-```bash
-# Build entire solution
-msbuild "Sistema Biblioteca Escolar.sln" /t:Rebuild /p:Configuration=Debug
+### Building the Solution
+```powershell
+# Build entire solution (from repository root)
+msbuild "Sistema Biblioteca Escolar.sln" /t:Build /p:Configuration=Debug
 
-# Build specific project
-msbuild "View\UI\UI.csproj" /t:Rebuild /p:Configuration=Debug
+# Clean and rebuild
+msbuild "Sistema Biblioteca Escolar.sln" /t:Clean,Build /p:Configuration=Release
 ```
 
-### Run Application
-```bash
-# From Visual Studio: Press F5 or Start Debugging
-# From command line:
+### Running the Application
+```powershell
+# From repository root
 cd "View\UI\bin\Debug"
-UI.exe
+.\UI.exe
+
+# Default credentials
+# Username: admin
+# Password: admin123
 ```
 
 ### Database Setup
-```bash
-# Full database setup (creates both databases with all data)
+
+**Initial Setup (First Time):**
+```powershell
+# Security database (creates SeguridadBiblioteca)
 sqlcmd -S localhost -E -i "Database\00_EJECUTAR_TODO.sql"
 
-# Or individual steps:
-sqlcmd -S localhost -E -i "Database\01_CrearBaseDatos.sql"
-sqlcmd -S localhost -E -i "Database\02_CrearTablas.sql"
-sqlcmd -S localhost -E -i "Database\03_DatosIniciales.sql"
-
-# Business database setup (inscriptions, materials, etc.)
+# Business database (creates NegocioBiblioteca)
 sqlcmd -S localhost -E -i "Database\Negocio\00_EJECUTAR_TODO_NEGOCIO.sql"
 ```
 
-**Default Admin Credentials:**
-- Username: `admin`
-- Password: `admin123`
-
-## Architecture Overview
-
-### Three-Tier Layered Architecture
-
+**Verify Database State:**
+```powershell
+sqlcmd -S localhost -E -i "Database\Negocio\00_VerificarBaseDatos.sql"
 ```
-View Layer (UI)
-    ↓
-Model Layer (BLL + DAL + DomainModel)
-    ↓
-Data Layer (SQL Server)
-    ↓
-Security Layer (Independent ServicesSecurity)
+
+**Add Test Data (if database exists but empty):**
+```powershell
+sqlcmd -S localhost -E -i "Database\Negocio\00_VerificarYCrearDatosPrueba.sql"
 ```
+
+## Architecture
 
 ### Project Structure
 
-- **View/UI/** - Windows Forms user interface
-  - `WinUi/Administración/` - Admin forms (login, menus, user management, catalog)
-  - `WinUi/Transacciones/` - Transaction forms (loans, returns)
-  - `Resources/I18n/` - Translation files (Spanish, English)
+The solution uses a **3-tier layered architecture** with an additional Security layer:
 
-- **Model/** - Business logic and data access
-  - `DomainModel/` - Domain entities (Alumno, Material, Ejemplar, Prestamo, etc.)
-  - `BLL/` - Business Logic Layer (validation, orchestration)
-  - `DAL/` - Data Access Layer (repositories, adapters)
-  - `Services/` - Utility services
+```
+Sistema Biblioteca Escolar.sln
+├── Model/ (Business Logic Layer)
+│   ├── DomainModel/ - Entity classes and DTOs
+│   ├── DAL/ - Data Access Layer (Repository Pattern)
+│   ├── BLL/ - Business Logic Layer
+│   └── Services/ - Cross-cutting services (Export, etc.)
+├── View/
+│   └── UI/ - WinForms presentation layer
+└── Security/
+    └── ServicesSeguridad/ - Authentication, authorization, permissions
+```
 
-- **Security/ServicesSeguridad/** - Authentication and authorization
-  - `DomainModel/Security/Composite/` - Composite pattern for permissions
-  - `DAL/` - Security repositories
-  - `BLL/` - Login service, cryptography
+### Key Architectural Patterns
 
-- **Database/** - SQL scripts for setup and migrations
+**Repository Pattern (DAL Layer):**
+- All data access goes through repository interfaces in `Model/DAL/Contracts/`
+- Implementations in `Model/DAL/Implementations/`
+- Generic repository interface: `IGenericRepository<T>` with Add, Update, Delete, GetAll
+- Adapters in `Model/DAL/Tools/` handle DataReader-to-Entity mapping
 
-### Two-Database Architecture
+**Business Logic Layer (BLL):**
+- Each entity has a corresponding BLL class (e.g., `MaterialBLL`, `AlumnoBLL`)
+- BLL classes inject repository dependencies (can use constructor injection or default constructor)
+- Contains validation logic before calling repository methods
+- Example pattern:
+  ```csharp
+  public MaterialBLL(IMaterialRepository materialRepository) { }
+  public MaterialBLL() : this(new MaterialRepository()) { }
+  ```
 
-The system uses **two separate databases** for security isolation:
+**Composite Pattern (Security Layer):**
+- Permissions system uses Composite pattern
+- `Component` base class with `Familia` (composite) and `Patente` (leaf) implementations
+- `Usuario` contains a tree of `Component` permissions
+- Permission checking traverses the tree to find matching form access
 
-1. **SeguridadBiblioteca** - Users, roles, permissions, i18n, audit logs
-2. **NegocioBiblioteca** - Library materials, students, loans, returns, inscriptions
+### Database Architecture
 
-Connection strings are configured in `View/UI/App.config`:
-- `ServicesConString` → SeguridadBiblioteca
-- `NegocioConString` → NegocioBiblioteca
+**Two Separate Databases:**
 
-## Key Architectural Patterns
+1. **SeguridadBiblioteca** - Security/authentication database
+   - Tables: Usuario, Familia, Patente, UsuarioFamilia, UsuarioPatente, FamiliaPatente, FamiliaFamilia
+   - Handles user authentication (SHA-256 hashing), roles, and permissions
+   - Digital validation with DVH (Digito Verificador Horizontal) for integrity
 
-### 1. Repository Pattern (NO ORM - ADO.NET Direct)
+2. **NegocioBiblioteca** - Business/domain database
+   - Tables: Material, Ejemplar, Alumno, Prestamo, Devolucion, Inscripcion, AnioLectivo, HistorialEstadoEjemplar
+   - Business logic for library operations
 
-All data access uses ADO.NET with parameterized queries (NO Entity Framework or Dapper).
+**Connection Strings:**
+Located in `View\UI\App.config`:
+- `ServicesConString`: SeguridadBiblioteca
+- `NegocioConString`: NegocioBiblioteca
 
-**Generic Repository Interface:**
+### Domain Model Key Concepts
+
+**Material vs Ejemplar (Important Distinction):**
+- `Material`: Catalog concept (e.g., "The Little Prince" as a book title)
+- `Ejemplar`: Physical copy instance (e.g., specific copy #1 with barcode "EJ001")
+- One Material has many Ejemplares
+- Each Ejemplar has its own state: Disponible(0), Prestado(1), Mantenimiento(2), Perdido(3)
+
+**Inscripcion System:**
+- Students are enrolled by academic year (`AnioLectivo`)
+- `Inscripcion` table tracks grade/division per year
+- Stored procedures handle grade promotion: `sp_PromocionarAlumnosPorGrado`, `sp_PromocionarTodosLosAlumnos`
+
+**Prestamo Lifecycle:**
+- Prestamo created with `Estado = 'Activo'`
+- Devolucion records when returned (`FechaDevolucionReal`)
+- Prestamo has `FechaDevolucionPrevista` for due date tracking
+- RenovacionPrestamo extends loans when needed
+
+### Internationalization (i18n)
+
+**Translation Files:**
+- Located in `View\UI\Resources\I18n\`
+- Formats: `idioma.es-AR` (Spanish Argentina), `idioma.en-GB` (English UK)
+- Plain text format: `key=value`
+- Loaded via `LanguagePath` in App.config
+
+**Usage Pattern:**
 ```csharp
-public interface IGenericRepository<T>
-{
-    void Insert(T entity);
-    void Update(T entity);
-    void Delete(Guid id);
-    T SelectOne(Guid id);
-    List<T> SelectAll();
-}
+// In BLL or Services layer
+using ServicesSecurity.BLL;
+var translator = new LanguageBLL();
+string translatedText = translator.GetWord("key_name");
 ```
 
-**Specialized Repositories:**
-- `IMaterialRepository` - Catalog operations
-- `IPrestamoRepository` - Loan transactions
-- `IEjemplarRepository` - Physical copy management
-- `IInscripcionRepository` - Student enrollment
+### Security & Permissions
 
-Location: `Model/DAL/Contracts/` (interfaces) and `Model/DAL/Implementations/` (concrete)
+**Permission System:**
+- Each form has a FormName identifier (e.g., `consultarMaterial`, `gestionPrestamos`)
+- Permissions are assigned as Patentes (individual) or Familias (groups of permissions)
+- Menu items check permissions before enabling: `SessionManager.GetInstance().UsuarioActual.TienePermiso(formName)`
 
-### 2. Adapter Pattern (DataRow to Domain Object Mapping)
+**Digital Validation:**
+- System uses DVH (hash verification) for data integrity
+- Validation handled in Security layer
 
-Centralizes SQL-to-Object conversion logic.
+**User Session:**
+- `SessionManager.GetInstance().UsuarioActual` holds logged-in user
+- Session persists throughout application lifetime
 
-**Location:** `Model/DAL/Tools/`
+## Module Organization
 
-**Example:**
-```csharp
-public static Material AdaptMaterial(DataRow row)
-{
-    return new Material
-    {
-        IdMaterial = (Guid)row["IdMaterial"],
-        Titulo = row["Titulo"].ToString(),
-        CantidadTotal = Convert.ToInt32(row["CantidadTotal"]),
-        // ... more fields
-    };
-}
-```
+### Administración (Administration)
+- Forms in `View\UI\WinUi\Administración\`
+- User management (`gestionUsuarios.cs`)
+- Permission management (`gestionPermisos.cs`)
+- Student management (`gestionAlumnos.cs`, `editarAlumno.cs`)
+- Material catalog (`consultarMaterial.cs`, `registrarMaterial.cs`, `EditarMaterial.cs`)
+- Ejemplar management (`GestionarEjemplares.cs`)
+- Student promotion (`gestionPromocionAlumnos.cs`)
 
-### 3. Composite Pattern (Hierarchical Permissions)
+### Transacciones (Transactions)
+- Forms in `View\UI\WinUi\Transacciones\`
+- Loan management (`gestionPrestamos.cs`, `registrarPrestamo.cs`)
+- Returns (`registrarDevolucion.cs`)
+- Renewals (`renovarPrestamo.cs`)
+- Ejemplar selection (`SeleccionarEjemplar.cs`)
 
-Enables flexible role-based access control with inheritance.
-
-**Location:** `Security/ServicesSeguridad/DomainModel/Security/Composite/`
-
-**Structure:**
-```
-Component (abstract base)
-├── Patente (leaf) - Individual permission
-└── Familia (composite) - Permission group or Role
-```
-
-**Roles vs Groups:**
-- Families named `ROL_*` → Roles (e.g., ROL_Administrador)
-- Other families → Permission groups (e.g., "Gestión Catálogo")
-
-**Permission Hierarchy Example:**
-```
-ROL_Administrador
-├── Gestión Usuarios (Familia)
-│   ├── Alta de Usuario (Patente)
-│   ├── Modificar Usuario (Patente)
-│   └── Ver Usuarios (Patente)
-├── Gestión Catálogo (Familia)
-│   ├── Consultar Material (Patente)
-│   ├── Registrar Material (Patente)
-│   └── Editar Material (Patente)
-└── More permissions...
-```
-
-### 4. Dependency Injection in BLL
-
-Each BLL class has dual constructors for testability:
-
-```csharp
-public class MaterialBLL
-{
-    private readonly IMaterialRepository _repository;
-
-    // For production (UI ease of use)
-    public MaterialBLL()
-    {
-        _repository = new MaterialRepository();
-    }
-
-    // For testing (dependency injection)
-    public MaterialBLL(IMaterialRepository repository)
-    {
-        _repository = repository;
-    }
-}
-```
-
-## Domain Model - Key Entities
-
-### Material (Conceptual Catalog Entry)
-- **IdMaterial** - GUID primary key
-- **Titulo** - Title
-- **Autor** - Author
-- **Genero** - Genre
-- **Nivel** - Academic level
-- **CantidadTotal** - Dynamically calculated from Ejemplar count
-- **CantidadDisponible** - Dynamically calculated available copies
-
-**Important:** Material quantities are NOT stored, they are calculated in real-time from Ejemplar records.
-
-### Ejemplar (Physical Copy)
-- **IdEjemplar** - GUID primary key
-- **IdMaterial** - FK to Material
-- **CodigoEjemplar** - Barcode/unique identifier
-- **Estado** - 0=Disponible, 1=Prestado, 2=Mantenimiento, 3=Perdido
-- **Ubicacion** - Physical location in library
-- **Activo** - Logical delete flag
-
-**Important:** Ejemplar is the single source of truth for availability. Each physical book/copy is one Ejemplar.
-
-### Prestamo (Loan)
-- **IdPrestamo** - GUID primary key
-- **IdAlumno** - FK to student
-- **IdMaterial** - FK to material (conceptual)
-- **IdEjemplar** - FK to specific copy (CRITICAL)
-- **FechaPrestamo** - Loan date
-- **FechaDevolucionEsperada** - Due date
-- **Estado** - 0=Activo, 1=Devuelto, 2=Vencido
-
-**Important:** Prestamo links to BOTH Material (for reporting) and Ejemplar (for state tracking).
-
-### Devolucion (Return)
-- **IdDevolucion** - GUID primary key
-- **IdPrestamo** - FK to loan
-- **FechaDevolucion** - Actual return date
-- **Observaciones** - Notes (damage, late fees, etc.)
-
-### Alumno (Student)
-- **IdAlumno** - GUID primary key
-- **Nombre**, **Apellido** - Name
-- **DNI** - National ID
-- **Email**, **Telefono** - Contact info
-
-### Inscripcion (Enrollment)
-- **IdInscripcion** - GUID primary key
-- **IdAlumno** - FK to student
-- **AnioLectivo** - Academic year (INT)
-- **Grado** - Grade (1-7 or "EGRESADO")
-- **Division** - Division (A, B, C, etc.)
-- **Estado** - Activo/Finalizado/Abandonado
-
-**Important:** Maintains complete academic history. One student can have multiple inscriptions across different years.
-
-## Security and Permissions
-
-### Authentication Flow
-
-1. User enters credentials in Login form
-2. `LoginService.Login(username, password)` is called
-3. Password is hashed with SHA256 and compared
-4. If valid, user's permission tree is loaded recursively
-5. User object with all permissions is returned
-6. Session stored in `SessionService.CurrentUser`
-
-### Authorization
-
-**Check Permission:**
-```csharp
-if (SessionService.CurrentUser.TienePermiso("FormName"))
-{
-    // Allow access
-}
-```
-
-**Get User's Role:**
-```csharp
-string roleName = SessionService.CurrentUser.ObtenerNombreRol();
-// Returns: "Administrador", "Veterinario", etc. (without ROL_ prefix)
-```
-
-### Permission Checking in UI
-
-Forms check permissions on load:
-```csharp
-private void FormLoad(object sender, EventArgs e)
-{
-    if (!SessionService.CurrentUser.TienePermiso("registrarMaterial"))
-    {
-        MessageBox.Show("No tiene permisos");
-        this.Close();
-        return;
-    }
-    // Continue loading...
-}
-```
-
-Menu items are dynamically shown/hidden based on permissions.
-
-## Internationalization (i18n)
-
-### Translation Files
-
-Located at `View/UI/Resources/I18n/`:
-- `idioma.es-AR` - Spanish (Argentina)
-- `idioma.en-GB` - English
-
-**Format:** Simple key=value pairs
-```
-login=Iniciar Sesión
-username=Usuario
-password=Contraseña
-```
-
-### Usage in Code
-
-```csharp
-using ServicesSecurity.Services.Contracts;
-
-// Get service
-ILanguageService langService = LanguageService.GetInstance();
-
-// Translate
-string translated = langService.Translate("login"); // → "Iniciar Sesión"
-```
-
-### Language Switching
-
-User can change language in UI, stored in `Usuario.IdiomaPreferido` field.
-
-### Adding New Translations
-
-1. Add key=value to both `idioma.es-AR` and `idioma.en-GB`
-2. Use `LanguageService.Translate("your_key")` in code
-3. Translations are loaded at runtime, no recompilation needed
-
-## Business Logic Patterns
-
-### Complex Validation in BLL
-
-**ValidationBLL** contains reusable field validators:
-- `ValidarDNI(string dni)` - 7-8 digits
-- `ValidarEmail(string email)` - Email format
-- `ValidarNombre(string nombre)` - Non-empty, reasonable length
-- `ValidarAnioLectivo(int anio)` - Valid year range
-- `ValidarGrado(string grado)` - 1-7 or EGRESADO
-
-### Transaction Pattern (Loan Registration)
-
-PrestamoBLL orchestrates complex multi-step operations:
-
-1. Validate material exists (`MaterialBLL.ObtenerPorId()`)
-2. Validate student exists (`AlumnoBLL.ObtenerPorId()`)
-3. Check student has no overdue loans (`VerificarPrestamosVencidos()`)
-4. Validate specific exemplar is available (`EjemplarBLL.ObtenerPorId()`)
-5. Update exemplar state to "Prestado" (`EjemplarBLL.ActualizarEstado()`)
-6. Create loan record (`PrestamoRepository.Insert()`)
-7. Recalculate material quantities (automatic)
-
-**Important:** All operations within BLL should use ADO.NET transactions for atomicity.
-
-### Dynamic Calculation Pattern
-
-Material quantities are NEVER stored in database:
-
-```sql
--- CantidadTotal calculation
-SELECT COUNT(*) FROM Ejemplar
-WHERE IdMaterial = @IdMaterial AND Activo = 1
-
--- CantidadDisponible calculation
-SELECT COUNT(*) FROM Ejemplar
-WHERE IdMaterial = @IdMaterial AND Activo = 1 AND Estado = 0
-```
-
-This ensures single source of truth and prevents data inconsistencies.
+### Reportes (Reports)
+- Forms in `View\UI\WinUi\Reportes\`
+- Active loans report (`ReportePrestamosActivos.cs`)
+- Most borrowed materials (`ReporteMaterialesMasPrestados.cs`)
+- Usage by grade/division (`ReporteUsoPorGrado.cs`)
+- Export to CSV functionality via `ExportService.cs`
+- Uses DTOs in `Model\DomainModel\DTOs\`
 
 ## Common Development Tasks
 
+### Adding a New Form with Permissions
+
+1. Create the form in appropriate `View\UI\WinUi\` folder
+2. Add SQL script to create Patente in `Database\` with unique FormName
+3. Execute SQL to add permission to database
+4. Add menu item in `menu.Designer.cs`
+5. Add click handler in `menu.cs` with permission check:
+   ```csharp
+   if (SessionManager.GetInstance().UsuarioActual.TienePermiso("yourFormName"))
+   {
+       // Open form
+   }
+   ```
+6. Add translations to `idioma.es-AR` and `idioma.en-GB`
+
 ### Adding a New Entity
 
-1. Create domain class in `Model/DomainModel/YourEntity.cs`
-2. Create repository interface in `Model/DAL/Contracts/IYourEntityRepository.cs`
-3. Create adapter in `Model/DAL/Tools/YourEntityAdapter.cs`
-4. Implement repository in `Model/DAL/Implementations/YourEntityRepository.cs`
-5. Create BLL in `Model/BLL/YourEntityBLL.cs`
-6. Create UI form in `View/UI/WinUi/Administración/` or `Transacciones/`
-7. Create database table and stored procedures in `Database/`
+1. Create entity class in `Model\DomainModel\` with properties
+2. Create repository interface in `Model\DAL\Contracts\`
+3. Implement repository in `Model\DAL\Implementations\`
+4. Create adapter in `Model\DAL\Tools\` for DataReader mapping
+5. Create BLL class in `Model\BLL\` with validation logic
+6. Create database table via SQL script
+7. Update relevant `.csproj` files if needed
 
-### Adding a New Permission
+### Adding a New Report
 
-1. Insert into Patente table:
-```sql
-INSERT INTO Patente (IdPatente, FormName, MenuItemName, Descripcion)
-VALUES (NEWUUID(), 'YourFormName', 'Menu Display Text', 'Description');
+1. Create DTO in `Model\DomainModel\DTOs\`
+2. Add query method to `ReporteRepository.cs` in DAL
+3. Add business method to `ReporteBLL.cs`
+4. Add export method to `ExportService.cs` if needed
+5. Create WinForm in `View\UI\WinUi\Reportes\`
+6. Create Patente permission via SQL script
+7. Add menu item and permission check
+8. Add translations
+
+### Working with SQL Scripts
+
+**Script Naming Convention:**
+- `00_*.sql` - Master execution scripts
+- `01_*.sql`, `02_*.sql`, etc. - Sequential installation steps
+- Numbered scripts for incremental features (e.g., `05_AgregarPermisosReportes.sql`)
+
+**Executing Scripts:**
+```powershell
+# From repository root
+sqlcmd -S localhost -E -i "Database\ScriptName.sql"
+
+# For Negocio database scripts
+sqlcmd -S localhost -E -i "Database\Negocio\ScriptName.sql"
 ```
 
-2. Assign to role/familia:
-```sql
-INSERT INTO FamiliaPatente (IdFamilia, IdPatente)
-SELECT f.IdFamilia, p.IdPatente
-FROM Familia f, Patente p
-WHERE f.Nombre = 'ROL_Administrador'
-  AND p.FormName = 'YourFormName';
-```
+### Validation Patterns
 
-3. Check permission in form:
+**BLL Validation:**
+- Always validate in BLL before calling repository
+- Throw descriptive exceptions for validation failures
+- Example:
+  ```csharp
+  if (string.IsNullOrWhiteSpace(material.Titulo))
+      throw new Exception("El título es obligatorio");
+  ```
+
+**Custom Exceptions:**
+- Security exceptions in `Security\ServicesSeguridad\DomainModel\Exceptions\`
+- Business exceptions in `Model\DomainModel\Exceptions\` (if exists)
+
+## Project References
+
+**UI Layer depends on:**
+- Model\BLL
+- Model\DAL
+- Model\DomainModel
+- Model\Services
+- Security\ServicesSeguridad
+
+**BLL Layer depends on:**
+- Model\DAL
+- Model\DomainModel
+
+**DAL Layer depends on:**
+- Model\DomainModel
+
+**Services Layer:**
+- Independent utility layer (export, etc.)
+
+## Transaction Management
+
+**UPDATE (Oct 27, 2025): Unit of Work pattern has been implemented** ✅
+
+The project now uses Unit of Work pattern for critical transaction operations. See `IMPLEMENTACION_UNIT_OF_WORK.md` for complete implementation details.
+
+### Transaction Patterns Used
+
+The project uses **three different transaction approaches** depending on the layer:
+
+#### 1. TransactionScope (UI Layer) - `System.Transactions`
+
+**Location:** `View\UI\WinUi\Administración\registrarMaterial.cs:147`
+
+Used for **multi-repository operations** that require atomicity at the UI level:
+
 ```csharp
-if (!SessionService.CurrentUser.TienePermiso("YourFormName")) { /* deny */ }
-```
+using (TransactionScope transaction = new TransactionScope())
+{
+    try
+    {
+        _materialBLL.GuardarMaterial(nuevoMaterial);  // Repository 1
 
-### Adding a New Translation
+        for (int i = 1; i <= nuevoMaterial.CantidadTotal; i++)
+        {
+            _ejemplarBLL.GuardarEjemplar(nuevoEjemplar);  // Repository 2 (multiple times)
+        }
 
-1. Add to both language files:
-```
-# idioma.es-AR
-your_key=Tu texto en español
-
-# idioma.en-GB
-your_key=Your text in English
-```
-
-2. Use in code:
-```csharp
-label.Text = langService.Translate("your_key");
-```
-
-### Creating a Database Migration Script
-
-Follow naming convention: `Database/XX_DescripcionDelCambio.sql`
-
-Example structure:
-```sql
--- Descripción del cambio
--- Fecha: YYYY-MM-DD
-
-USE NegocioBiblioteca;
-GO
-
--- 1. Crear tabla/modificar estructura
-ALTER TABLE ...
-
--- 2. Migrar datos existentes
-UPDATE ...
-
--- 3. Agregar constraints
-ALTER TABLE ...
-
--- 4. Verificación
-SELECT ...
-```
-
-## Important Conventions
-
-### Naming Conventions
-
-- **Classes:** PascalCase (`MaterialBLL`, `PrestamoRepository`)
-- **Methods:** PascalCase (`ObtenerTodosMateriales()`, `RegistrarPrestamo()`)
-- **Private fields:** `_camelCase` (`_materialRepository`)
-- **Properties:** PascalCase (`IdMaterial`, `Titulo`)
-- **Database objects:** PascalCase (`Alumno`, `Prestamo`, `FamiliaPatente`)
-- **SQL parameters:** `@PascalCase` (`@IdMaterial`, `@Titulo`)
-
-### Error Handling
-
-Custom exceptions in `Model/DomainModel/Exceptions/`:
-- `ValidacionException` - Validation errors (display to user)
-- `AutenticacionException` - Authentication failures
-- `UsuarioNoEncontradoException` - User not found
-- `IntegridadException` - Data integrity violations
-
-**Pattern:**
-```csharp
-// BLL throws domain exceptions
-throw new ValidacionException("Material no encontrado");
-
-// UI catches and displays
-try {
-    materialBLL.Registrar(material);
-} catch (ValidacionException ex) {
-    MessageBox.Show(ex.Message);
+        transaction.Complete();  // Commit only if all succeed
+    }
+    catch
+    {
+        // Automatic rollback if Complete() not called
+        throw;
+    }
 }
 ```
 
-### Logical Deletes
+**Characteristics:**
+- ✅ Distributed transaction (requires MSDTC)
+- ✅ Automatic rollback if `Complete()` not called
+- ✅ Coordinates multiple repositories
+- ⚠️ Only used in `registrarMaterial.cs` currently
 
-**Always use logical deletes (Activo field) instead of physical DELETE:**
+#### 2. SqlTransaction (DAL Layer) - ADO.NET
 
-```sql
--- WRONG
-DELETE FROM Material WHERE IdMaterial = @Id;
+**Location:** `Model\DAL\Implementations\PrestamoRepository.cs:344` (RenovarPrestamo method)
 
--- CORRECT
-UPDATE Material SET Activo = 0 WHERE IdMaterial = @Id;
-```
-
-This maintains referential integrity and audit trail.
-
-### SQL Injection Prevention
-
-**Always use parameterized queries:**
+Used for **complex operations within a single repository**:
 
 ```csharp
-// WRONG
-string sql = $"SELECT * FROM Usuario WHERE Nombre = '{nombre}'";
+using (SqlConnection conn = new SqlConnection(_connectionString))
+{
+    conn.Open();
+    SqlTransaction transaction = conn.BeginTransaction();
 
-// CORRECT
-string sql = "SELECT * FROM Usuario WHERE Nombre = @Nombre";
-SqlCommand cmd = new SqlCommand(sql, connection);
-cmd.Parameters.AddWithValue("@Nombre", nombre);
+    try
+    {
+        // 1. Read current data
+        using (SqlCommand cmd = new SqlCommand(queryGetFecha, conn, transaction)) { }
+
+        // 2. Update Prestamo
+        using (SqlCommand cmd = new SqlCommand(queryUpdate, conn, transaction)) { }
+
+        // 3. Insert into RenovacionPrestamo (audit table)
+        using (SqlCommand cmd = new SqlCommand(queryInsertRenovacion, conn, transaction)) { }
+
+        transaction.Commit();
+    }
+    catch
+    {
+        transaction.Rollback();
+        throw;
+    }
+}
 ```
 
-## Configuration
+**Characteristics:**
+- ✅ Local transaction (single connection)
+- ✅ Explicit `Commit()` and `Rollback()` control
+- ✅ More efficient than TransactionScope for single-repository operations
+- ✅ Does not require MSDTC
 
-### App.config Structure
+#### 3. Unit of Work Pattern (BLL Layer) - ✅ **IMPLEMENTED**
 
-```xml
-<connectionStrings>
-  <add name="ServicesConString" connectionString="Data Source=localhost;Initial Catalog=SeguridadBiblioteca;Integrated Security=True;TrustServerCertificate=True"/>
-  <add name="NegocioConString" connectionString="Data Source=localhost;Initial Catalog=NegocioBiblioteca;Integrated Security=True;TrustServerCertificate=True"/>
-</connectionStrings>
+**Location:** `PrestamoBLL.cs`, `DevolucionBLL.cs`
 
-<appSettings>
-  <add key="LanguagePath" value="Resources\I18n\idioma"/>
-  <add key="SecurityRepositoryServices" value="ServicesSecurity.DAL.Implementations"/>
-</appSettings>
+**Implementation:** Critical multi-repository operations now use Unit of Work with TransactionScope for atomicity.
+
+**Example - PrestamoBLL.RegistrarPrestamo (lines 59-138):**
+```csharp
+public void RegistrarPrestamo(Prestamo prestamo)
+{
+    // Validations...
+
+    // TRANSACTIONAL OPERATIONS: Using Unit of Work for atomicity
+    using (var uow = new UnitOfWork())
+    {
+        uow.BeginTransaction();
+        try
+        {
+            // Operation 1: Update Ejemplar state
+            ejemplarSeleccionado.Estado = EstadoMaterial.Prestado;
+            uow.Ejemplares.Update(ejemplarSeleccionado);
+
+            // Operation 2: Insert Prestamo
+            uow.Prestamos.Add(prestamo);
+
+            // ✅ ATOMIC COMMIT - both operations committed together
+            uow.Commit();
+        }
+        catch
+        {
+            uow.Rollback(); // Automatic rollback if any operation fails
+            throw;
+        }
+    }
+}
 ```
 
-**To change database server:** Update `Data Source=` in connection strings.
+**Example - DevolucionBLL.RegistrarDevolucion (lines 51-109):**
+```csharp
+public void RegistrarDevolucion(Devolucion devolucion)
+{
+    // Validations...
 
-## Known Issues and Warnings
+    // TRANSACTIONAL OPERATIONS: Using Unit of Work for atomicity
+    using (var uow = new UnitOfWork())
+    {
+        uow.BeginTransaction();
+        try
+        {
+            // Operation 1: Insert Devolucion
+            uow.Devoluciones.Add(devolucion);
 
-1. **Compilation Warnings:**
-   - `LoginService.cs:87` - Unused variable 'iex'
-   - `Login.cs:210` - Unused variable 'ex'
-   - `gestionPromocionAlumnos.cs:153` - Unused variable 'ex'
+            // Operation 2: Update Prestamo state
+            uow.Prestamos.ActualizarEstado(prestamo.IdPrestamo, "Devuelto");
 
-   These are safe to ignore but should be cleaned up.
+            // Operation 3: Update Ejemplar state
+            uow.Ejemplares.Update(ejemplar);
 
-2. **Loan-Exemplar Relationship:**
-   - Always ensure `IdEjemplar` is set when creating Prestamo
-   - Update Ejemplar.Estado when creating/returning loans
-   - Verify Ejemplar state before allowing new loan
-
-3. **Role Migration:**
-   - System migrated from `Usuario.Rol` string to Composite pattern
-   - Old code using `usuario.Rol` must use `usuario.ObtenerNombreRol()`
-
-## Testing Guidance
-
-### Manual Testing Checklist
-
-**Login & Permissions:**
-- [ ] Login with admin credentials
-- [ ] Verify menu shows only permitted items
-- [ ] Try accessing form without permission (should deny)
-
-**Material & Exemplar Management:**
-- [ ] Register new material (conceptual catalog entry)
-- [ ] Add multiple exemplars for same material
-- [ ] Verify CantidadTotal/Disponible updates correctly
-- [ ] Edit material details
-- [ ] Logical delete material (verify exemplars become inactive)
-
-**Loan & Return Flow:**
-- [ ] Register loan for available exemplar
-- [ ] Verify exemplar estado changes to "Prestado"
-- [ ] Verify material CantidadDisponible decreases
-- [ ] Try loaning same exemplar again (should fail)
-- [ ] Register return
-- [ ] Verify exemplar estado returns to "Disponible"
-- [ ] Verify material CantidadDisponible increases
-
-**Student Enrollment:**
-- [ ] Register new student
-- [ ] Create inscription for current year
-- [ ] Try creating duplicate inscription (should fail)
-- [ ] Promote students to next grade
-- [ ] Verify inscription history maintained
-
-### Unit Testing (Future)
-
-Key classes to prioritize for unit tests:
-- `ValidationBLL` - Static validators
-- `MaterialBLL.CalcularCantidades()` - Dynamic calculations
-- `PrestamoBLL.RegistrarPrestamo()` - Complex transaction
-- `EjemplarBLL.VerificarDisponibilidad()` - State validation
-- Composite pattern permission checks
-
-## Database Schema Notes
-
-### Key Relationships
-
-```
-Material (1) ────< (N) Ejemplar
-                         │
-                         │ (FK)
-                         ↓
-Prestamo >───────< Ejemplar
-   │
-   └──────< Devolucion
-
-Alumno (1) ────< (N) Prestamo
-       │
-       └──────< (N) Inscripcion
-
-Usuario (N) ────< (N) Familia (via UsuarioFamilia)
-Usuario (N) ────< (N) Patente (via UsuarioPatente)
-Familia (N) ────< (N) Familia (via FamiliaFamilia) [Composite hierarchy]
-Familia (N) ────< (N) Patente (via FamiliaPatente)
+            // ✅ ATOMIC COMMIT - all 3 operations committed together
+            uow.Commit();
+        }
+        catch
+        {
+            uow.Rollback(); // Automatic rollback if any operation fails
+            throw;
+        }
+    }
+}
 ```
 
-### Indexed Columns
+### Protected Operations (Using Unit of Work)
 
-For performance, ensure indexes exist on:
-- `Ejemplar.IdMaterial` - Used in COUNT() queries
-- `Ejemplar.Estado` - Used in availability checks
-- `Prestamo.IdAlumno` - Used in student loan history
-- `Prestamo.Estado` - Used in active/overdue queries
-- `Inscripcion.IdAlumno` - Used in enrollment history
-- `Inscripcion.AnioLectivo` - Used in year filtering
+These BLL methods now use **Unit of Work for transactional consistency**:
 
-### Stored Procedures
+1. ✅ **PrestamoBLL.RegistrarPrestamo** (line 59)
+   - Updates `Ejemplar.Estado` + Inserts `Prestamo`
+   - **Protected:** Both operations commit atomically
 
-Located in `Database/Negocio/`:
-- `sp_ObtenerInscripcionActiva` - Gets student's current enrollment
-- `sp_PromocionarAlumnosPorGrado` - Manual grade promotion
-- `sp_PromocionarTodosLosAlumnos` - Mass promotion
-- `sp_ObtenerAlumnosPorGradoDivision` - Filtered student lists
+2. ✅ **DevolucionBLL.RegistrarDevolucion** (line 51)
+   - Inserts `Devolucion` + Updates `Prestamo.Estado` + Updates `Ejemplar.Estado`
+   - **Protected:** All 3 operations commit atomically
 
-Use stored procedures for complex operations involving multiple tables or calculations.
+3. ✅ **PrestamoBLL.MarcarComoDevuelto** (line 149)
+   - Updates `Ejemplar.Estado` + Updates `Prestamo.Estado`
+   - **Protected:** Both operations commit atomically
 
-## Troubleshooting
+4. ✅ **DevolucionBLL.EliminarDevolucion** (line 123)
+   - Deletes `Devolucion` + Updates `Prestamo.Estado` + Updates `Ejemplar.Estado`
+   - **Protected:** All 3 operations commit atomically
 
-### Cannot Connect to Database
+### Unit of Work Implementation Details
 
-1. Verify SQL Server is running
-2. Check connection strings in `App.config`
-3. Verify Windows Authentication has permissions
-4. Run database setup scripts if databases don't exist
+**Interface:** `Model/DAL/Contracts/IUnitOfWork.cs`
 
-### Permission Denied on Form Access
+```csharp
+public interface IUnitOfWork : IDisposable
+{
+    IPrestamoRepository Prestamos { get; }
+    IEjemplarRepository Ejemplares { get; }
+    IDevolucionRepository Devoluciones { get; }
+    IMaterialRepository Materiales { get; }
+    IAlumnoRepository Alumnos { get; }
 
-1. Check user has been assigned a role (ROL_* familia)
-2. Verify patente exists with correct FormName
-3. Check familia-patente relationships in database
-4. Debug: Print `SessionService.CurrentUser.ObtenerPermisos()` to console
+    void BeginTransaction();
+    void Commit();
+    void Rollback();
+    bool HasActiveTransaction { get; }
+}
+```
 
-### Material Quantities Not Updating
+**Implementation:** `Model/DAL/Implementations/UnitOfWork.cs`
 
-1. Verify Ejemplar records exist and are Activo=1
-2. Check if adapter is using correct column names from JOIN
-3. Ensure MaterialRepository uses updated SELECT with COUNT() calculations
-4. Check for orphaned Ejemplar records (IdMaterial FK exists?)
+Uses `TransactionScope` (System.Transactions) to coordinate multiple repository operations:
 
-### Exemplar Already Loaned Error
+```csharp
+public class UnitOfWork : IUnitOfWork
+{
+    private TransactionScope _transactionScope;
 
-1. Verify Ejemplar.Estado is updated when creating Prestamo
-2. Check if previous loan was properly returned (Devolucion record exists?)
-3. Manually fix state: `UPDATE Ejemplar SET Estado=0 WHERE IdEjemplar=...`
+    public void BeginTransaction()
+    {
+        var options = new TransactionOptions
+        {
+            IsolationLevel = IsolationLevel.ReadCommitted,
+            Timeout = TimeSpan.FromMinutes(2)
+        };
 
-### Translation Not Showing
+        _transactionScope = new TransactionScope(
+            TransactionScopeOption.Required,
+            options,
+            TransactionScopeAsyncFlowOption.Enabled
+        );
+    }
 
-1. Verify key exists in BOTH language files
-2. Check spelling matches exactly (case-sensitive)
-3. Ensure files are copied to output directory (Build Action = Content, Copy Always)
-4. Restart application to reload translation files
+    public void Commit()
+    {
+        _transactionScope.Complete();
+        _transactionScope.Dispose();
+    }
 
-## Additional Documentation
+    public void Rollback()
+    {
+        _transactionScope?.Dispose(); // Without Complete() = automatic rollback
+    }
+}
+```
 
-- `Database/README_INSTALACION.md` - Complete database setup guide
-- `Database/README_MIGRACION.md` - Role composite pattern migration
-- `README_SISTEMA_INSCRIPCIONES.md` - Student enrollment system details
+**Why TransactionScope?**
+- ✅ No need to refactor existing repositories
+- ✅ Automatically coordinates multiple database connections
+- ✅ Automatic promotion to distributed transaction if needed
+- ⚠️ Requires MSDTC (Microsoft Distributed Transaction Coordinator)
+
+### Transaction Management Summary by Layer
+
+| Layer | Pattern | Scope | Example | Status |
+|-------|---------|-------|---------|--------|
+| UI | `TransactionScope` | Multi-repository coordination | `registrarMaterial.cs` | ✅ Used (limited) |
+| DAL | `SqlTransaction` | Complex single-repository ops | `RenovarPrestamo` | ✅ Used |
+| BLL | `Unit of Work` (TransactionScope) | Multi-repository coordination | `RegistrarPrestamo`, `RegistrarDevolucion` | ✅ **IMPLEMENTED** |
+
+## Important Notes
+
+- **Unit of Work Pattern:** ✅ **NOW IMPLEMENTED** (Oct 27, 2025) - Critical transaction operations now use Unit of Work pattern. See `IMPLEMENTACION_UNIT_OF_WORK.md` for details.
+- **Transaction Management:** Critical BLL operations (RegistrarPrestamo, RegistrarDevolucion, EliminarDevolucion, MarcarComoDevuelto) now use atomic transactions via Unit of Work
+- **Ejemplar Tracking:** Always update Material.CantidadDisponible when Ejemplar.Estado changes
+- **Stored Procedures:** Located in `Database\Negocio\06_StoredProceduresInscripcion.sql` for inscription operations
+- **Hash Calculation:** Security uses SHA-256 for passwords; recalculation scripts in `Database\04_RecalcularDVH.sql`
+- **ReportViewer:** Project includes Microsoft.ReportViewer.WinForms package for advanced reporting (optional feature)
+
+## Testing
+
+**Manual Testing Workflow:**
+1. Ensure both databases are created and populated
+2. Run application
+3. Login with admin/admin123
+4. Test specific module functionality
+5. Check database state after operations
+
+**Test Data:**
+- Security DB: Default admin user created by `Database\03_DatosIniciales.sql`
+- Negocio DB: 16 materials and 10 students from `Database\Negocio\03_DatosInicialesNegocio.sql`
+
+## Recent Changes
+
+Per git status, recent work includes:
+- Reports module implementation (RESUMEN_NUEVOS_REPORTES.md, INSTRUCCIONES_MODULO_REPORTES.md)
+- New DTOs in `Model\DomainModel\DTOs\`
+- Export service implementation
+- Menu updates for reports functionality
+- Translation updates for new modules

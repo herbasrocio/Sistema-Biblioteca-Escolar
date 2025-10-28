@@ -84,7 +84,7 @@ namespace ServicesSecurity.Services
                 // Re-lanzar excepciones de autenticación
                 throw;
             }
-            catch (IntegridadException iex)
+            catch (IntegridadException)
             {
                 // Re-lanzar excepciones de integridad de datos
                 // No convertir a AutenticacionException - es un problema de seguridad diferente

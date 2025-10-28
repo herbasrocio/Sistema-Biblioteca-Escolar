@@ -1599,10 +1599,10 @@ namespace UI.WinUi.Administrador
             dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Apellido", HeaderText = "Apellido", DataPropertyName = "Apellido", Width = 120 });
             dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre", Width = 120 });
             dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "DNI", HeaderText = "DNI", DataPropertyName = "DNI", Width = 100 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Grado", HeaderText = "Grado", Width = 80 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Division", HeaderText = "División", Width = 80 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Estado", HeaderText = "Estado", Width = 100 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "FechaInscripcion", HeaderText = "Fecha Inscripción", Width = 130 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Grado", HeaderText = "Grado", DataPropertyName = "Grado", Width = 80 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Division", HeaderText = "División", DataPropertyName = "Division", Width = 80 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Estado", HeaderText = "Estado", DataPropertyName = "Estado", Width = 100 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "FechaInscripcion", HeaderText = "Fecha Inscripción", DataPropertyName = "FechaInscripcion", Width = 130 });
 
             // Aplicar estilo al dgvHistorial
             ConfigurarEstiloDataGridViewHistorial();

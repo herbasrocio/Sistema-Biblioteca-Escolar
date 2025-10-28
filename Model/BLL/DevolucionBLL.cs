@@ -50,7 +50,7 @@ namespace BLL
 
         public void RegistrarDevolucion(Devolucion devolucion)
         {
-            // Validaciones
+            // Validaciones previas (no requieren transacción)
             if (devolucion.IdPrestamo == Guid.Empty)
                 throw new Exception("Debe seleccionar un préstamo");
 
@@ -70,26 +70,42 @@ namespace BLL
             if (devolucionExistente != null)
                 throw new Exception("Ya existe una devolución registrada para este préstamo");
 
-            // Registrar devolución
-            _devolucionRepository.Add(devolucion);
-
-            // Actualizar estado del préstamo a "Devuelto"
-            _prestamoRepository.ActualizarEstado(prestamo.IdPrestamo, "Devuelto");
-
-            // Cambiar estado del ejemplar a Disponible
-            if (prestamo.IdEjemplar != Guid.Empty)
+            // OPERACIONES TRANSACCIONALES: Usar Unit of Work para garantizar atomicidad
+            using (var uow = new UnitOfWork())
             {
-                var ejemplarRepository = new EjemplarRepository();
-                var ejemplar = ejemplarRepository.ObtenerPorId(prestamo.IdEjemplar);
-                if (ejemplar != null)
+                uow.BeginTransaction();
+                try
                 {
-                    ejemplar.Estado = DomainModel.Enums.EstadoMaterial.Disponible;
-                    ejemplarRepository.Update(ejemplar);
+                    // 1. Registrar devolución
+                    uow.Devoluciones.Add(devolucion);
+
+                    // 2. Actualizar estado del préstamo a "Devuelto"
+                    uow.Prestamos.ActualizarEstado(prestamo.IdPrestamo, "Devuelto");
+
+                    // 3. Cambiar estado del ejemplar a Disponible
+                    if (prestamo.IdEjemplar != Guid.Empty)
+                    {
+                        var ejemplar = uow.Ejemplares.ObtenerPorId(prestamo.IdEjemplar);
+                        if (ejemplar != null)
+                        {
+                            ejemplar.Estado = DomainModel.Enums.EstadoMaterial.Disponible;
+                            uow.Ejemplares.Update(ejemplar);
+                        }
+                    }
+
+                    // Confirmar transacción - las 3 operaciones se confirman juntas
+                    uow.Commit();
+
+                    // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
+                    // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
+                }
+                catch
+                {
+                    // Rollback automático al salir del using si no se llamó Commit()
+                    uow.Rollback();
+                    throw;
                 }
             }
-
-            // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
-            // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
         }
 
         public void ActualizarDevolucion(Devolucion devolucion)
@@ -106,31 +122,48 @@ namespace BLL
 
         public void EliminarDevolucion(Devolucion devolucion)
         {
-            // Al eliminar una devolución, reactivar el préstamo y ajustar inventario
+            // Validar que el préstamo existe
             var prestamo = _prestamoRepository.ObtenerPorId(devolucion.IdPrestamo);
-            if (prestamo != null)
+            if (prestamo == null)
+                throw new Exception("El préstamo asociado no existe");
+
+            // OPERACIONES TRANSACCIONALES: Usar Unit of Work para garantizar atomicidad
+            using (var uow = new UnitOfWork())
             {
-                // Cambiar estado del préstamo a Activo o Atrasado según corresponda
-                string nuevoEstado = prestamo.EstaAtrasado() ? "Atrasado" : "Activo";
-                _prestamoRepository.ActualizarEstado(prestamo.IdPrestamo, nuevoEstado);
-
-                // Cambiar estado del ejemplar a Prestado
-                if (prestamo.IdEjemplar != Guid.Empty)
+                uow.BeginTransaction();
+                try
                 {
-                    var ejemplarRepository = new EjemplarRepository();
-                    var ejemplar = ejemplarRepository.ObtenerPorId(prestamo.IdEjemplar);
-                    if (ejemplar != null)
+                    // 1. Eliminar la devolución
+                    uow.Devoluciones.Delete(devolucion);
+
+                    // 2. Cambiar estado del préstamo a Activo o Atrasado según corresponda
+                    string nuevoEstado = prestamo.EstaAtrasado() ? "Atrasado" : "Activo";
+                    uow.Prestamos.ActualizarEstado(prestamo.IdPrestamo, nuevoEstado);
+
+                    // 3. Cambiar estado del ejemplar a Prestado
+                    if (prestamo.IdEjemplar != Guid.Empty)
                     {
-                        ejemplar.Estado = DomainModel.Enums.EstadoMaterial.Prestado;
-                        ejemplarRepository.Update(ejemplar);
+                        var ejemplar = uow.Ejemplares.ObtenerPorId(prestamo.IdEjemplar);
+                        if (ejemplar != null)
+                        {
+                            ejemplar.Estado = DomainModel.Enums.EstadoMaterial.Prestado;
+                            uow.Ejemplares.Update(ejemplar);
+                        }
                     }
+
+                    // Confirmar transacción - las 3 operaciones se confirman juntas
+                    uow.Commit();
+
+                    // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
+                    // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
                 }
-
-                // NOTA: No se actualiza manualmente CantidadDisponible porque ahora se calcula
-                // dinámicamente en MaterialRepository basándose en el estado de los ejemplares
+                catch
+                {
+                    // Rollback automático al salir del using si no se llamó Commit()
+                    uow.Rollback();
+                    throw;
+                }
             }
-
-            _devolucionRepository.Delete(devolucion);
         }
 
         public int CalcularDiasAtraso(Guid idDevolucion)
