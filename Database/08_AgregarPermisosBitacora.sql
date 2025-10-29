@@ -36,11 +36,11 @@ BEGIN
 END
 GO
 
--- Asignar permiso de BitacoraAdmin a la familia Administrador
+-- Asignar permiso de BitacoraAdmin a la familia ROL_Administrador
 DECLARE @IdFamiliaAdmin UNIQUEIDENTIFIER;
 DECLARE @IdPatenteAdmin UNIQUEIDENTIFIER;
 
-SELECT @IdFamiliaAdmin = IdFamilia FROM Familia WHERE Nombre = 'Administrador';
+SELECT @IdFamiliaAdmin = IdFamilia FROM Familia WHERE Nombre = 'ROL_Administrador';
 SELECT @IdPatenteAdmin = IdPatente FROM Patente WHERE FormName = 'consultarBitacoraAdmin';
 
 IF @IdFamiliaAdmin IS NOT NULL AND @IdPatenteAdmin IS NOT NULL
@@ -50,24 +50,24 @@ BEGIN
         INSERT INTO FamiliaPatente (IdFamilia, IdPatente)
         VALUES (@IdFamiliaAdmin, @IdPatenteAdmin);
 
-        PRINT 'Permiso "consultarBitacoraAdmin" asignado a familia Administrador.';
+        PRINT 'Permiso "consultarBitacoraAdmin" asignado a familia ROL_Administrador.';
     END
     ELSE
     BEGIN
-        PRINT 'El permiso "consultarBitacoraAdmin" ya estaba asignado a familia Administrador.';
+        PRINT 'El permiso "consultarBitacoraAdmin" ya estaba asignado a familia ROL_Administrador.';
     END
 END
 ELSE
 BEGIN
-    PRINT 'No se pudo asignar el permiso - Familia Administrador o Patente no encontrada.';
+    PRINT 'No se pudo asignar el permiso - Familia ROL_Administrador o Patente no encontrada.';
 END
 GO
 
--- Asignar permiso de BitacoraBibliotecario a la familia Administrador
+-- Asignar permiso de BitacoraBibliotecario a la familia ROL_Administrador
 DECLARE @IdFamiliaAdmin2 UNIQUEIDENTIFIER;
 DECLARE @IdPatenteBibliotecario UNIQUEIDENTIFIER;
 
-SELECT @IdFamiliaAdmin2 = IdFamilia FROM Familia WHERE Nombre = 'Administrador';
+SELECT @IdFamiliaAdmin2 = IdFamilia FROM Familia WHERE Nombre = 'ROL_Administrador';
 SELECT @IdPatenteBibliotecario = IdPatente FROM Patente WHERE FormName = 'consultarBitacoraBibliotecario';
 
 IF @IdFamiliaAdmin2 IS NOT NULL AND @IdPatenteBibliotecario IS NOT NULL
@@ -77,20 +77,20 @@ BEGIN
         INSERT INTO FamiliaPatente (IdFamilia, IdPatente)
         VALUES (@IdFamiliaAdmin2, @IdPatenteBibliotecario);
 
-        PRINT 'Permiso "consultarBitacoraBibliotecario" asignado a familia Administrador.';
+        PRINT 'Permiso "consultarBitacoraBibliotecario" asignado a familia ROL_Administrador.';
     END
     ELSE
     BEGIN
-        PRINT 'El permiso "consultarBitacoraBibliotecario" ya estaba asignado a familia Administrador.';
+        PRINT 'El permiso "consultarBitacoraBibliotecario" ya estaba asignado a familia ROL_Administrador.';
     END
 END
 GO
 
--- Asignar permiso de BitacoraBibliotecario a la familia Bibliotecario (si existe)
+-- Asignar permiso de BitacoraBibliotecario a la familia ROL_Bibliotecario (si existe)
 DECLARE @IdFamiliaBibliotecario UNIQUEIDENTIFIER;
 DECLARE @IdPatenteBibliotecario2 UNIQUEIDENTIFIER;
 
-SELECT @IdFamiliaBibliotecario = IdFamilia FROM Familia WHERE Nombre = 'Bibliotecario';
+SELECT @IdFamiliaBibliotecario = IdFamilia FROM Familia WHERE Nombre = 'ROL_Bibliotecario';
 SELECT @IdPatenteBibliotecario2 = IdPatente FROM Patente WHERE FormName = 'consultarBitacoraBibliotecario';
 
 IF @IdFamiliaBibliotecario IS NOT NULL AND @IdPatenteBibliotecario2 IS NOT NULL
@@ -100,16 +100,16 @@ BEGIN
         INSERT INTO FamiliaPatente (IdFamilia, IdPatente)
         VALUES (@IdFamiliaBibliotecario, @IdPatenteBibliotecario2);
 
-        PRINT 'Permiso "consultarBitacoraBibliotecario" asignado a familia Bibliotecario.';
+        PRINT 'Permiso "consultarBitacoraBibliotecario" asignado a familia ROL_Bibliotecario.';
     END
     ELSE
     BEGIN
-        PRINT 'El permiso "consultarBitacoraBibliotecario" ya estaba asignado a familia Bibliotecario.';
+        PRINT 'El permiso "consultarBitacoraBibliotecario" ya estaba asignado a familia ROL_Bibliotecario.';
     END
 END
 ELSE
 BEGIN
-    PRINT 'Familia Bibliotecario no encontrada - permiso solo asignado a Administrador.';
+    PRINT 'Familia ROL_Bibliotecario no encontrada - permiso solo asignado a ROL_Administrador.';
 END
 GO
 

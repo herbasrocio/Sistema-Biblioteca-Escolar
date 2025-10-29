@@ -14,6 +14,7 @@ using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.DomainModel.Exceptions;
 using ServicesSecurity.BLL;
 using UI.WinUi.Administrador;
+using BLL;
 
 namespace UI
 {
@@ -21,10 +22,12 @@ namespace UI
     {
         private bool contraseñaVisible = false;
         private string _idiomaSeleccionadoEnLogin = "es-AR"; // Siempre iniciar en español
+        private readonly BitacoraAdminBLL _bitacoraAdminBLL;
 
         public Login()
         {
             InitializeComponent();
+            _bitacoraAdminBLL = new BitacoraAdminBLL();
 
             // IMPORTANTE: Establecer español como idioma por defecto al iniciar
             CambiarIdioma("es-AR");
@@ -128,10 +131,20 @@ namespace UI
             try
             {
                 // Validar campos usando ValidationBLL
-                ValidationBLL.ValidarCredencialesLogin(txtUsuario.Text, txtContraseña.Text);
+                ServicesSecurity.BLL.ValidationBLL.ValidarCredencialesLogin(txtUsuario.Text, txtContraseña.Text);
 
                 // Intentar login usando LoginService
                 Usuario usuarioLogueado = LoginService.Login(txtUsuario.Text.Trim(), txtContraseña.Text);
+
+                // Registrar login exitoso en bitácora
+                _bitacoraAdminBLL.RegistrarEventoSeguridad(
+                    modulo: "Login",
+                    accion: "Inicio de sesión exitoso",
+                    detalle: $"Usuario '{txtUsuario.Text.Trim()}' ingresó al sistema",
+                    idUsuario: usuarioLogueado.IdUsuario,
+                    nombreUsuario: usuarioLogueado.Nombre,
+                    criticidad: "Baja"
+                );
 
                 // Login exitoso - redirigir según el rol
                 RedirigirPorRol(usuarioLogueado);
@@ -144,7 +157,15 @@ namespace UI
             }
             catch (UsuarioNoEncontradoException uex)
             {
-                // Usuario no existe
+                // Usuario no existe - registrar en bitácora
+                _bitacoraAdminBLL.RegistrarEventoSeguridad(
+                    modulo: "Login",
+                    accion: "Intento de login con usuario inexistente",
+                    detalle: $"Se intentó acceder con el usuario '{txtUsuario.Text.Trim()}' que no existe en el sistema",
+                    nombreUsuario: txtUsuario.Text.Trim(),
+                    criticidad: "Media"
+                );
+
                 MessageBox.Show(uex.Message, LanguageManager.Translate("error_autenticacion"),
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 txtContraseña.Clear();
@@ -152,7 +173,15 @@ namespace UI
             }
             catch (ContraseñaInvalidaException cex)
             {
-                // Contraseña incorrecta
+                // Contraseña incorrecta - registrar en bitácora
+                _bitacoraAdminBLL.RegistrarEventoSeguridad(
+                    modulo: "Login",
+                    accion: "Intento de login con contraseña incorrecta",
+                    detalle: $"Usuario '{txtUsuario.Text.Trim()}' intentó ingresar con contraseña incorrecta",
+                    nombreUsuario: txtUsuario.Text.Trim(),
+                    criticidad: "Alta"
+                );
+
                 MessageBox.Show(cex.Message, LanguageManager.Translate("error_autenticacion"),
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 txtContraseña.Clear();
@@ -160,7 +189,15 @@ namespace UI
             }
             catch (AutenticacionException aex)
             {
-                // Otros errores de autenticación
+                // Otros errores de autenticación - registrar en bitácora
+                _bitacoraAdminBLL.RegistrarEventoSeguridad(
+                    modulo: "Login",
+                    accion: "Error de autenticación",
+                    detalle: $"Error de autenticación para usuario '{txtUsuario.Text.Trim()}': {aex.Message}",
+                    nombreUsuario: txtUsuario.Text.Trim(),
+                    criticidad: "Alta"
+                );
+
                 MessageBox.Show(aex.Message, LanguageManager.Translate("error_autenticacion"),
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

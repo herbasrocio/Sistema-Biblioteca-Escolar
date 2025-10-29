@@ -58,44 +58,16 @@ namespace UI.WinUi.Reportes
             this.Text = LanguageManager.Translate("bitacora_bibliotecario_titulo");
             lblDesde.Text = LanguageManager.Translate("bitacora_fecha_inicio") + ":";
             lblHasta.Text = LanguageManager.Translate("bitacora_fecha_fin") + ":";
-            lblTipoOperacion.Text = LanguageManager.Translate("bitacora_bibliotecario_tipo_operacion") + ":";
-            lblEntidad.Text = LanguageManager.Translate("bitacora_bibliotecario_entidad_afectada") + ":";
-            lblModulo.Text = LanguageManager.Translate("bitacora_modulo") + ":";
+            lblBuscar.Text = LanguageManager.Translate("bitacora_buscar") + ":";
 
             btnFiltrar.Text = LanguageManager.Translate("bitacora_filtrar");
-            btnLimpiar.Text = LanguageManager.Translate("bitacora_limpiar");
             btnVolver.Text = LanguageManager.Translate("volver");
-
-            // Configurar combo de Tipo de Operación
-            cmbTipoOperacion.Items.Clear();
-            cmbTipoOperacion.Items.Add("TODOS");
-            cmbTipoOperacion.Items.Add("Prestamo");
-            cmbTipoOperacion.Items.Add("Devolucion");
-            cmbTipoOperacion.Items.Add("Renovacion");
-            cmbTipoOperacion.Items.Add("ConsultaMaterial");
-            cmbTipoOperacion.Items.Add("GestionMaterial");
-            cmbTipoOperacion.Items.Add("GestionAlumno");
-            cmbTipoOperacion.Items.Add("GestionEjemplar");
-            cmbTipoOperacion.SelectedIndex = 0;
-
-            // Configurar combo de Entidad Afectada
-            cmbEntidad.Items.Clear();
-            cmbEntidad.Items.Add("TODOS");
-            cmbEntidad.Items.Add("Material");
-            cmbEntidad.Items.Add("Ejemplar");
-            cmbEntidad.Items.Add("Alumno");
-            cmbEntidad.Items.Add("Prestamo");
-            cmbEntidad.Items.Add("Devolucion");
-            cmbEntidad.SelectedIndex = 0;
 
             // Configurar DateTimePickers - últimos 30 días por defecto
             dtpDesde.Value = DateTime.Now.AddDays(-30);
             dtpHasta.Value = DateTime.Now;
             dtpDesde.MaxDate = DateTime.Now;
             dtpHasta.MaxDate = DateTime.Now;
-
-            // TextBox módulo vacío (filtro opcional)
-            txtModulo.Text = "";
         }
 
         private void ConfigurarDataGridView()
@@ -110,15 +82,6 @@ namespace UI.WinUi.Reportes
 
             // Configurar columnas
             dgvBitacora.Columns.Clear();
-
-            dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "IdBitacora",
-                HeaderText = "ID",
-                Name = "colId",
-                Width = 60,
-                ReadOnly = true
-            });
 
             dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
             {
@@ -141,15 +104,6 @@ namespace UI.WinUi.Reportes
 
             dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "TipoOperacion",
-                HeaderText = LanguageManager.Translate("bitacora_bibliotecario_tipo_operacion"),
-                Name = "colTipoOperacion",
-                Width = 120,
-                ReadOnly = true
-            });
-
-            dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
-            {
                 DataPropertyName = "Modulo",
                 HeaderText = LanguageManager.Translate("bitacora_modulo"),
                 Name = "colModulo",
@@ -166,24 +120,6 @@ namespace UI.WinUi.Reportes
                 ReadOnly = true
             });
 
-            dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "EntidadAfectada",
-                HeaderText = LanguageManager.Translate("bitacora_bibliotecario_entidad_afectada"),
-                Name = "colEntidadAfectada",
-                Width = 120,
-                ReadOnly = true
-            });
-
-            dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "IdEntidad",
-                HeaderText = LanguageManager.Translate("bitacora_bibliotecario_id_entidad"),
-                Name = "colIdEntidad",
-                Width = 80,
-                ReadOnly = true
-            });
-
             // Agregar evento para mostrar detalle al hacer doble clic
             dgvBitacora.CellDoubleClick += DgvBitacora_CellDoubleClick;
         }
@@ -196,21 +132,25 @@ namespace UI.WinUi.Reportes
                 DateTime fechaDesde = dtpDesde.Value.Date;
                 DateTime fechaHasta = dtpHasta.Value.Date.AddDays(1).AddSeconds(-1); // Hasta 23:59:59
 
-                string tipoOperacion = cmbTipoOperacion.SelectedItem?.ToString();
-                if (tipoOperacion == "TODOS") tipoOperacion = null;
-
-                string entidadAfectada = cmbEntidad.SelectedItem?.ToString();
-                if (entidadAfectada == "TODOS") entidadAfectada = null;
-
-                string modulo = string.IsNullOrWhiteSpace(txtModulo.Text) ? null : txtModulo.Text.Trim();
-
                 _registrosActuales = _bitacoraBibliotecarioBLL.ObtenerConFiltros(
                     fechaInicio: fechaDesde,
                     fechaFin: fechaHasta,
-                    tipoOperacion: tipoOperacion,
-                    entidadAfectada: entidadAfectada,
-                    modulo: modulo
+                    tipoOperacion: null,
+                    entidadAfectada: null,
+                    modulo: null
                 );
+
+                // Aplicar filtro de búsqueda si hay texto
+                if (!string.IsNullOrWhiteSpace(txtBuscar.Text))
+                {
+                    string textoBusqueda = txtBuscar.Text.ToLower();
+                    _registrosActuales = _registrosActuales.Where(r =>
+                        (r.NombreUsuario != null && r.NombreUsuario.ToLower().Contains(textoBusqueda)) ||
+                        (r.Modulo != null && r.Modulo.ToLower().Contains(textoBusqueda)) ||
+                        (r.Accion != null && r.Accion.ToLower().Contains(textoBusqueda)) ||
+                        (r.Detalle != null && r.Detalle.ToLower().Contains(textoBusqueda))
+                    ).ToList();
+                }
 
                 dgvBitacora.DataSource = null;
                 dgvBitacora.DataSource = _registrosActuales;
@@ -272,14 +212,10 @@ namespace UI.WinUi.Reportes
 
         private void MostrarDetalle(BitacoraBibliotecario registro)
         {
-            string detalle = $"ID Bitácora: {registro.IdBitacora}\n\n" +
-                           $"Fecha: {registro.Fecha:dd/MM/yyyy HH:mm:ss}\n" +
+            string detalle = $"Fecha: {registro.Fecha:dd/MM/yyyy HH:mm:ss}\n" +
                            $"Usuario: {registro.NombreUsuario ?? "N/A"}\n" +
-                           $"Tipo de Operación: {registro.TipoOperacion}\n" +
                            $"Módulo: {registro.Modulo}\n" +
-                           $"Acción: {registro.Accion}\n" +
-                           $"Entidad Afectada: {registro.EntidadAfectada ?? "N/A"}\n" +
-                           $"ID Entidad: {registro.IdEntidad?.ToString() ?? "N/A"}\n\n" +
+                           $"Acción: {registro.Accion}\n\n" +
                            $"Detalle:\n{registro.Detalle ?? "Sin detalles adicionales"}";
 
             MessageBox.Show(detalle, "Detalle del Registro", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -287,19 +223,6 @@ namespace UI.WinUi.Reportes
 
         private void btnFiltrar_Click(object sender, EventArgs e)
         {
-            CargarRegistros();
-        }
-
-        private void btnLimpiar_Click(object sender, EventArgs e)
-        {
-            // Restablecer filtros
-            dtpDesde.Value = DateTime.Now.AddDays(-30);
-            dtpHasta.Value = DateTime.Now;
-            cmbTipoOperacion.SelectedIndex = 0;
-            cmbEntidad.SelectedIndex = 0;
-            txtModulo.Text = "";
-
-            // Recargar datos
             CargarRegistros();
         }
 

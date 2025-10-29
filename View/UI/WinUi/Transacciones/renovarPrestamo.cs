@@ -16,6 +16,7 @@ namespace UI.WinUi.Transacciones
         private AlumnoBLL _alumnoBLL;
         private MaterialBLL _materialBLL;
         private EjemplarBLL _ejemplarBLL;
+        private BitacoraBibliotecarioBLL _bitacoraBLL;
         private Timer _searchTimer;
         private const int SEARCH_DELAY = 500;
         private const int MAX_RENOVACIONES = 3;
@@ -33,6 +34,7 @@ namespace UI.WinUi.Transacciones
             _prestamoBLL = new PrestamoBLL();
             _alumnoBLL = new AlumnoBLL();
             _materialBLL = new MaterialBLL();
+            _bitacoraBLL = new BitacoraBibliotecarioBLL();
             _ejemplarBLL = new EjemplarBLL();
             ConfigurarFormulario();
         }
@@ -445,6 +447,19 @@ namespace UI.WinUi.Transacciones
                     MAX_RENOVACIONES,
                     MAX_DIAS_ATRASO,
                     observaciones);
+
+                // Registrar en bitácora
+                _bitacoraBLL.RegistrarOperacion(new BitacoraBibliotecario
+                {
+                    IdUsuario = _usuarioLogueado.IdUsuario,
+                    NombreUsuario = _usuarioLogueado.Nombre,
+                    TipoOperacion = "Modificacion",
+                    Modulo = "Préstamos",
+                    Accion = "Renovar préstamo",
+                    EntidadAfectada = "Prestamo",
+                    IdEntidad = null,
+                    Detalle = $"Préstamo renovado: Material '{material}' de alumno '{alumno}'. Extensión: {diasExtension} días. Nueva fecha: {txtNuevaFechaDevolucion.Text}"
+                });
 
                 MessageBox.Show(
                     LanguageManager.Translate("renovacion_exitosa"),

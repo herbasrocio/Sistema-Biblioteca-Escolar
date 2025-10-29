@@ -19,6 +19,7 @@ namespace UI.WinUi.Transacciones
         private MaterialBLL _materialBLL;
         private EjemplarBLL _ejemplarBLL;
         private InscripcionBLL _inscripcionBLL;
+        private BitacoraBibliotecarioBLL _bitacoraBLL;
         private List<Alumno> _alumnosGrado;
         private Timer _searchTimer;
         private const int SEARCH_DELAY = 500; // 500ms de delay para búsqueda en tiempo real
@@ -54,6 +55,7 @@ namespace UI.WinUi.Transacciones
             _materialBLL = new MaterialBLL();
             _ejemplarBLL = new EjemplarBLL();
             _inscripcionBLL = new InscripcionBLL();
+            _bitacoraBLL = new BitacoraBibliotecarioBLL();
             _alumnosGrado = new List<Alumno>();
             ConfigurarFormulario();
         }
@@ -417,6 +419,19 @@ namespace UI.WinUi.Transacciones
                 };
 
                 _devolucionBLL.RegistrarDevolucion(devolucion);
+
+                // Registrar en bitácora
+                _bitacoraBLL.RegistrarOperacion(new BitacoraBibliotecario
+                {
+                    IdUsuario = _usuarioLogueado.IdUsuario,
+                    NombreUsuario = _usuarioLogueado.Nombre,
+                    TipoOperacion = "Creacion",
+                    Modulo = "Devoluciones",
+                    Accion = "Registrar devolución",
+                    EntidadAfectada = "Devolucion",
+                    IdEntidad = null,
+                    Detalle = $"Devolución registrada: Material '{tituloMaterial}' de alumno '{nombreAlumno}'. Ejemplar #{numeroEjemplar} ({codigoEjemplar}). {(diasAtraso > 0 ? $"CON ATRASO: {diasAtraso} día(s)" : "A tiempo")}"
+                });
 
                 // Construir mensaje de éxito con formato mejorado
                 string titulo;

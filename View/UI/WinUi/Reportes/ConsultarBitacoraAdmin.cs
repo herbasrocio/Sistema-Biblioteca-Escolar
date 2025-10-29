@@ -108,15 +108,6 @@ namespace UI.WinUi.Reportes
 
             dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "IdBitacora",
-                HeaderText = "ID",
-                Name = "colId",
-                Width = 60,
-                ReadOnly = true
-            });
-
-            dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
-            {
                 DataPropertyName = "Fecha",
                 HeaderText = LanguageManager.Translate("bitacora_fecha"),
                 Name = "colFecha",
@@ -167,15 +158,6 @@ namespace UI.WinUi.Reportes
                 HeaderText = LanguageManager.Translate("bitacora_accion"),
                 Name = "colAccion",
                 Width = 200,
-                ReadOnly = true
-            });
-
-            dgvBitacora.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "DireccionIP",
-                HeaderText = LanguageManager.Translate("bitacora_admin_direccion_ip"),
-                Name = "colDireccionIP",
-                Width = 120,
                 ReadOnly = true
             });
 
@@ -263,14 +245,12 @@ namespace UI.WinUi.Reportes
 
         private void MostrarDetalle(BitacoraAdmin registro)
         {
-            string detalle = $"ID Bitácora: {registro.IdBitacora}\n\n" +
-                           $"Fecha: {registro.Fecha:dd/MM/yyyy HH:mm:ss}\n" +
+            string detalle = $"Fecha: {registro.Fecha:dd/MM/yyyy HH:mm:ss}\n" +
                            $"Usuario: {registro.NombreUsuario ?? "N/A"}\n" +
                            $"Tipo de Evento: {registro.TipoEvento}\n" +
                            $"Criticidad: {registro.Criticidad}\n" +
                            $"Módulo: {registro.Modulo}\n" +
-                           $"Acción: {registro.Accion}\n" +
-                           $"Dirección IP: {registro.DireccionIP ?? "N/A"}\n\n" +
+                           $"Acción: {registro.Accion}\n\n" +
                            $"Detalle:\n{registro.Detalle ?? "Sin detalles adicionales"}";
 
             MessageBox.Show(detalle, "Detalle del Registro", MessageBoxButtons.OK, MessageBoxIcon.Information);

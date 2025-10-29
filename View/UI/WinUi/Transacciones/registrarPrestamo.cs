@@ -17,6 +17,7 @@ namespace UI.WinUi.Transacciones
         private PrestamoBLL _prestamoBLL;
         private InscripcionBLL _inscripcionBLL;
         private EjemplarBLL _ejemplarBLL;
+        private BitacoraBibliotecarioBLL _bitacoraBLL;
         private List<MaterialDetalle> _materialesFiltrados;
         private List<Alumno> _alumnosGrado;
         private Ejemplar _ejemplarSeleccionado; // Ejemplar seleccionado por el usuario
@@ -48,6 +49,7 @@ namespace UI.WinUi.Transacciones
             _prestamoBLL = new PrestamoBLL();
             _inscripcionBLL = new InscripcionBLL();
             _ejemplarBLL = new EjemplarBLL();
+            _bitacoraBLL = new BitacoraBibliotecarioBLL();
             _materialesFiltrados = new List<MaterialDetalle>();
             _alumnosGrado = new List<Alumno>();
             ConfigurarFormulario();
@@ -563,6 +565,19 @@ namespace UI.WinUi.Transacciones
                 };
 
                 _prestamoBLL.RegistrarPrestamo(prestamo);
+
+                // Registrar en bitácora
+                _bitacoraBLL.RegistrarOperacion(new BitacoraBibliotecario
+                {
+                    IdUsuario = _usuarioLogueado.IdUsuario,
+                    NombreUsuario = _usuarioLogueado.Nombre,
+                    TipoOperacion = "Creacion",
+                    Modulo = "Préstamos",
+                    Accion = "Registrar préstamo",
+                    EntidadAfectada = "Prestamo",
+                    IdEntidad = null,
+                    Detalle = $"Préstamo registrado: Material '{materialDetalle.Titulo}' a alumno '{alumno.NombreCompleto}'. Ejemplar #{_ejemplarSeleccionado.NumeroEjemplar} ({_ejemplarSeleccionado.CodigoEjemplar}). Devolución prevista: {dtpFechaDevolucion.Value:dd/MM/yyyy}"
+                });
 
                 // Construir mensaje de éxito con formato mejorado
                 string mensaje = "✓ PRÉSTAMO REGISTRADO EXITOSAMENTE\n\n";

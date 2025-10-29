@@ -15,7 +15,7 @@ BEGIN
     (
         [IdBitacora] INT IDENTITY(1,1) NOT NULL,
         [Fecha] DATETIME NOT NULL DEFAULT GETDATE(),
-        [IdUsuario] INT NULL, -- Referencia externa a SeguridadBiblioteca.Usuario
+        [IdUsuario] UNIQUEIDENTIFIER NULL, -- Referencia externa a SeguridadBiblioteca.Usuario
         [NombreUsuario] NVARCHAR(100) NULL,
         [TipoOperacion] NVARCHAR(50) NOT NULL, -- 'Prestamo', 'Devolucion', 'Renovacion', 'ConsultaMaterial', 'GestionAlumno', etc.
         [Modulo] NVARCHAR(100) NOT NULL, -- Nombre del módulo/formulario
@@ -54,7 +54,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sp_Reg
 GO
 
 CREATE PROCEDURE [dbo].[sp_RegistrarBitacoraBibliotecario]
-    @IdUsuario INT = NULL,
+    @IdUsuario UNIQUEIDENTIFIER = NULL,
     @NombreUsuario NVARCHAR(100) = NULL,
     @TipoOperacion NVARCHAR(50),
     @Modulo NVARCHAR(100),

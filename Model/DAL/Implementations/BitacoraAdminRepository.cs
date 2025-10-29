@@ -294,7 +294,7 @@ namespace DAL.Implementations
             {
                 IdBitacora = reader.GetInt32(reader.GetOrdinal("IdBitacora")),
                 Fecha = reader.GetDateTime(reader.GetOrdinal("Fecha")),
-                IdUsuario = reader.IsDBNull(reader.GetOrdinal("IdUsuario")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                IdUsuario = reader.IsDBNull(reader.GetOrdinal("IdUsuario")) ? (Guid?)null : reader.GetGuid(reader.GetOrdinal("IdUsuario")),
                 NombreUsuario = reader.IsDBNull(reader.GetOrdinal("NombreUsuario")) ? null : reader.GetString(reader.GetOrdinal("NombreUsuario")),
                 TipoEvento = reader.GetString(reader.GetOrdinal("TipoEvento")),
                 Modulo = reader.GetString(reader.GetOrdinal("Modulo")),
