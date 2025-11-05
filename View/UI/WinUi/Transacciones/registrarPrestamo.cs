@@ -17,7 +17,7 @@ namespace UI.WinUi.Transacciones
         private PrestamoBLL _prestamoBLL;
         private InscripcionBLL _inscripcionBLL;
         private EjemplarBLL _ejemplarBLL;
-        private BitacoraBibliotecarioBLL _bitacoraBLL;
+        private BitacoraOperacionesBLL _bitacoraBLL;
         private List<MaterialDetalle> _materialesFiltrados;
         private List<Alumno> _alumnosGrado;
         private Ejemplar _ejemplarSeleccionado; // Ejemplar seleccionado por el usuario
@@ -49,7 +49,7 @@ namespace UI.WinUi.Transacciones
             _prestamoBLL = new PrestamoBLL();
             _inscripcionBLL = new InscripcionBLL();
             _ejemplarBLL = new EjemplarBLL();
-            _bitacoraBLL = new BitacoraBibliotecarioBLL();
+            _bitacoraBLL = new BitacoraOperacionesBLL();
             _materialesFiltrados = new List<MaterialDetalle>();
             _alumnosGrado = new List<Alumno>();
             ConfigurarFormulario();
@@ -567,7 +567,7 @@ namespace UI.WinUi.Transacciones
                 _prestamoBLL.RegistrarPrestamo(prestamo);
 
                 // Registrar en bitácora
-                _bitacoraBLL.RegistrarOperacion(new BitacoraBibliotecario
+                _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
                 {
                     IdUsuario = _usuarioLogueado.IdUsuario,
                     NombreUsuario = _usuarioLogueado.Nombre,

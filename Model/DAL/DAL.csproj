@@ -43,8 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contracts\IAlumnoRepository.cs" />
-    <Compile Include="Contracts\IBitacoraAdminRepository.cs" />
-    <Compile Include="Contracts\IBitacoraBibliotecarioRepository.cs" />
+    <Compile Include="Contracts\IBitacoraSeguridadRepository.cs" />
+    <Compile Include="Contracts\IBitacoraOperacionesRepository.cs" />
     <Compile Include="Contracts\IDevolucionRepository.cs" />
     <Compile Include="Contracts\IEjemplarRepository.cs" />
     <Compile Include="Contracts\IGenericRepository.cs" />
@@ -55,8 +55,8 @@
     <Compile Include="Contracts\IUnitOfWork.cs" />
     <Compile Include="Implementations\AlumnoRepository.cs" />
     <Compile Include="Implementations\BaseRepository.cs" />
-    <Compile Include="Implementations\BitacoraAdminRepository.cs" />
-    <Compile Include="Implementations\BitacoraBibliotecarioRepository.cs" />
+    <Compile Include="Implementations\BitacoraSeguridadRepository.cs" />
+    <Compile Include="Implementations\BitacoraOperacionesRepository.cs" />
     <Compile Include="Implementations\DevolucionRepository.cs" />
     <Compile Include="Implementations\EjemplarRepository.cs" />
     <Compile Include="Implementations\HistorialEstadoEjemplarRepository.cs" />

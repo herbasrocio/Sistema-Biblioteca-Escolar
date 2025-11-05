@@ -77,6 +77,9 @@ namespace ServicesSecurity.Services
                 // Cargar permisos del usuario
                 CargarPermisosUsuario(usuarioDB);
 
+                // Actualizar fecha de último acceso
+                DAL.Implementations.UsuarioRepository.Current.UpdateFechaUltimoAcceso(usuarioDB.IdUsuario);
+
                 return usuarioDB;
             }
             catch (AutenticacionException)

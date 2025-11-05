@@ -3,12 +3,14 @@ using System.Linq;
 using System.Windows.Forms;
 using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.Services;
+using BLL;
 
 namespace UI.WinUi.Administrador
 {
     public partial class menu : Form
     {
         private Usuario _usuarioLogueado;
+        private BitacoraSeguridadBLL _bitacoraSeguridadBLL;
 
         // Nombres de las patentes que controlan cada opción del menú
         private const string PATENTE_USUARIOS = "Gestión Usuarios";
@@ -19,13 +21,14 @@ namespace UI.WinUi.Administrador
         private const string PATENTE_GESTIONAR_EJEMPLARES = "Gestionar Ejemplares";
         private const string PATENTE_ALUMNOS = "Gestión Alumnos";
         private const string PATENTE_PRESTAMOS = "Gestión Préstamos";
+        private const string PATENTE_RENOVAR_PRESTAMO = "renovarPrestamo";
         private const string PATENTE_DEVOLUCIONES = "Gestión Devoluciones";
         private const string PATENTE_REPORTES = "Consultar Reportes";
         private const string PATENTE_REPORTE_PRESTAMOS_ACTIVOS = "reportePrestamosActivos";
         private const string PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS = "reporteMaterialesMasPrestados";
         private const string PATENTE_REPORTE_USO_POR_GRADO = "reporteUsoPorGrado";
-        private const string PATENTE_BITACORA_ADMIN = "consultarBitacoraAdmin";
-        private const string PATENTE_BITACORA_BIBLIOTECARIO = "consultarBitacoraBibliotecario";
+        private const string PATENTE_BITACORA_SEGURIDAD = "consultarBitacoraSeguridad";
+        private const string PATENTE_BITACORA_OPERACIONES = "consultarBitacoraOperaciones";
 
         public menu()
         {
@@ -36,6 +39,7 @@ namespace UI.WinUi.Administrador
         public menu(Usuario usuario) : this()
         {
             _usuarioLogueado = usuario;
+            _bitacoraSeguridadBLL = new BitacoraSeguridadBLL();
             ActualizarTextos();
             ConfigurarVisibilidadPorPermisos();
         }
@@ -69,6 +73,7 @@ namespace UI.WinUi.Administrador
             renovarPrestamoToolStripMenuItem.Text = LanguageManager.Translate("renovar_prestamo");
             devolucionesToolStripMenuItem.Text = LanguageManager.Translate("devoluciones");
             reportesToolStripMenuItem.Text = LanguageManager.Translate("reportes");
+            bitacorasToolStripMenuItem.Text = LanguageManager.Translate("bitacoras");
             consultarBitacoraAdminToolStripMenuItem.Text = LanguageManager.Translate("bitacora_admin_titulo");
             consultarBitacoraBibliotecarioToolStripMenuItem.Text = LanguageManager.Translate("bitacora_bibliotecario_titulo");
             cerrarSesionToolStripMenuItem.Text = LanguageManager.Translate("cerrar_sesion");
@@ -116,18 +121,24 @@ namespace UI.WinUi.Administrador
 
             devolucionesToolStripMenuItem.Visible = TienePermiso(PATENTE_DEVOLUCIONES);
 
-            // Reportes: visible si tiene al menos uno de los submenús
-            bool tieneReportePrestamos = TienePermiso(PATENTE_REPORTE_PRESTAMOS_ACTIVOS);
-            bool tieneReporteMateriales = TienePermiso(PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS);
-            bool tieneReporteGrado = TienePermiso(PATENTE_REPORTE_USO_POR_GRADO);
-            bool tieneBitacoraAdmin = TienePermiso(PATENTE_BITACORA_ADMIN);
-            bool tieneBitacoraBibliotecario = TienePermiso(PATENTE_BITACORA_BIBLIOTECARIO);
-            reportesToolStripMenuItem.Visible = tieneReportePrestamos || tieneReporteMateriales || tieneReporteGrado || tieneBitacoraAdmin || tieneBitacoraBibliotecario;
+            // Reportes: visible si tiene el permiso maestro "Consultar Reportes"
+            bool tieneAccesoReportes = TienePermiso(PATENTE_REPORTES);
+            reportesToolStripMenuItem.Visible = tieneAccesoReportes;
+
+            // Los reportes individuales se muestran si tiene acceso al módulo Y el permiso específico
+            bool tieneReportePrestamos = tieneAccesoReportes && TienePermiso(PATENTE_REPORTE_PRESTAMOS_ACTIVOS);
+            bool tieneReporteMateriales = tieneAccesoReportes && TienePermiso(PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS);
+            bool tieneReporteGrado = tieneAccesoReportes && TienePermiso(PATENTE_REPORTE_USO_POR_GRADO);
             reportePrestamosActivosToolStripMenuItem.Visible = tieneReportePrestamos;
             reporteMaterialesMasPrestadosToolStripMenuItem.Visible = tieneReporteMateriales;
             reporteUsoPorGradoToolStripMenuItem.Visible = tieneReporteGrado;
-            consultarBitacoraAdminToolStripMenuItem.Visible = tieneBitacoraAdmin;
-            consultarBitacoraBibliotecarioToolStripMenuItem.Visible = tieneBitacoraBibliotecario;
+
+            // Bitácoras: visible si tiene al menos una de las bitácoras
+            bool tieneBitacoraSeguridad = TienePermiso(PATENTE_BITACORA_SEGURIDAD);
+            bool tieneBitacoraOperaciones = TienePermiso(PATENTE_BITACORA_OPERACIONES);
+            bitacorasToolStripMenuItem.Visible = tieneBitacoraSeguridad || tieneBitacoraOperaciones;
+            consultarBitacoraAdminToolStripMenuItem.Visible = tieneBitacoraSeguridad;
+            consultarBitacoraBibliotecarioToolStripMenuItem.Visible = tieneBitacoraOperaciones;
         }
 
         private bool TienePermiso(string nombrePatente)
@@ -136,10 +147,40 @@ namespace UI.WinUi.Administrador
             return _usuarioLogueado?.TienePermiso(nombrePatente) ?? false;
         }
 
+        /// <summary>
+        /// Verifica si el usuario tiene permiso y registra en bitácora si el acceso es denegado
+        /// </summary>
+        private bool VerificarYRegistrarAcceso(string nombrePatente, string nombreFormulario)
+        {
+            bool tienePermiso = TienePermiso(nombrePatente);
+
+            if (!tienePermiso)
+            {
+                // Registrar intento de acceso denegado en bitácora
+                _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                    modulo: "Seguridad",
+                    accion: "Acceso denegado",
+                    detalle: $"Usuario '{_usuarioLogueado.Nombre}' intentó acceder a '{nombreFormulario}' sin permiso '{nombrePatente}'",
+                    idUsuario: _usuarioLogueado.IdUsuario,
+                    nombreUsuario: _usuarioLogueado.Nombre,
+                    gravedad: "Medio"
+                );
+            }
+
+            return tienePermiso;
+        }
+
         private void usuariosToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_USUARIOS, "Gestión de Usuarios"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 gestionUsuarios formGestion = new gestionUsuarios(_usuarioLogueado);
                 formGestion.ShowDialog();
             }
@@ -154,6 +195,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_PERMISOS, "Gestión de Permisos"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 gestionPermisos formPermisos = new gestionPermisos(_usuarioLogueado);
                 formPermisos.ShowDialog();
             }
@@ -168,6 +216,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_CONSULTAR_MATERIAL, "Consultar Material"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 consultarMaterial formConsultar = new consultarMaterial(_usuarioLogueado);
                 formConsultar.ShowDialog();
             }
@@ -182,6 +237,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_REGISTRAR_MATERIAL, "Registrar Material"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 RegistrarMaterial formRegistrar = new RegistrarMaterial(_usuarioLogueado);
                 formRegistrar.ShowDialog();
             }
@@ -196,6 +258,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_ALUMNOS, "Gestión de Alumnos"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 gestionAlumnos formAlumnos = new gestionAlumnos(_usuarioLogueado);
                 formAlumnos.ShowDialog();
             }
@@ -210,6 +279,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_PRESTAMOS, "Registro de Préstamos"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 UI.WinUi.Transacciones.registrarPrestamo formPrestamo = new UI.WinUi.Transacciones.registrarPrestamo(_usuarioLogueado);
                 formPrestamo.ShowDialog();
             }
@@ -224,6 +300,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_RENOVAR_PRESTAMO, "Renovar Préstamo"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 UI.WinUi.Transacciones.renovarPrestamo formRenovar = new UI.WinUi.Transacciones.renovarPrestamo(_usuarioLogueado);
                 formRenovar.ShowDialog();
             }
@@ -238,6 +321,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_DEVOLUCIONES, "Gestión de Devoluciones"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 UI.WinUi.Transacciones.registrarDevolucion formDevolucion = new UI.WinUi.Transacciones.registrarDevolucion(_usuarioLogueado);
                 formDevolucion.ShowDialog();
             }
@@ -252,6 +342,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_REPORTE_PRESTAMOS_ACTIVOS, "Reporte Préstamos Activos"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 UI.WinUi.Reportes.ReportePrestamosActivos formReporte = new UI.WinUi.Reportes.ReportePrestamosActivos(_usuarioLogueado);
                 formReporte.ShowDialog();
             }
@@ -266,6 +363,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS, "Reporte Materiales Más Prestados"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 UI.WinUi.Reportes.ReporteMaterialesMasPrestados formReporte = new UI.WinUi.Reportes.ReporteMaterialesMasPrestados(_usuarioLogueado);
                 formReporte.ShowDialog();
             }
@@ -280,6 +384,13 @@ namespace UI.WinUi.Administrador
         {
             try
             {
+                if (!VerificarYRegistrarAcceso(PATENTE_REPORTE_USO_POR_GRADO, "Reporte Uso por Grado"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 UI.WinUi.Reportes.ReporteUsoPorGrado formReporte = new UI.WinUi.Reportes.ReporteUsoPorGrado(_usuarioLogueado);
                 formReporte.ShowDialog();
             }
@@ -294,12 +405,19 @@ namespace UI.WinUi.Administrador
         {
             try
             {
-                UI.WinUi.Reportes.ConsultarBitacoraAdmin formBitacoraAdmin = new UI.WinUi.Reportes.ConsultarBitacoraAdmin(_usuarioLogueado);
-                formBitacoraAdmin.ShowDialog();
+                if (!VerificarYRegistrarAcceso(PATENTE_BITACORA_SEGURIDAD, "Consultar Bitácora de Seguridad"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                UI.WinUi.Bitacoras.ConsultarBitacoraSeguridad formBitacoraSeguridad = new UI.WinUi.Bitacoras.ConsultarBitacoraSeguridad(_usuarioLogueado);
+                formBitacoraSeguridad.ShowDialog();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al abrir bitácora de administrador: {ex.Message}",
+                MessageBox.Show($"Error al abrir bitácora de seguridad: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -308,12 +426,19 @@ namespace UI.WinUi.Administrador
         {
             try
             {
-                UI.WinUi.Reportes.ConsultarBitacoraBibliotecario formBitacoraBibliotecario = new UI.WinUi.Reportes.ConsultarBitacoraBibliotecario(_usuarioLogueado);
-                formBitacoraBibliotecario.ShowDialog();
+                if (!VerificarYRegistrarAcceso(PATENTE_BITACORA_OPERACIONES, "Consultar Bitácora de Operaciones"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                UI.WinUi.Bitacoras.ConsultarBitacoraOperaciones formBitacoraOperaciones = new UI.WinUi.Bitacoras.ConsultarBitacoraOperaciones(_usuarioLogueado);
+                formBitacoraOperaciones.ShowDialog();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al abrir bitácora de bibliotecario: {ex.Message}",
+                MessageBox.Show($"Error al abrir bitácora de operaciones: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -330,6 +455,16 @@ namespace UI.WinUi.Administrador
 
                 if (resultado == DialogResult.Yes)
                 {
+                    // Registrar cierre de sesión en bitácora
+                    _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                        modulo: "Login",
+                        accion: "Cierre de sesión",
+                        detalle: $"Usuario '{_usuarioLogueado.Nombre}' cerró sesión",
+                        idUsuario: _usuarioLogueado.IdUsuario,
+                        nombreUsuario: _usuarioLogueado.Nombre,
+                        gravedad: "Bajo"
+                    );
+
                     // Cerrar este formulario
                     this.Close();
 

@@ -42,8 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlumnoBLL.cs" />
-    <Compile Include="BitacoraAdminBLL.cs" />
-    <Compile Include="BitacoraBibliotecarioBLL.cs" />
+    <Compile Include="BitacoraSeguridadBLL.cs" />
+    <Compile Include="BitacoraOperacionesBLL.cs" />
     <Compile Include="DevolucionBLL.cs" />
     <Compile Include="EjemplarBLL.cs" />
     <Compile Include="InscripcionBLL.cs" />

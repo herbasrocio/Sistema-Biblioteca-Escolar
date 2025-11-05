@@ -76,8 +76,7 @@ namespace ServicesSecurity.BLL
         /// <param name="email">Email del usuario</param>
         /// <param name="password">Contraseña</param>
         /// <param name="idFamiliaRol">ID de la Familia que representa el rol</param>
-        /// <param name="idioma">Idioma preferido del usuario (opcional, default: es-AR)</param>
-        public static void CrearUsuario(string nombre, string email, string password, Guid idFamiliaRol, string idioma = "es-AR")
+        public static void CrearUsuario(string nombre, string email, string password, Guid idFamiliaRol)
         {
             try
             {
@@ -112,8 +111,7 @@ namespace ServicesSecurity.BLL
                     Email = email,
                     Password = password,
                     Clave = CryptographyService.HashPassword(password),
-                    Activo = true,
-                    IdiomaPreferido = idioma
+                    Activo = true
                 };
 
                 ServicesSecurity.DAL.Implementations.UsuarioRepository.Current.Insert(nuevoUsuario);
@@ -480,33 +478,6 @@ namespace ServicesSecurity.BLL
             {
                 ExceptionManager.Current.Handle(ex);
                 throw new Exception("Error al quitar patente del usuario", ex);
-            }
-        }
-
-        #endregion
-
-        #region Gestión de Idioma
-
-        /// <summary>
-        /// Cambia el idioma preferido de un usuario
-        /// </summary>
-        public static void CambiarIdiomaPreferido(Guid idUsuario, string idioma)
-        {
-            try
-            {
-                var usuario = ServicesSecurity.DAL.Implementations.UsuarioRepository.Current.SelectOne(idUsuario);
-                if (usuario == null)
-                {
-                    throw new UsuarioNoEncontradoException($"Usuario con ID {idUsuario}");
-                }
-
-                usuario.IdiomaPreferido = idioma;
-                ServicesSecurity.DAL.Implementations.UsuarioRepository.Current.Update(usuario);
-            }
-            catch (Exception ex)
-            {
-                ExceptionManager.Current.Handle(ex);
-                throw new Exception("Error al cambiar idioma preferido del usuario", ex);
             }
         }
 

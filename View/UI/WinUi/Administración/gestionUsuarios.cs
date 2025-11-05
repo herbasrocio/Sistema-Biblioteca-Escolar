@@ -12,6 +12,7 @@ using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.DomainModel.Exceptions;
 using ServicesSecurity.BLL;
 using ServicesSecurity.Services;
+using BLL;
 
 namespace UI.WinUi.Administrador
 {
@@ -21,6 +22,7 @@ namespace UI.WinUi.Administrador
         private Usuario _usuarioSeleccionado;
         private bool _modoEdicion = false;
         private const string PLACEHOLDER_PASSWORD = "••••••••";
+        private BitacoraSeguridadBLL _bitacoraSeguridadBLL;
 
         public gestionUsuarios()
         {
@@ -30,6 +32,7 @@ namespace UI.WinUi.Administrador
         public gestionUsuarios(Usuario usuario) : this()
         {
             _usuarioLogueado = usuario;
+            _bitacoraSeguridadBLL = new BitacoraSeguridadBLL();
             ConfigurarFormulario();
         }
 
@@ -228,6 +231,12 @@ namespace UI.WinUi.Administrador
             _usuarioSeleccionado = null;
             LimpiarCampos();
             DesbloquearCampos();
+
+            // Asegurar que el campo de contraseña esté completamente habilitado para nuevo usuario
+            txtContraseña.ReadOnly = false;
+            txtContraseña.UseSystemPasswordChar = true;
+            txtContraseña.BackColor = System.Drawing.Color.White;
+
             btnGuardar.Enabled = true;
             txtNombreUsuario.Focus();
         }
@@ -258,10 +267,23 @@ namespace UI.WinUi.Administrador
                     return;
                 }
 
+                // Validar contraseña obligatoria para nuevo usuario
+                if (!_modoEdicion && string.IsNullOrWhiteSpace(password))
+                {
+                    MessageBox.Show("Debe ingresar una contraseña para el nuevo usuario", "Validación",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtContraseña.Focus();
+                    return;
+                }
+
                 if (_modoEdicion && _usuarioSeleccionado != null)
                 {
                     // Si la contraseña es el placeholder, enviar string vacío para no actualizarla
                     string passwordToUpdate = (password == PLACEHOLDER_PASSWORD) ? "" : password;
+
+                    // Obtener rol anterior para la bitácora
+                    var rolAnterior = _usuarioSeleccionado.ObtenerFamiliaRol();
+                    string nombreRolAnterior = rolAnterior != null ? rolAnterior.NombreRol : "Sin rol";
 
                     // Actualizar usuario existente
                     UsuarioBLL.ActualizarUsuario(
@@ -272,13 +294,39 @@ namespace UI.WinUi.Administrador
                         rolSeleccionado.IdComponent  // Pasar ID de la Familia de rol
                     );
 
+                    // Registrar en bitácora
+                    string detalle = $"Usuario '{nombre}' actualizado. Email: {email}. Rol: {rolSeleccionado.NombreRol}";
+                    if (!string.IsNullOrWhiteSpace(passwordToUpdate))
+                        detalle += ". Contraseña modificada";
+                    if (rolAnterior?.IdComponent != rolSeleccionado.IdComponent)
+                        detalle += $". Rol cambiado de '{nombreRolAnterior}' a '{rolSeleccionado.NombreRol}'";
+
+                    _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                        modulo: "Usuarios",
+                        accion: "Modificación de usuario",
+                        detalle: detalle,
+                        idUsuario: _usuarioLogueado.IdUsuario,
+                        nombreUsuario: _usuarioLogueado.Nombre,
+                        gravedad: "Alto"
+                    );
+
                     MessageBox.Show("Usuario actualizado correctamente",
                         "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    // Crear nuevo usuario (idioma por defecto: es-AR)
-                    UsuarioBLL.CrearUsuario(nombre, email, password, rolSeleccionado.IdComponent, "es-AR");
+                    // Crear nuevo usuario
+                    UsuarioBLL.CrearUsuario(nombre, email, password, rolSeleccionado.IdComponent);
+
+                    // Registrar en bitácora
+                    _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                        modulo: "Usuarios",
+                        accion: "Creación de usuario",
+                        detalle: $"Usuario '{nombre}' creado con email '{email}' y rol '{rolSeleccionado.NombreRol}'",
+                        idUsuario: _usuarioLogueado.IdUsuario,
+                        nombreUsuario: _usuarioLogueado.Nombre,
+                        gravedad: "Alto"
+                    );
 
                     MessageBox.Show("Usuario creado correctamente",
                         "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -296,6 +344,16 @@ namespace UI.WinUi.Administrador
             }
             catch (Exception ex)
             {
+                // Registrar error crítico en bitácora
+                _bitacoraSeguridadBLL.RegistrarError(
+                    modulo: "Usuarios",
+                    accion: _modoEdicion ? "Error al actualizar usuario" : "Error al crear usuario",
+                    detalle: $"Error: {ex.Message}. StackTrace: {ex.StackTrace}",
+                    idUsuario: _usuarioLogueado?.IdUsuario,
+                    nombreUsuario: _usuarioLogueado?.Nombre,
+                    gravedad: "Alto"
+                );
+
                 MessageBox.Show($"Error al guardar: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -382,7 +440,23 @@ namespace UI.WinUi.Administrador
 
                 if (confirmResult == DialogResult.Yes)
                 {
+                    // Guardar datos antes de eliminar para la bitácora
+                    string nombreUsuarioEliminado = _usuarioSeleccionado.Nombre;
+                    string emailUsuarioEliminado = _usuarioSeleccionado.Email ?? "";
+                    var rolUsuarioEliminado = _usuarioSeleccionado.ObtenerFamiliaRol();
+                    string nombreRolEliminado = rolUsuarioEliminado != null ? rolUsuarioEliminado.NombreRol : "Sin rol";
+
                     UsuarioBLL.EliminarUsuario(_usuarioSeleccionado.IdUsuario);
+
+                    // Registrar en bitácora
+                    _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                        modulo: "Usuarios",
+                        accion: "Eliminación de usuario",
+                        detalle: $"Usuario '{nombreUsuarioEliminado}' eliminado. Email: {emailUsuarioEliminado}. Rol: {nombreRolEliminado}",
+                        idUsuario: _usuarioLogueado.IdUsuario,
+                        nombreUsuario: _usuarioLogueado.Nombre,
+                        gravedad: "Alto"
+                    );
 
                     MessageBox.Show("Usuario eliminado correctamente",
                         "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -392,6 +466,16 @@ namespace UI.WinUi.Administrador
             }
             catch (Exception ex)
             {
+                // Registrar error crítico en bitácora
+                _bitacoraSeguridadBLL.RegistrarError(
+                    modulo: "Usuarios",
+                    accion: "Error al eliminar usuario",
+                    detalle: $"Error al intentar eliminar usuario '{_usuarioSeleccionado?.Nombre}'. Error: {ex.Message}. StackTrace: {ex.StackTrace}",
+                    idUsuario: _usuarioLogueado?.IdUsuario,
+                    nombreUsuario: _usuarioLogueado?.Nombre,
+                    gravedad: "Alto"
+                );
+
                 MessageBox.Show($"Error al eliminar: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -481,6 +565,8 @@ namespace UI.WinUi.Administrador
             txtNombreUsuario.Clear();
             txtEmail.Clear();
             txtContraseña.Clear();
+            txtContraseña.ReadOnly = false;
+            txtContraseña.UseSystemPasswordChar = true;
             comboBoxPerfil.SelectedIndex = -1;
             lblEstado.Text = LanguageManager.Translate("estado") + ":";
             _usuarioSeleccionado = null;

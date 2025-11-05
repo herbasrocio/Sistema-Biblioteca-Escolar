@@ -43,8 +43,8 @@
   <ItemGroup>
     <Compile Include="Alumno.cs" />
     <Compile Include="AnioLectivo.cs" />
-    <Compile Include="BitacoraAdmin.cs" />
-    <Compile Include="BitacoraBibliotecario.cs" />
+    <Compile Include="BitacoraSeguridad.cs" />
+    <Compile Include="BitacoraOperaciones.cs" />
     <Compile Include="Devolucion.cs" />
     <Compile Include="DTOs\ReportePrestamo.cs" />
     <Compile Include="DTOs\ReporteEstadisticaMaterial.cs" />

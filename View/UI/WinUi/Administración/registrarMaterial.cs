@@ -15,6 +15,7 @@ namespace UI.WinUi.Administrador
         private Usuario _usuarioLogueado;
         private MaterialBLL _materialBLL;
         private EjemplarBLL _ejemplarBLL;
+        private BitacoraOperacionesBLL _bitacoraBLL;
 
         public RegistrarMaterial()
         {
@@ -26,6 +27,7 @@ namespace UI.WinUi.Administrador
             _usuarioLogueado = usuario;
             _materialBLL = new MaterialBLL();
             _ejemplarBLL = new EjemplarBLL();
+            _bitacoraBLL = new BitacoraOperacionesBLL();
             ConfigurarFormulario();
         }
 
@@ -170,6 +172,19 @@ namespace UI.WinUi.Administrador
 
                         // Si todo salió bien, confirmar la transacción
                         transaction.Complete();
+
+                        // Registrar en bitácora
+                        _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                        {
+                            IdUsuario = _usuarioLogueado.IdUsuario,
+                            NombreUsuario = _usuarioLogueado.Nombre,
+                            TipoOperacion = "GestionMaterial",
+                            Modulo = "Materiales",
+                            Accion = "Registrar material",
+                            EntidadAfectada = "Material",
+                            IdEntidad = null,
+                            Detalle = $"Material '{nuevoMaterial.Titulo}' de {nuevoMaterial.Autor} registrado. Tipo: {nuevoMaterial.Tipo}. ISBN: {nuevoMaterial.ISBN}. {cantidadCreada} ejemplar(es) creado(s)."
+                        });
 
                         MessageBox.Show($"Material registrado exitosamente.\n{cantidadCreada} ejemplar(es) creado(s) automáticamente.",
                             LanguageManager.Translate("exito"),

@@ -174,17 +174,17 @@
     <Compile Include="WinUi\Reportes\ReporteUsoPorGrado.Designer.cs">
       <DependentUpon>ReporteUsoPorGrado.cs</DependentUpon>
     </Compile>
-    <Compile Include="WinUi\Reportes\ConsultarBitacoraAdmin.cs">
+    <Compile Include="WinUi\Bitacoras\ConsultarBitacoraSeguridad.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WinUi\Reportes\ConsultarBitacoraAdmin.Designer.cs">
-      <DependentUpon>ConsultarBitacoraAdmin.cs</DependentUpon>
+    <Compile Include="WinUi\Bitacoras\ConsultarBitacoraSeguridad.Designer.cs">
+      <DependentUpon>ConsultarBitacoraSeguridad.cs</DependentUpon>
     </Compile>
-    <Compile Include="WinUi\Reportes\ConsultarBitacoraBibliotecario.cs">
+    <Compile Include="WinUi\Bitacoras\ConsultarBitacoraOperaciones.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WinUi\Reportes\ConsultarBitacoraBibliotecario.Designer.cs">
-      <DependentUpon>ConsultarBitacoraBibliotecario.cs</DependentUpon>
+    <Compile Include="WinUi\Bitacoras\ConsultarBitacoraOperaciones.Designer.cs">
+      <DependentUpon>ConsultarBitacoraOperaciones.cs</DependentUpon>
     </Compile>
     <Compile Include="WinUi\Administración\Login.cs">
       <SubType>Form</SubType>
@@ -246,11 +246,11 @@
     <EmbeddedResource Include="WinUi\Reportes\ReporteUsoPorGrado.resx">
       <DependentUpon>ReporteUsoPorGrado.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WinUi\Reportes\ConsultarBitacoraAdmin.resx">
-      <DependentUpon>ConsultarBitacoraAdmin.cs</DependentUpon>
+    <EmbeddedResource Include="WinUi\Bitacoras\ConsultarBitacoraSeguridad.resx">
+      <DependentUpon>ConsultarBitacoraSeguridad.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WinUi\Reportes\ConsultarBitacoraBibliotecario.resx">
-      <DependentUpon>ConsultarBitacoraBibliotecario.cs</DependentUpon>
+    <EmbeddedResource Include="WinUi\Bitacoras\ConsultarBitacoraOperaciones.resx">
+      <DependentUpon>ConsultarBitacoraOperaciones.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Administración\Login.resx">
       <DependentUpon>Login.cs</DependentUpon>

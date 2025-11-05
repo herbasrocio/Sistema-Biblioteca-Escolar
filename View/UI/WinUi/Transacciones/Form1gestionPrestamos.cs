@@ -114,6 +114,22 @@ namespace UI.WinUi.Transacciones
 
         private void CargarFormularioRenovarPrestamo()
         {
+            // Verificar permiso antes de cargar el formulario
+            if (!TienePermiso("renovarPrestamo"))
+            {
+                MessageBox.Show(
+                    LanguageManager.Translate("sin_permisos"),
+                    LanguageManager.Translate("error"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                // Cambiar a la primera pestaña si no tiene permiso
+                if (tabControl.TabPages.Count > 0)
+                    tabControl.SelectedIndex = 0;
+
+                return;
+            }
+
             if (_formRenovarPrestamo == null || _formRenovarPrestamo.IsDisposed)
             {
                 _formRenovarPrestamo = new renovarPrestamo(_usuarioLogueado);
@@ -124,6 +140,12 @@ namespace UI.WinUi.Transacciones
 
             tabRenovarPrestamo.Controls.Add(_formRenovarPrestamo);
             _formRenovarPrestamo.Show();
+        }
+
+        private bool TienePermiso(string nombrePatente)
+        {
+            // Usar el método centralizado del Usuario que maneja el bypass de Administrador
+            return _usuarioLogueado?.TienePermiso(nombrePatente) ?? false;
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)

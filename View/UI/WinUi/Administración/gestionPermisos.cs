@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.Services;
 using ServicesSecurity.BLL;
+using BLL;
 
 namespace UI.WinUi.Administrador
 {
@@ -13,6 +14,7 @@ namespace UI.WinUi.Administrador
         private Usuario _usuarioLogueado;
         private Familia _familiaSeleccionada;
         private Usuario _usuarioSeleccionado;
+        private readonly BitacoraSeguridadBLL _bitacoraSeguridadBLL;
 
         public gestionPermisos()
         {
@@ -22,6 +24,7 @@ namespace UI.WinUi.Administrador
         public gestionPermisos(Usuario usuario) : this()
         {
             _usuarioLogueado = usuario;
+            _bitacoraSeguridadBLL = new BitacoraSeguridadBLL();
             ConfigurarFormulario();
         }
 
@@ -213,12 +216,29 @@ namespace UI.WinUi.Administrador
             {
                 var patentes = UsuarioBLL.ObtenerTodasLasPatentes();
 
-                // Filtrar solo las patentes del menú principal (FormName = "menu")
-                var patentesMenu = patentes.Where(p => p.FormName == "menu").OrderBy(p => p.MenuItemName).ToList();
+                // Filtrar solo las patentes que deben mostrarse:
+                // 1. Patentes del menú principal (FormName = "menu")
+                // 2. Patentes de reportes (FormName contiene "reporte")
+                // 3. Patentes de bitácoras (FormName contiene "bitacora")
+                // 4. Patentes específicas de formularios (renovarPrestamo, etc.)
+                // Excluir: Patentes internas de gestión (FormName empieza con "frm")
+                var patentesVisibles = patentes.Where(p =>
+                    p.FormName == "menu" ||
+                    p.FormName.ToLower().Contains("reporte") ||
+                    p.FormName.ToLower().Contains("bitacora") ||
+                    (p.FormName == "renovarPrestamo")
+                ).ToList();
+
+                // Ordenar patentes: primero las del menú, luego reportes, luego bitácoras
+                var patentesOrdenadas = patentesVisibles
+                    .OrderBy(p => GetCategoriaPatente(p.FormName))
+                    .ThenBy(p => p.Orden)
+                    .ThenBy(p => p.MenuItemName)
+                    .ToList();
 
                 // Cargar en CheckedListBox de roles
                 checkedListPatentesRol.Items.Clear();
-                foreach (var patente in patentesMenu)
+                foreach (var patente in patentesOrdenadas)
                 {
                     // Intentar obtener traducción, si no existe usar el texto de la BD
                     string claveTraduccion = ObtenerClaveTraduccionPermiso(patente.MenuItemName);
@@ -227,14 +247,20 @@ namespace UI.WinUi.Administrador
                     // Si la traducción no existe, usar el formato original
                     string textoMostrar = !string.IsNullOrEmpty(textoTraducido) && textoTraducido != claveTraduccion
                         ? textoTraducido
-                        : $"{patente.MenuItemName} - {patente.Descripcion}";
+                        : patente.MenuItemName;
+
+                    // Agregar prefijo "Reporte: " si es un reporte
+                    if (patente.FormName.ToLower().Contains("reporte"))
+                    {
+                        textoMostrar = "Reporte: " + textoMostrar;
+                    }
 
                     checkedListPatentesRol.Items.Add(new PatenteDisplay { Patente = patente, TextoMostrar = textoMostrar }, false);
                 }
 
                 // Cargar en CheckedListBox de usuarios
                 checkedListPatentesUsuario.Items.Clear();
-                foreach (var patente in patentesMenu)
+                foreach (var patente in patentesOrdenadas)
                 {
                     // Intentar obtener traducción, si no existe usar el texto de la BD
                     string claveTraduccion = ObtenerClaveTraduccionPermiso(patente.MenuItemName);
@@ -243,7 +269,13 @@ namespace UI.WinUi.Administrador
                     // Si la traducción no existe, usar el formato original
                     string textoMostrar = !string.IsNullOrEmpty(textoTraducido) && textoTraducido != claveTraduccion
                         ? textoTraducido
-                        : $"{patente.MenuItemName} - {patente.Descripcion}";
+                        : patente.MenuItemName;
+
+                    // Agregar prefijo "Reporte: " si es un reporte
+                    if (patente.FormName.ToLower().Contains("reporte"))
+                    {
+                        textoMostrar = "Reporte: " + textoMostrar;
+                    }
 
                     checkedListPatentesUsuario.Items.Add(new PatenteDisplay { Patente = patente, TextoMostrar = textoMostrar }, false);
                 }
@@ -253,6 +285,31 @@ namespace UI.WinUi.Administrador
                 MessageBox.Show($"Error al cargar patentes: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        /// <summary>
+        /// Obtiene la categoría de una patente para ordenamiento
+        /// </summary>
+        private int GetCategoriaPatente(string formName)
+        {
+            if (string.IsNullOrEmpty(formName))
+                return 999;
+
+            // Orden de prioridad:
+            // 1. Patentes del menú principal
+            if (formName == "menu")
+                return 1;
+
+            // 2. Patentes de reportes
+            if (formName.ToLower().Contains("reporte"))
+                return 2;
+
+            // 3. Patentes de bitácoras
+            if (formName.ToLower().Contains("bitacora"))
+                return 3;
+
+            // 4. Otras patentes (no deberían aparecer debido al filtro)
+            return 999;
         }
 
         /// <summary>
@@ -346,6 +403,9 @@ namespace UI.WinUi.Administrador
                     return;
                 }
 
+                // Obtener patentes actuales antes del cambio (para la bitácora)
+                var patentesAnteriores = FamiliaBLL.ObtenerPatentesDirectasDeFamilia(_familiaSeleccionada.IdComponent);
+
                 // Obtener patentes seleccionadas
                 var patentesSeleccionadas = new List<Patente>();
                 foreach (var item in checkedListPatentesRol.CheckedItems)
@@ -357,11 +417,42 @@ namespace UI.WinUi.Administrador
                 // Actualizar permisos del rol
                 FamiliaBLL.ActualizarPatentesDeRol(_familiaSeleccionada.IdComponent, patentesSeleccionadas);
 
-                MessageBox.Show(LanguageManager.Translate("permisos_actualizados"),
+                // Registrar en bitácora
+                var patentesAgregadas = patentesSeleccionadas.Where(p => !patentesAnteriores.Any(pa => pa.IdComponent == p.IdComponent)).ToList();
+                var patentesQuitadas = patentesAnteriores.Where(pa => !patentesSeleccionadas.Any(p => p.IdComponent == pa.IdComponent)).ToList();
+
+                string detalle = $"Rol '{_familiaSeleccionada.NombreRol}' modificado. ";
+                if (patentesAgregadas.Any())
+                    detalle += $"Permisos agregados: {string.Join(", ", patentesAgregadas.Select(p => p.MenuItemName))}. ";
+                if (patentesQuitadas.Any())
+                    detalle += $"Permisos quitados: {string.Join(", ", patentesQuitadas.Select(p => p.MenuItemName))}. ";
+
+                _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                    modulo: "Permisos",
+                    accion: "Modificación de permisos de rol",
+                    detalle: detalle,
+                    idUsuario: _usuarioLogueado.IdUsuario,
+                    nombreUsuario: _usuarioLogueado.Nombre,
+                    gravedad: "Alto"
+                );
+
+                string mensaje = LanguageManager.Translate("permisos_actualizados") + "\n\n" +
+                                 "IMPORTANTE: Los usuarios afectados deben cerrar sesión y volver a entrar para que los cambios surtan efecto.";
+                MessageBox.Show(mensaje,
                     LanguageManager.Translate("exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
+                // Registrar error crítico en bitácora
+                _bitacoraSeguridadBLL.RegistrarError(
+                    modulo: "Permisos",
+                    accion: "Error al guardar permisos de rol",
+                    detalle: $"Error al modificar permisos del rol '{_familiaSeleccionada?.NombreRol}'. Error: {ex.Message}. StackTrace: {ex.StackTrace}",
+                    idUsuario: _usuarioLogueado?.IdUsuario,
+                    nombreUsuario: _usuarioLogueado?.Nombre,
+                    gravedad: "Alto"
+                );
+
                 MessageBox.Show($"Error al guardar permisos: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -440,10 +531,26 @@ namespace UI.WinUi.Administrador
 
                 var nuevoRol = nuevoRolDisplay.Familia;
 
+                // Obtener rol anterior para la bitácora
+                var rolAnterior = _usuarioSeleccionado.ObtenerFamiliaRol();
+                string nombreRolAnterior = rolAnterior != null ? rolAnterior.NombreRol : "Sin rol";
+
                 // Cambiar el rol del usuario
                 UsuarioBLL.CambiarRol(_usuarioSeleccionado.IdUsuario, nuevoRol.IdComponent);
 
-                MessageBox.Show(LanguageManager.Translate("rol_actualizado"),
+                // Registrar en bitácora
+                _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                    modulo: "Usuarios",
+                    accion: "Cambio de rol de usuario",
+                    detalle: $"Usuario '{_usuarioSeleccionado.Nombre}' cambió de rol '{nombreRolAnterior}' a '{nuevoRol.NombreRol}'",
+                    idUsuario: _usuarioLogueado.IdUsuario,
+                    nombreUsuario: _usuarioLogueado.Nombre,
+                    gravedad: "Alto"
+                );
+
+                string mensaje = LanguageManager.Translate("rol_actualizado") + "\n\n" +
+                                 "IMPORTANTE: El usuario debe cerrar sesión y volver a entrar para que los cambios surtan efecto.";
+                MessageBox.Show(mensaje,
                     LanguageManager.Translate("exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 // Recargar datos
@@ -478,12 +585,17 @@ namespace UI.WinUi.Administrador
                 // Obtener patentes actuales del usuario
                 var patentesActuales = UsuarioBLL.ObtenerPatentesDelUsuario(_usuarioSeleccionado.IdUsuario);
 
+                // Listas para la bitácora
+                var patentesAgregadas = new List<Patente>();
+                var patentesQuitadas = new List<Patente>();
+
                 // Quitar patentes que ya no están seleccionadas
                 foreach (var patenteActual in patentesActuales)
                 {
                     if (!patentesSeleccionadas.Any(p => p.IdComponent == patenteActual.IdComponent))
                     {
                         UsuarioBLL.QuitarPatente(_usuarioSeleccionado.IdUsuario, patenteActual.IdComponent);
+                        patentesQuitadas.Add(patenteActual);
                     }
                 }
 
@@ -493,14 +605,46 @@ namespace UI.WinUi.Administrador
                     if (!patentesActuales.Any(p => p.IdComponent == patenteSeleccionada.IdComponent))
                     {
                         UsuarioBLL.AsignarPatente(_usuarioSeleccionado.IdUsuario, patenteSeleccionada.IdComponent);
+                        patentesAgregadas.Add(patenteSeleccionada);
                     }
                 }
 
-                MessageBox.Show(LanguageManager.Translate("permisos_actualizados"),
+                // Registrar en bitácora solo si hubo cambios
+                if (patentesAgregadas.Any() || patentesQuitadas.Any())
+                {
+                    string detalle = $"Permisos adicionales del usuario '{_usuarioSeleccionado.Nombre}' modificados. ";
+                    if (patentesAgregadas.Any())
+                        detalle += $"Permisos agregados: {string.Join(", ", patentesAgregadas.Select(p => p.MenuItemName))}. ";
+                    if (patentesQuitadas.Any())
+                        detalle += $"Permisos quitados: {string.Join(", ", patentesQuitadas.Select(p => p.MenuItemName))}. ";
+
+                    _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                        modulo: "Usuarios",
+                        accion: "Modificación de permisos adicionales de usuario",
+                        detalle: detalle,
+                        idUsuario: _usuarioLogueado.IdUsuario,
+                        nombreUsuario: _usuarioLogueado.Nombre,
+                        gravedad: "Alto"
+                    );
+                }
+
+                string mensaje = LanguageManager.Translate("permisos_actualizados") + "\n\n" +
+                                 "IMPORTANTE: El usuario debe cerrar sesión y volver a entrar para que los cambios surtan efecto.";
+                MessageBox.Show(mensaje,
                     LanguageManager.Translate("exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
+                // Registrar error crítico en bitácora
+                _bitacoraSeguridadBLL.RegistrarError(
+                    modulo: "Permisos",
+                    accion: "Error al guardar permisos adicionales de usuario",
+                    detalle: $"Error al modificar permisos del usuario '{_usuarioSeleccionado?.Nombre}'. Error: {ex.Message}. StackTrace: {ex.StackTrace}",
+                    idUsuario: _usuarioLogueado?.IdUsuario,
+                    nombreUsuario: _usuarioLogueado?.Nombre,
+                    gravedad: "Alto"
+                );
+
                 MessageBox.Show($"Error al guardar permisos: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

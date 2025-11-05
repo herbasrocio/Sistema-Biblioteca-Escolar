@@ -33,7 +33,7 @@ namespace ServicesSecurity.DAL.Implementations.Adapter
         public Usuario Adapt(object[] values)
         {
             //Hidratar el objeto usuario -> Nivel 1
-            // Orden: IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, DVH
+            // Orden: IdUsuario, Nombre, Email, Clave, Activo, DVH
             Usuario usuario = new Usuario()
             {
                 IdUsuario = Guid.Parse(values[0].ToString()),
@@ -41,8 +41,7 @@ namespace ServicesSecurity.DAL.Implementations.Adapter
                 Email = values.Length > 2 && values[2] != DBNull.Value ? values[2].ToString() : null,
                 Clave = values[3].ToString(),
                 Activo = values.Length > 4 && values[4] != DBNull.Value ? Convert.ToBoolean(values[4]) : true,
-                IdiomaPreferido = values.Length > 5 && values[5] != DBNull.Value ? values[5].ToString() : "es-AR",
-                DVH = values.Length > 6 && values[6] != DBNull.Value ? values[6].ToString() : null
+                DVH = values.Length > 5 && values[5] != DBNull.Value ? values[5].ToString() : null
             };
 
             //Nivel 2 de hidratación...

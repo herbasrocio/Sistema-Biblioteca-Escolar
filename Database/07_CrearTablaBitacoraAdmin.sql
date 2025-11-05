@@ -21,7 +21,7 @@ BEGIN
         [Modulo] NVARCHAR(100) NOT NULL, -- Nombre del módulo/formulario
         [Accion] NVARCHAR(255) NOT NULL, -- Descripción breve de la acción
         [Detalle] NVARCHAR(MAX) NULL, -- Información detallada (stack trace, datos anteriores, etc.)
-        [Criticidad] NVARCHAR(20) NOT NULL DEFAULT 'Media', -- 'Baja', 'Media', 'Alta', 'Critica'
+        [Gravedad] NVARCHAR(20) NOT NULL DEFAULT 'Medio', -- 'Bajo', 'Medio', 'Alto'
         [DireccionIP] NVARCHAR(45) NULL, -- IPv4 o IPv6
 
         CONSTRAINT [PK_BitacoraAdmin] PRIMARY KEY CLUSTERED ([IdBitacora] ASC),
@@ -59,16 +59,16 @@ CREATE PROCEDURE [dbo].[sp_RegistrarBitacoraAdmin]
     @Modulo NVARCHAR(100),
     @Accion NVARCHAR(255),
     @Detalle NVARCHAR(MAX) = NULL,
-    @Criticidad NVARCHAR(20) = 'Media',
+    @Gravedad NVARCHAR(20) = 'Medio',
     @DireccionIP NVARCHAR(45) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO [dbo].[BitacoraAdmin]
-        ([IdUsuario], [NombreUsuario], [TipoEvento], [Modulo], [Accion], [Detalle], [Criticidad], [DireccionIP])
+        ([IdUsuario], [NombreUsuario], [TipoEvento], [Modulo], [Accion], [Detalle], [Gravedad], [DireccionIP])
     VALUES
-        (@IdUsuario, @NombreUsuario, @TipoEvento, @Modulo, @Accion, @Detalle, @Criticidad, @DireccionIP);
+        (@IdUsuario, @NombreUsuario, @TipoEvento, @Modulo, @Accion, @Detalle, @Gravedad, @DireccionIP);
 
     RETURN SCOPE_IDENTITY();
 END

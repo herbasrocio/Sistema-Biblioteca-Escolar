@@ -43,6 +43,7 @@
             this.reportePrestamosActivosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reporteMaterialesMasPrestadosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reporteUsoPorGradoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.bitacorasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.consultarBitacoraAdminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.consultarBitacoraBibliotecarioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cerrarSesionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -67,6 +68,7 @@
             this.prestamosToolStripMenuItem,
             this.devolucionesToolStripMenuItem,
             this.reportesToolStripMenuItem,
+            this.bitacorasToolStripMenuItem,
             this.cerrarSesionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -160,9 +162,7 @@
             this.reportesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.reportePrestamosActivosToolStripMenuItem,
             this.reporteMaterialesMasPrestadosToolStripMenuItem,
-            this.reporteUsoPorGradoToolStripMenuItem,
-            this.consultarBitacoraAdminToolStripMenuItem,
-            this.consultarBitacoraBibliotecarioToolStripMenuItem});
+            this.reporteUsoPorGradoToolStripMenuItem});
             this.reportesToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.reportesToolStripMenuItem.Name = "reportesToolStripMenuItem";
             this.reportesToolStripMenuItem.Size = new System.Drawing.Size(75, 23);
@@ -189,18 +189,28 @@
             this.reporteUsoPorGradoToolStripMenuItem.Text = "Uso por Grado/División";
             this.reporteUsoPorGradoToolStripMenuItem.Click += new System.EventHandler(this.reporteUsoPorGradoToolStripMenuItem_Click);
             //
+            // bitacorasToolStripMenuItem
+            //
+            this.bitacorasToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.consultarBitacoraAdminToolStripMenuItem,
+            this.consultarBitacoraBibliotecarioToolStripMenuItem});
+            this.bitacorasToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.bitacorasToolStripMenuItem.Name = "bitacorasToolStripMenuItem";
+            this.bitacorasToolStripMenuItem.Size = new System.Drawing.Size(80, 23);
+            this.bitacorasToolStripMenuItem.Text = "Bitácoras";
+            //
             // consultarBitacoraAdminToolStripMenuItem
             //
-            this.consultarBitacoraAdminToolStripMenuItem.Name = "consultarBitacoraAdminToolStripMenuItem";
+            this.consultarBitacoraAdminToolStripMenuItem.Name = "consultarBitacoraSeguidadToolStripMenuItem";
             this.consultarBitacoraAdminToolStripMenuItem.Size = new System.Drawing.Size(280, 24);
-            this.consultarBitacoraAdminToolStripMenuItem.Text = "Consultar Bitácora Admin";
+            this.consultarBitacoraAdminToolStripMenuItem.Text = "Seguridad y Errores";
             this.consultarBitacoraAdminToolStripMenuItem.Click += new System.EventHandler(this.consultarBitacoraAdminToolStripMenuItem_Click);
             //
             // consultarBitacoraBibliotecarioToolStripMenuItem
             //
             this.consultarBitacoraBibliotecarioToolStripMenuItem.Name = "consultarBitacoraBibliotecarioToolStripMenuItem";
             this.consultarBitacoraBibliotecarioToolStripMenuItem.Size = new System.Drawing.Size(280, 24);
-            this.consultarBitacoraBibliotecarioToolStripMenuItem.Text = "Consultar Bitácora Bibliotecario";
+            this.consultarBitacoraBibliotecarioToolStripMenuItem.Text = "Operaciones de Biblioteca";
             this.consultarBitacoraBibliotecarioToolStripMenuItem.Click += new System.EventHandler(this.consultarBitacoraBibliotecarioToolStripMenuItem_Click);
             //
             // cerrarSesionToolStripMenuItem
@@ -307,6 +317,7 @@
         private System.Windows.Forms.ToolStripMenuItem reportePrestamosActivosToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem reporteMaterialesMasPrestadosToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem reporteUsoPorGradoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem bitacorasToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem consultarBitacoraAdminToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem consultarBitacoraBibliotecarioToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cerrarSesionToolStripMenuItem;

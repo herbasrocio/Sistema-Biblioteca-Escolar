@@ -21,8 +21,6 @@ namespace ServicesSecurity.DomainModel.Security.Composite
 
         public bool Activo { get; set; }
 
-        public string IdiomaPreferido { get; set; } // Idioma preferido del usuario (ej: "es-AR", "en-GB")
-
         public string DVH { get; set; } // Dígito Verificador Horizontal
 
         public string HashDH
@@ -89,17 +87,13 @@ namespace ServicesSecurity.DomainModel.Security.Composite
 
         /// <summary>
         /// Verifica si el usuario tiene un permiso específico
-        /// IMPORTANTE: Los administradores tienen acceso a TODOS los permisos automáticamente
+        /// Verifica en el árbol de permisos asignados (Familias y Patentes)
         /// </summary>
         /// <param name="nombrePatente">Nombre del permiso (FormName o MenuItemName)</param>
-        /// <returns>True si tiene el permiso o es Administrador</returns>
+        /// <returns>True si tiene el permiso asignado</returns>
         public bool TienePermiso(string nombrePatente)
         {
-            // Los administradores tienen acceso a TODO
-            if (TieneRol("Administrador"))
-                return true;
-
-            // Para otros usuarios, buscar el permiso en su árbol de permisos
+            // Buscar el permiso en el árbol de permisos del usuario
             if (Permisos == null)
                 return false;
 

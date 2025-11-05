@@ -19,7 +19,7 @@ namespace UI.WinUi.Transacciones
         private MaterialBLL _materialBLL;
         private EjemplarBLL _ejemplarBLL;
         private InscripcionBLL _inscripcionBLL;
-        private BitacoraBibliotecarioBLL _bitacoraBLL;
+        private BitacoraOperacionesBLL _bitacoraBLL;
         private List<Alumno> _alumnosGrado;
         private Timer _searchTimer;
         private const int SEARCH_DELAY = 500; // 500ms de delay para búsqueda en tiempo real
@@ -55,7 +55,7 @@ namespace UI.WinUi.Transacciones
             _materialBLL = new MaterialBLL();
             _ejemplarBLL = new EjemplarBLL();
             _inscripcionBLL = new InscripcionBLL();
-            _bitacoraBLL = new BitacoraBibliotecarioBLL();
+            _bitacoraBLL = new BitacoraOperacionesBLL();
             _alumnosGrado = new List<Alumno>();
             ConfigurarFormulario();
         }
@@ -421,7 +421,7 @@ namespace UI.WinUi.Transacciones
                 _devolucionBLL.RegistrarDevolucion(devolucion);
 
                 // Registrar en bitácora
-                _bitacoraBLL.RegistrarOperacion(new BitacoraBibliotecario
+                _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
                 {
                     IdUsuario = _usuarioLogueado.IdUsuario,
                     NombreUsuario = _usuarioLogueado.Nombre,

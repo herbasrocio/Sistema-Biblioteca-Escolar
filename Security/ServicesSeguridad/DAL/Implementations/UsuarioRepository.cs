@@ -92,12 +92,12 @@ namespace ServicesSecurity.DAL.Implementations
         #region Statements
         private string InsertStatement
         {
-            get => "INSERT INTO [dbo].[Usuario] (IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, DVH) VALUES (@IdUsuario, @Nombre, @Email, @Clave, @Activo, @IdiomaPreferido, @DVH)";
+            get => "INSERT INTO [dbo].[Usuario] (IdUsuario, Nombre, Email, Clave, Activo, DVH) VALUES (@IdUsuario, @Nombre, @Email, @Clave, @Activo, @DVH)";
         }
 
         private string UpdateStatement
         {
-            get => "UPDATE [dbo].[Usuario] SET Nombre = @Nombre, Email = @Email, Clave = @Clave, Activo = @Activo, IdiomaPreferido = @IdiomaPreferido, DVH = @DVH WHERE IdUsuario = @IdUsuario";
+            get => "UPDATE [dbo].[Usuario] SET Nombre = @Nombre, Email = @Email, Clave = @Clave, Activo = @Activo, DVH = @DVH WHERE IdUsuario = @IdUsuario";
         }
 
         private string DeleteStatement
@@ -107,17 +107,17 @@ namespace ServicesSecurity.DAL.Implementations
 
         private string SelectOneStatement
         {
-            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, DVH FROM [dbo].[Usuario] WHERE IdUsuario = @IdUsuario";
+            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, DVH FROM [dbo].[Usuario] WHERE IdUsuario = @IdUsuario";
         }
 
         private string SelectOneByNameStatement
         {
-            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, DVH FROM [dbo].[Usuario] WHERE Nombre = @Nombre";
+            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, DVH FROM [dbo].[Usuario] WHERE Nombre = @Nombre";
         }
 
         private string SelectAllStatement
         {
-            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, DVH FROM [dbo].[Usuario]";
+            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, DVH FROM [dbo].[Usuario]";
         }
         #endregion
 
@@ -132,8 +132,7 @@ namespace ServicesSecurity.DAL.Implementations
                 new SqlParameter("@Email", obj.Email ?? (object)DBNull.Value),
                 new SqlParameter("@Clave", obj.Clave),
                 new SqlParameter("@Activo", obj.Activo),
-                new SqlParameter("@IdiomaPreferido", obj.IdiomaPreferido ?? "es-AR"),
-                new SqlParameter("@DVH", obj.DVH)  // Ya no puede ser null
+                new SqlParameter("@DVH", obj.DVH)
             });
         }
 
@@ -156,8 +155,7 @@ namespace ServicesSecurity.DAL.Implementations
                 new SqlParameter("@Email", obj.Email ?? (object)DBNull.Value),
                 new SqlParameter("@Clave", obj.Clave),
                 new SqlParameter("@Activo", obj.Activo),
-                new SqlParameter("@IdiomaPreferido", obj.IdiomaPreferido ?? "es-AR"),
-                new SqlParameter("@DVH", obj.DVH)  // Ya no puede ser null
+                new SqlParameter("@DVH", obj.DVH)
             });
         }
 
@@ -281,6 +279,21 @@ namespace ServicesSecurity.DAL.Implementations
         public Usuario GetOneByName(string sName)
         {
             return SelectOneByName(sName);
+        }
+
+        /// <summary>
+        /// Actualiza la fecha de último acceso del usuario
+        /// Este método NO recalcula el DVH ya que FechaUltimoAcceso es metadata de auditoría
+        /// </summary>
+        /// <param name="idUsuario">ID del usuario</param>
+        public void UpdateFechaUltimoAcceso(Guid idUsuario)
+        {
+            string updateStatement = "UPDATE [dbo].[Usuario] SET FechaUltimoAcceso = @FechaUltimoAcceso WHERE IdUsuario = @IdUsuario";
+
+            SqlHelper.ExecuteNonQuery(updateStatement, System.Data.CommandType.Text, new SqlParameter[] {
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@FechaUltimoAcceso", DateTime.Now)
+            });
         }
     }
 }

@@ -16,7 +16,7 @@ namespace UI.WinUi.Transacciones
         private AlumnoBLL _alumnoBLL;
         private MaterialBLL _materialBLL;
         private EjemplarBLL _ejemplarBLL;
-        private BitacoraBibliotecarioBLL _bitacoraBLL;
+        private BitacoraOperacionesBLL _bitacoraBLL;
         private Timer _searchTimer;
         private const int SEARCH_DELAY = 500;
         private const int MAX_RENOVACIONES = 3;
@@ -34,7 +34,7 @@ namespace UI.WinUi.Transacciones
             _prestamoBLL = new PrestamoBLL();
             _alumnoBLL = new AlumnoBLL();
             _materialBLL = new MaterialBLL();
-            _bitacoraBLL = new BitacoraBibliotecarioBLL();
+            _bitacoraBLL = new BitacoraOperacionesBLL();
             _ejemplarBLL = new EjemplarBLL();
             ConfigurarFormulario();
         }
@@ -89,8 +89,8 @@ namespace UI.WinUi.Transacciones
 
         private void RenovarPrestamo_Load(object sender, EventArgs e)
         {
-            // Verificar permisos (usa el mismo permiso que el menú Préstamos)
-            if (!TienePermiso("Gestión Préstamos"))
+            // Verificar permiso específico para renovar préstamos
+            if (!TienePermiso("renovarPrestamo"))
             {
                 MessageBox.Show(
                     LanguageManager.Translate("sin_permisos"),
@@ -449,7 +449,7 @@ namespace UI.WinUi.Transacciones
                     observaciones);
 
                 // Registrar en bitácora
-                _bitacoraBLL.RegistrarOperacion(new BitacoraBibliotecario
+                _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
                 {
                     IdUsuario = _usuarioLogueado.IdUsuario,
                     NombreUsuario = _usuarioLogueado.Nombre,
