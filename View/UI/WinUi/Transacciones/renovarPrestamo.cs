@@ -89,18 +89,7 @@ namespace UI.WinUi.Transacciones
 
         private void RenovarPrestamo_Load(object sender, EventArgs e)
         {
-            // Verificar permiso específico para renovar préstamos
-            if (!TienePermiso("renovarPrestamo"))
-            {
-                MessageBox.Show(
-                    LanguageManager.Translate("sin_permisos"),
-                    LanguageManager.Translate("error"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-                this.Close();
-                return;
-            }
-
+            // El permiso ya fue verificado (renovar está unificado con Gestión Préstamos)
             AplicarTraducciones();
             BuscarYCargarPrestamos();
             LimpiarFormulario();
@@ -126,7 +115,6 @@ namespace UI.WinUi.Transacciones
                 lblRenovaciones.Text = LanguageManager.Translate("renovaciones_realizadas");
                 lblDiasExtension.Text = LanguageManager.Translate("dias_extension");
                 lblNuevaFechaDevolucion.Text = LanguageManager.Translate("nueva_fecha_devolucion");
-                lblObservaciones.Text = LanguageManager.Translate("observaciones");
                 btnRenovar.Text = LanguageManager.Translate("renovar_prestamo");
                 btnLimpiar.Text = LanguageManager.Translate("limpiar");
                 btnVolver.Text = LanguageManager.Translate("volver");
@@ -368,20 +356,6 @@ namespace UI.WinUi.Transacciones
                     txtRenovaciones.Font = new Font(txtRenovaciones.Font, FontStyle.Regular);
                 }
 
-                // Mostrar si está vencido
-                bool estaVencido = Convert.ToBoolean(row.Cells["EstaVencido"].Value);
-                if (estaVencido)
-                {
-                    int diasAtraso = Convert.ToInt32(row.Cells["DiasAtraso"].Value);
-                    lblAdvertencia.Text = $"{LanguageManager.Translate("prestamo_vencido")}: {diasAtraso} {LanguageManager.Translate("dias_atraso")}";
-                    lblAdvertencia.ForeColor = Color.Red;
-                    lblAdvertencia.Visible = true;
-                }
-                else
-                {
-                    lblAdvertencia.Visible = false;
-                }
-
                 // Calcular nueva fecha
                 CalcularNuevaFecha();
 
@@ -438,7 +412,6 @@ namespace UI.WinUi.Transacciones
             {
                 Guid idPrestamo = (Guid)row.Cells["IdPrestamo"].Value;
                 int diasExtension = (int)numDiasExtension.Value;
-                string observaciones = string.IsNullOrWhiteSpace(txtObservaciones.Text) ? null : txtObservaciones.Text.Trim();
 
                 _prestamoBLL.RenovarPrestamo(
                     idPrestamo,
@@ -446,7 +419,7 @@ namespace UI.WinUi.Transacciones
                     _usuarioLogueado.IdUsuario,
                     MAX_RENOVACIONES,
                     MAX_DIAS_ATRASO,
-                    observaciones);
+                    null);
 
                 // Registrar en bitácora
                 _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
@@ -491,9 +464,7 @@ namespace UI.WinUi.Transacciones
             txtFechaDevolucionActual.Clear();
             txtRenovaciones.Clear();
             txtNuevaFechaDevolucion.Clear();
-            txtObservaciones.Clear();
             numDiasExtension.Value = DIAS_EXTENSION_DEFAULT;
-            lblAdvertencia.Visible = false;
             btnRenovar.Enabled = false;
             dgvPrestamos.ClearSelection();
         }

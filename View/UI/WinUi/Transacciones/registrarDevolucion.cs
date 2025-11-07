@@ -369,11 +369,11 @@ namespace UI.WinUi.Transacciones
 
                 if (diasAtraso > 0)
                 {
-                    mensajeConfirmacion += $"⚠️  ATENCIÓN: {diasAtraso} DÍA(S) DE ATRASO\n\n";
+                    mensajeConfirmacion += $"ATENCIÓN: {diasAtraso} DÍA(S) DE ATRASO\n\n";
                 }
                 else
                 {
-                    mensajeConfirmacion += "✓ Devolución a tiempo\n\n";
+                    mensajeConfirmacion += "Devolución a tiempo\n\n";
                 }
 
                 if (!string.IsNullOrEmpty(ubicacion) && ubicacion != "No registrada")
@@ -445,7 +445,7 @@ namespace UI.WinUi.Transacciones
                 else
                 {
                     titulo = "Devolución Registrada";
-                    encabezado = "✓ DEVOLUCIÓN REGISTRADA A TIEMPO\n\n";
+                    encabezado = "DEVOLUCIÓN REGISTRADA A TIEMPO\n\n";
                 }
 
                 string mensaje = encabezado;

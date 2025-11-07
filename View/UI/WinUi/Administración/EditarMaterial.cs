@@ -14,11 +14,13 @@ namespace UI.WinUi.Administrador
         private Usuario _usuarioLogueado;
         private Material _materialActual;
         private MaterialBLL _materialBLL;
+        private BitacoraOperacionesBLL _bitacoraBLL;
 
         public EditarMaterial()
         {
             InitializeComponent();
             _materialBLL = new MaterialBLL();
+            _bitacoraBLL = new BitacoraOperacionesBLL();
         }
 
         public EditarMaterial(Usuario usuario, Material material) : this()
@@ -147,6 +149,19 @@ namespace UI.WinUi.Administrador
                 // Guardar en la base de datos
                 _materialBLL.ActualizarMaterial(_materialActual);
 
+                // Registrar en bitácora
+                _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                {
+                    IdUsuario = _usuarioLogueado.IdUsuario,
+                    NombreUsuario = _usuarioLogueado.Nombre,
+                    TipoOperacion = "Modificacion",
+                    Modulo = "Administración - Materiales",
+                    Accion = "Editar material",
+                    EntidadAfectada = "Material",
+                    IdEntidad = null,
+                    Detalle = $"Material editado: '{_materialActual.Titulo}' (Autor: {_materialActual.Autor}, Tipo: {_materialActual.Tipo}, ISBN: {_materialActual.ISBN ?? "N/A"})"
+                });
+
                 MessageBox.Show("Material actualizado exitosamente",
                     LanguageManager.Translate("exito"),
                     MessageBoxButtons.OK,
@@ -176,6 +191,19 @@ namespace UI.WinUi.Administrador
                 {
                     // Eliminar (borrado lógico)
                     _materialBLL.EliminarMaterial(_materialActual);
+
+                    // Registrar en bitácora
+                    _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                    {
+                        IdUsuario = _usuarioLogueado.IdUsuario,
+                        NombreUsuario = _usuarioLogueado.Nombre,
+                        TipoOperacion = "Eliminacion",
+                        Modulo = "Administración - Materiales",
+                        Accion = "Eliminar material",
+                        EntidadAfectada = "Material",
+                        IdEntidad = null,
+                        Detalle = $"Material eliminado (borrado lógico): '{_materialActual.Titulo}' (Autor: {_materialActual.Autor}, ISBN: {_materialActual.ISBN ?? "N/A"})"
+                    });
 
                     MessageBox.Show("Material eliminado exitosamente",
                         LanguageManager.Translate("exito"),

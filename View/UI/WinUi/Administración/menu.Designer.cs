@@ -36,8 +36,6 @@
             this.registrarMaterialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.alumnosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.prestamosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.registrarPrestamoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.renovarPrestamoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.devolucionesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reportesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reportePrestamosActivosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -127,27 +125,11 @@
             //
             // prestamosToolStripMenuItem
             //
-            this.prestamosToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.registrarPrestamoToolStripMenuItem,
-            this.renovarPrestamoToolStripMenuItem});
             this.prestamosToolStripMenuItem.ForeColor = System.Drawing.Color.White;
             this.prestamosToolStripMenuItem.Name = "prestamosToolStripMenuItem";
             this.prestamosToolStripMenuItem.Size = new System.Drawing.Size(85, 23);
             this.prestamosToolStripMenuItem.Text = "Préstamos";
-            //
-            // registrarPrestamoToolStripMenuItem
-            //
-            this.registrarPrestamoToolStripMenuItem.Name = "registrarPrestamoToolStripMenuItem";
-            this.registrarPrestamoToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
-            this.registrarPrestamoToolStripMenuItem.Text = "Registrar Préstamo";
-            this.registrarPrestamoToolStripMenuItem.Click += new System.EventHandler(this.registrarPrestamoToolStripMenuItem_Click);
-            //
-            // renovarPrestamoToolStripMenuItem
-            //
-            this.renovarPrestamoToolStripMenuItem.Name = "renovarPrestamoToolStripMenuItem";
-            this.renovarPrestamoToolStripMenuItem.Size = new System.Drawing.Size(210, 24);
-            this.renovarPrestamoToolStripMenuItem.Text = "Renovar Préstamo";
-            this.renovarPrestamoToolStripMenuItem.Click += new System.EventHandler(this.renovarPrestamoToolStripMenuItem_Click);
+            this.prestamosToolStripMenuItem.Click += new System.EventHandler(this.prestamosToolStripMenuItem_Click);
             //
             // devolucionesToolStripMenuItem
             //
@@ -310,8 +292,6 @@
         private System.Windows.Forms.ToolStripMenuItem registrarMaterialToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem alumnosToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem prestamosToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem registrarPrestamoToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem renovarPrestamoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem devolucionesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem reportesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem reportePrestamosActivosToolStripMenuItem;

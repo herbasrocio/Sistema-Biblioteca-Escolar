@@ -168,7 +168,7 @@ namespace UI.WinUi.Reportes
             try
             {
                 // Verificar permisos
-                if (_usuarioLogueado == null || !_usuarioLogueado.TienePermiso("reporteMaterialesMasPrestados"))
+                if (_usuarioLogueado == null || !_usuarioLogueado.TienePermiso("consultarReportes"))
                 {
                     MessageBox.Show(LanguageManager.Translate("sin_permisos"),
                         LanguageManager.Translate("error"),

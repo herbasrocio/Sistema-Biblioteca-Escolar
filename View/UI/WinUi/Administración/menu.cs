@@ -13,20 +13,16 @@ namespace UI.WinUi.Administrador
         private BitacoraSeguridadBLL _bitacoraSeguridadBLL;
 
         // Nombres de las patentes que controlan cada opción del menú
-        private const string PATENTE_USUARIOS = "Gestión Usuarios";
-        private const string PATENTE_PERMISOS = "Gestión Permisos";
+        private const string PATENTE_USUARIOS = "Gestion Usuarios";
+        private const string PATENTE_PERMISOS = "Gestion Permisos";
         private const string PATENTE_CONSULTAR_MATERIAL = "Consultar Material";
         private const string PATENTE_REGISTRAR_MATERIAL = "Registrar Material";
         private const string PATENTE_EDITAR_MATERIAL = "Editar Material";
         private const string PATENTE_GESTIONAR_EJEMPLARES = "Gestionar Ejemplares";
-        private const string PATENTE_ALUMNOS = "Gestión Alumnos";
-        private const string PATENTE_PRESTAMOS = "Gestión Préstamos";
-        private const string PATENTE_RENOVAR_PRESTAMO = "renovarPrestamo";
-        private const string PATENTE_DEVOLUCIONES = "Gestión Devoluciones";
-        private const string PATENTE_REPORTES = "Consultar Reportes";
-        private const string PATENTE_REPORTE_PRESTAMOS_ACTIVOS = "reportePrestamosActivos";
-        private const string PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS = "reporteMaterialesMasPrestados";
-        private const string PATENTE_REPORTE_USO_POR_GRADO = "reporteUsoPorGrado";
+        private const string PATENTE_ALUMNOS = "Gestion Alumnos";
+        private const string PATENTE_PRESTAMOS = "Gestion Prestamos";
+        private const string PATENTE_DEVOLUCIONES = "Gestion Devoluciones";
+        private const string PATENTE_REPORTES = "consultarReportes";
         private const string PATENTE_BITACORA_SEGURIDAD = "consultarBitacoraSeguridad";
         private const string PATENTE_BITACORA_OPERACIONES = "consultarBitacoraOperaciones";
 
@@ -69,8 +65,6 @@ namespace UI.WinUi.Administrador
             registrarMaterialToolStripMenuItem.Text = LanguageManager.Translate("registrar_material");
             alumnosToolStripMenuItem.Text = LanguageManager.Translate("alumnos");
             prestamosToolStripMenuItem.Text = LanguageManager.Translate("prestamos");
-            registrarPrestamoToolStripMenuItem.Text = LanguageManager.Translate("registrar_prestamo");
-            renovarPrestamoToolStripMenuItem.Text = LanguageManager.Translate("renovar_prestamo");
             devolucionesToolStripMenuItem.Text = LanguageManager.Translate("devoluciones");
             reportesToolStripMenuItem.Text = LanguageManager.Translate("reportes");
             bitacorasToolStripMenuItem.Text = LanguageManager.Translate("bitacoras");
@@ -113,25 +107,19 @@ namespace UI.WinUi.Administrador
 
             alumnosToolStripMenuItem.Visible = TienePermiso(PATENTE_ALUMNOS);
 
-            // Préstamos: visible si tiene el permiso (incluye Registrar y Renovar)
-            bool tienePrestamos = TienePermiso(PATENTE_PRESTAMOS);
-            prestamosToolStripMenuItem.Visible = tienePrestamos;
-            registrarPrestamoToolStripMenuItem.Visible = tienePrestamos;
-            renovarPrestamoToolStripMenuItem.Visible = tienePrestamos;
+            // Préstamos: mostrar si tiene permiso de préstamos (la ventana gestiona internamente la visibilidad de renovar)
+            prestamosToolStripMenuItem.Visible = TienePermiso(PATENTE_PRESTAMOS);
 
             devolucionesToolStripMenuItem.Visible = TienePermiso(PATENTE_DEVOLUCIONES);
 
-            // Reportes: visible si tiene el permiso maestro "Consultar Reportes"
+            // Reportes: visible si tiene el permiso unificado "consultarReportes"
             bool tieneAccesoReportes = TienePermiso(PATENTE_REPORTES);
             reportesToolStripMenuItem.Visible = tieneAccesoReportes;
 
-            // Los reportes individuales se muestran si tiene acceso al módulo Y el permiso específico
-            bool tieneReportePrestamos = tieneAccesoReportes && TienePermiso(PATENTE_REPORTE_PRESTAMOS_ACTIVOS);
-            bool tieneReporteMateriales = tieneAccesoReportes && TienePermiso(PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS);
-            bool tieneReporteGrado = tieneAccesoReportes && TienePermiso(PATENTE_REPORTE_USO_POR_GRADO);
-            reportePrestamosActivosToolStripMenuItem.Visible = tieneReportePrestamos;
-            reporteMaterialesMasPrestadosToolStripMenuItem.Visible = tieneReporteMateriales;
-            reporteUsoPorGradoToolStripMenuItem.Visible = tieneReporteGrado;
+            // Todos los reportes individuales usan el mismo permiso unificado
+            reportePrestamosActivosToolStripMenuItem.Visible = tieneAccesoReportes;
+            reporteMaterialesMasPrestadosToolStripMenuItem.Visible = tieneAccesoReportes;
+            reporteUsoPorGradoToolStripMenuItem.Visible = tieneAccesoReportes;
 
             // Bitácoras: visible si tiene al menos una de las bitácoras
             bool tieneBitacoraSeguridad = TienePermiso(PATENTE_BITACORA_SEGURIDAD);
@@ -275,44 +263,24 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void registrarPrestamoToolStripMenuItem_Click(object sender, EventArgs e)
+        private void prestamosToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                if (!VerificarYRegistrarAcceso(PATENTE_PRESTAMOS, "Registro de Préstamos"))
+                if (!VerificarYRegistrarAcceso(PATENTE_PRESTAMOS, "Gestión de Préstamos"))
                 {
                     MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
                         "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                UI.WinUi.Transacciones.registrarPrestamo formPrestamo = new UI.WinUi.Transacciones.registrarPrestamo(_usuarioLogueado);
-                formPrestamo.ShowDialog();
+                // Abrir ventana unificada de préstamos con pestañas (Registrar y Renovar)
+                UI.WinUi.Transacciones.Form1gestionPrestamos formGestionPrestamos = new UI.WinUi.Transacciones.Form1gestionPrestamos(_usuarioLogueado);
+                formGestionPrestamos.ShowDialog();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al abrir registro de préstamos: {ex.Message}",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void renovarPrestamoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (!VerificarYRegistrarAcceso(PATENTE_RENOVAR_PRESTAMO, "Renovar Préstamo"))
-                {
-                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
-                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                UI.WinUi.Transacciones.renovarPrestamo formRenovar = new UI.WinUi.Transacciones.renovarPrestamo(_usuarioLogueado);
-                formRenovar.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al abrir renovación de préstamos: {ex.Message}",
+                MessageBox.Show($"Error al abrir gestión de préstamos: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -342,7 +310,7 @@ namespace UI.WinUi.Administrador
         {
             try
             {
-                if (!VerificarYRegistrarAcceso(PATENTE_REPORTE_PRESTAMOS_ACTIVOS, "Reporte Préstamos Activos"))
+                if (!VerificarYRegistrarAcceso(PATENTE_REPORTES, "Reporte Préstamos Activos"))
                 {
                     MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
                         "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -363,7 +331,7 @@ namespace UI.WinUi.Administrador
         {
             try
             {
-                if (!VerificarYRegistrarAcceso(PATENTE_REPORTE_MATERIALES_MAS_PRESTADOS, "Reporte Materiales Más Prestados"))
+                if (!VerificarYRegistrarAcceso(PATENTE_REPORTES, "Reporte Materiales Más Prestados"))
                 {
                     MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
                         "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -384,7 +352,7 @@ namespace UI.WinUi.Administrador
         {
             try
             {
-                if (!VerificarYRegistrarAcceso(PATENTE_REPORTE_USO_POR_GRADO, "Reporte Uso por Grado"))
+                if (!VerificarYRegistrarAcceso(PATENTE_REPORTES, "Reporte Uso por Grado"))
                 {
                     MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
                         "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);

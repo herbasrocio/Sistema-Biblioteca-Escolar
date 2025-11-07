@@ -21,12 +21,12 @@ namespace UI.WinUi.Transacciones
             this.dgvPrestamos = new System.Windows.Forms.DataGridView();
             this.lblResultados = new System.Windows.Forms.Label();
             this.groupBoxBusqueda = new System.Windows.Forms.GroupBox();
-            this.txtBuscarAlumno = new System.Windows.Forms.TextBox();
-            this.txtBuscarTitulo = new System.Windows.Forms.TextBox();
-            this.txtBuscarEjemplar = new System.Windows.Forms.TextBox();
             this.lblBuscarAlumno = new System.Windows.Forms.Label();
+            this.txtBuscarAlumno = new System.Windows.Forms.TextBox();
             this.lblBuscarTitulo = new System.Windows.Forms.Label();
+            this.txtBuscarTitulo = new System.Windows.Forms.TextBox();
             this.lblBuscarEjemplar = new System.Windows.Forms.Label();
+            this.txtBuscarEjemplar = new System.Windows.Forms.TextBox();
             this.groupBoxDatos = new System.Windows.Forms.GroupBox();
             this.lblUbicacion = new System.Windows.Forms.Label();
             this.lblFechaDevolucionPrevista = new System.Windows.Forms.Label();
@@ -43,18 +43,37 @@ namespace UI.WinUi.Transacciones
             this.SuspendLayout();
             // 
             // lblTitulo
-            //
+            // 
             this.lblTitulo.AutoSize = true;
             this.lblTitulo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.lblTitulo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.lblTitulo.Location = new System.Drawing.Point(20, 15);
             this.lblTitulo.Name = "lblTitulo";
-            this.lblTitulo.Size = new System.Drawing.Size(260, 21);
+            this.lblTitulo.Size = new System.Drawing.Size(235, 21);
             this.lblTitulo.TabIndex = 0;
-            this.lblTitulo.Text = "📚 Préstamos Activos y Vencidos";
-            //
+            this.lblTitulo.Text = "Préstamos Activos y Vencidos";
+            // 
+            // dgvPrestamos
+            // 
+            this.dgvPrestamos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvPrestamos.Location = new System.Drawing.Point(20, 190);
+            this.dgvPrestamos.Name = "dgvPrestamos";
+            this.dgvPrestamos.Size = new System.Drawing.Size(760, 210);
+            this.dgvPrestamos.TabIndex = 3;
+            this.dgvPrestamos.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvPrestamos_CellContentClick);
+            // 
+            // lblResultados
+            // 
+            this.lblResultados.AutoSize = true;
+            this.lblResultados.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblResultados.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
+            this.lblResultados.Location = new System.Drawing.Point(20, 165);
+            this.lblResultados.Name = "lblResultados";
+            this.lblResultados.Size = new System.Drawing.Size(0, 17);
+            this.lblResultados.TabIndex = 2;
+            // 
             // groupBoxBusqueda
-            //
+            // 
             this.groupBoxBusqueda.BackColor = System.Drawing.Color.White;
             this.groupBoxBusqueda.Controls.Add(this.lblBuscarAlumno);
             this.groupBoxBusqueda.Controls.Add(this.txtBuscarAlumno);
@@ -69,10 +88,10 @@ namespace UI.WinUi.Transacciones
             this.groupBoxBusqueda.Size = new System.Drawing.Size(760, 110);
             this.groupBoxBusqueda.TabIndex = 1;
             this.groupBoxBusqueda.TabStop = false;
-            this.groupBoxBusqueda.Text = "🔍 Buscar Préstamo";
-            //
+            this.groupBoxBusqueda.Text = "Buscar Préstamo";
+            // 
             // lblBuscarAlumno
-            //
+            // 
             this.lblBuscarAlumno.AutoSize = true;
             this.lblBuscarAlumno.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.lblBuscarAlumno.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
@@ -81,71 +100,52 @@ namespace UI.WinUi.Transacciones
             this.lblBuscarAlumno.Size = new System.Drawing.Size(108, 17);
             this.lblBuscarAlumno.TabIndex = 0;
             this.lblBuscarAlumno.Text = "Nombre Alumno:";
-            //
+            // 
             // txtBuscarAlumno
-            //
+            // 
             this.txtBuscarAlumno.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.txtBuscarAlumno.Location = new System.Drawing.Point(20, 50);
             this.txtBuscarAlumno.Name = "txtBuscarAlumno";
             this.txtBuscarAlumno.Size = new System.Drawing.Size(230, 25);
             this.txtBuscarAlumno.TabIndex = 1;
-            //
+            // 
             // lblBuscarTitulo
-            //
+            // 
             this.lblBuscarTitulo.AutoSize = true;
             this.lblBuscarTitulo.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.lblBuscarTitulo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.lblBuscarTitulo.Location = new System.Drawing.Point(270, 30);
             this.lblBuscarTitulo.Name = "lblBuscarTitulo";
-            this.lblBuscarTitulo.Size = new System.Drawing.Size(96, 17);
+            this.lblBuscarTitulo.Size = new System.Drawing.Size(95, 17);
             this.lblBuscarTitulo.TabIndex = 2;
             this.lblBuscarTitulo.Text = "Título Material:";
-            //
+            // 
             // txtBuscarTitulo
-            //
+            // 
             this.txtBuscarTitulo.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.txtBuscarTitulo.Location = new System.Drawing.Point(270, 50);
             this.txtBuscarTitulo.Name = "txtBuscarTitulo";
             this.txtBuscarTitulo.Size = new System.Drawing.Size(230, 25);
             this.txtBuscarTitulo.TabIndex = 3;
-            //
+            // 
             // lblBuscarEjemplar
-            //
+            // 
             this.lblBuscarEjemplar.AutoSize = true;
             this.lblBuscarEjemplar.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.lblBuscarEjemplar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.lblBuscarEjemplar.Location = new System.Drawing.Point(520, 30);
             this.lblBuscarEjemplar.Name = "lblBuscarEjemplar";
-            this.lblBuscarEjemplar.Size = new System.Drawing.Size(116, 17);
+            this.lblBuscarEjemplar.Size = new System.Drawing.Size(109, 17);
             this.lblBuscarEjemplar.TabIndex = 4;
             this.lblBuscarEjemplar.Text = "Código Ejemplar:";
-            //
+            // 
             // txtBuscarEjemplar
-            //
+            // 
             this.txtBuscarEjemplar.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.txtBuscarEjemplar.Location = new System.Drawing.Point(520, 50);
             this.txtBuscarEjemplar.Name = "txtBuscarEjemplar";
             this.txtBuscarEjemplar.Size = new System.Drawing.Size(220, 25);
             this.txtBuscarEjemplar.TabIndex = 5;
-            //
-            // dgvPrestamos
-            //
-            this.dgvPrestamos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvPrestamos.Location = new System.Drawing.Point(20, 190);
-            this.dgvPrestamos.Name = "dgvPrestamos";
-            this.dgvPrestamos.Size = new System.Drawing.Size(760, 210);
-            this.dgvPrestamos.TabIndex = 3;
-            this.dgvPrestamos.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvPrestamos_CellContentClick);
-            //
-            // lblResultados
-            //
-            this.lblResultados.AutoSize = true;
-            this.lblResultados.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold);
-            this.lblResultados.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
-            this.lblResultados.Location = new System.Drawing.Point(20, 165);
-            this.lblResultados.Name = "lblResultados";
-            this.lblResultados.Size = new System.Drawing.Size(0, 17);
-            this.lblResultados.TabIndex = 2;
             // 
             // groupBoxDatos
             // 
@@ -226,7 +226,7 @@ namespace UI.WinUi.Transacciones
             this.lblObservaciones.Text = "Observaciones:";
             // 
             // btnRegistrar
-            //
+            // 
             this.btnRegistrar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(174)))), ((int)(((byte)(96)))));
             this.btnRegistrar.FlatAppearance.BorderSize = 0;
             this.btnRegistrar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -238,9 +238,9 @@ namespace UI.WinUi.Transacciones
             this.btnRegistrar.TabIndex = 5;
             this.btnRegistrar.Text = "Registrar Devolución";
             this.btnRegistrar.UseVisualStyleBackColor = false;
-            //
+            // 
             // btnLimpiar
-            //
+            // 
             this.btnLimpiar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
             this.btnLimpiar.FlatAppearance.BorderSize = 0;
             this.btnLimpiar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -252,9 +252,9 @@ namespace UI.WinUi.Transacciones
             this.btnLimpiar.TabIndex = 6;
             this.btnLimpiar.Text = "Limpiar";
             this.btnLimpiar.UseVisualStyleBackColor = false;
-            //
+            // 
             // btnVolver
-            //
+            // 
             this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
             this.btnVolver.FlatAppearance.BorderSize = 0;
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -268,7 +268,7 @@ namespace UI.WinUi.Transacciones
             this.btnVolver.UseVisualStyleBackColor = false;
             // 
             // registrarDevolucion
-            //
+            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));

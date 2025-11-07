@@ -225,6 +225,9 @@
     <EmbeddedResource Include="WinUi\Administración\RegistrarMaterial.resx">
       <DependentUpon>RegistrarMaterial.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="WinUi\Transacciones\Form1gestionPrestamos.resx">
+      <DependentUpon>Form1gestionPrestamos.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Transacciones\registrarPrestamo.resx">
       <DependentUpon>registrarPrestamo.cs</DependentUpon>
     </EmbeddedResource>

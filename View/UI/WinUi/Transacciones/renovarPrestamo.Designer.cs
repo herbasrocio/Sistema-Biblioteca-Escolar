@@ -29,7 +29,6 @@ namespace UI.WinUi.Transacciones
         private void InitializeComponent()
         {
             this.groupBoxBusqueda = new System.Windows.Forms.GroupBox();
-            this.lblTotalPrestamos = new System.Windows.Forms.Label();
             this.lblBuscarEjemplar = new System.Windows.Forms.Label();
             this.txtBuscarEjemplar = new System.Windows.Forms.TextBox();
             this.lblBuscarTitulo = new System.Windows.Forms.Label();
@@ -38,9 +37,6 @@ namespace UI.WinUi.Transacciones
             this.txtBuscarAlumno = new System.Windows.Forms.TextBox();
             this.dgvPrestamos = new System.Windows.Forms.DataGridView();
             this.groupBoxDatos = new System.Windows.Forms.GroupBox();
-            this.lblAdvertencia = new System.Windows.Forms.Label();
-            this.lblObservaciones = new System.Windows.Forms.Label();
-            this.txtObservaciones = new System.Windows.Forms.TextBox();
             this.lblNuevaFechaDevolucion = new System.Windows.Forms.Label();
             this.txtNuevaFechaDevolucion = new System.Windows.Forms.TextBox();
             this.lblDiasExtension = new System.Windows.Forms.Label();
@@ -52,6 +48,7 @@ namespace UI.WinUi.Transacciones
             this.btnRenovar = new System.Windows.Forms.Button();
             this.btnLimpiar = new System.Windows.Forms.Button();
             this.btnVolver = new System.Windows.Forms.Button();
+            this.lblTotalPrestamos = new System.Windows.Forms.Label();
             this.groupBoxBusqueda.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPrestamos)).BeginInit();
             this.groupBoxDatos.SuspendLayout();
@@ -60,7 +57,8 @@ namespace UI.WinUi.Transacciones
             // 
             // groupBoxBusqueda
             // 
-            this.groupBoxBusqueda.Controls.Add(this.lblTotalPrestamos);
+            this.groupBoxBusqueda.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxBusqueda.Controls.Add(this.lblBuscarEjemplar);
             this.groupBoxBusqueda.Controls.Add(this.txtBuscarEjemplar);
             this.groupBoxBusqueda.Controls.Add(this.lblBuscarTitulo);
@@ -70,25 +68,15 @@ namespace UI.WinUi.Transacciones
             this.groupBoxBusqueda.Controls.Add(this.dgvPrestamos);
             this.groupBoxBusqueda.Location = new System.Drawing.Point(12, 12);
             this.groupBoxBusqueda.Name = "groupBoxBusqueda";
-            this.groupBoxBusqueda.Size = new System.Drawing.Size(980, 350);
+            this.groupBoxBusqueda.Size = new System.Drawing.Size(838, 212);
             this.groupBoxBusqueda.TabIndex = 0;
             this.groupBoxBusqueda.TabStop = false;
             this.groupBoxBusqueda.Text = "Buscar Préstamos";
             // 
-            // lblTotalPrestamos
-            // 
-            this.lblTotalPrestamos.AutoSize = true;
-            this.lblTotalPrestamos.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold);
-            this.lblTotalPrestamos.Location = new System.Drawing.Point(15, 320);
-            this.lblTotalPrestamos.Name = "lblTotalPrestamos";
-            this.lblTotalPrestamos.Size = new System.Drawing.Size(126, 15);
-            this.lblTotalPrestamos.TabIndex = 7;
-            this.lblTotalPrestamos.Text = "Total préstamos: 0";
-            // 
             // lblBuscarEjemplar
             // 
             this.lblBuscarEjemplar.AutoSize = true;
-            this.lblBuscarEjemplar.Location = new System.Drawing.Point(620, 28);
+            this.lblBuscarEjemplar.Location = new System.Drawing.Point(508, 18);
             this.lblBuscarEjemplar.Name = "lblBuscarEjemplar";
             this.lblBuscarEjemplar.Size = new System.Drawing.Size(86, 13);
             this.lblBuscarEjemplar.TabIndex = 6;
@@ -96,15 +84,15 @@ namespace UI.WinUi.Transacciones
             // 
             // txtBuscarEjemplar
             // 
-            this.txtBuscarEjemplar.Location = new System.Drawing.Point(623, 45);
+            this.txtBuscarEjemplar.Location = new System.Drawing.Point(511, 35);
             this.txtBuscarEjemplar.Name = "txtBuscarEjemplar";
-            this.txtBuscarEjemplar.Size = new System.Drawing.Size(340, 20);
+            this.txtBuscarEjemplar.Size = new System.Drawing.Size(306, 20);
             this.txtBuscarEjemplar.TabIndex = 5;
             // 
             // lblBuscarTitulo
             // 
             this.lblBuscarTitulo.AutoSize = true;
-            this.lblBuscarTitulo.Location = new System.Drawing.Point(320, 28);
+            this.lblBuscarTitulo.Location = new System.Drawing.Point(263, 18);
             this.lblBuscarTitulo.Name = "lblBuscarTitulo";
             this.lblBuscarTitulo.Size = new System.Drawing.Size(38, 13);
             this.lblBuscarTitulo.TabIndex = 4;
@@ -112,15 +100,15 @@ namespace UI.WinUi.Transacciones
             // 
             // txtBuscarTitulo
             // 
-            this.txtBuscarTitulo.Location = new System.Drawing.Point(323, 45);
+            this.txtBuscarTitulo.Location = new System.Drawing.Point(266, 35);
             this.txtBuscarTitulo.Name = "txtBuscarTitulo";
-            this.txtBuscarTitulo.Size = new System.Drawing.Size(280, 20);
+            this.txtBuscarTitulo.Size = new System.Drawing.Size(227, 20);
             this.txtBuscarTitulo.TabIndex = 3;
             // 
             // lblBuscarAlumno
             // 
             this.lblBuscarAlumno.AutoSize = true;
-            this.lblBuscarAlumno.Location = new System.Drawing.Point(15, 28);
+            this.lblBuscarAlumno.Location = new System.Drawing.Point(15, 18);
             this.lblBuscarAlumno.Name = "lblBuscarAlumno";
             this.lblBuscarAlumno.Size = new System.Drawing.Size(45, 13);
             this.lblBuscarAlumno.TabIndex = 2;
@@ -128,24 +116,26 @@ namespace UI.WinUi.Transacciones
             // 
             // txtBuscarAlumno
             // 
-            this.txtBuscarAlumno.Location = new System.Drawing.Point(18, 45);
+            this.txtBuscarAlumno.Location = new System.Drawing.Point(18, 35);
             this.txtBuscarAlumno.Name = "txtBuscarAlumno";
-            this.txtBuscarAlumno.Size = new System.Drawing.Size(280, 20);
+            this.txtBuscarAlumno.Size = new System.Drawing.Size(230, 20);
             this.txtBuscarAlumno.TabIndex = 1;
             // 
             // dgvPrestamos
             // 
+            this.dgvPrestamos.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvPrestamos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvPrestamos.Location = new System.Drawing.Point(18, 80);
+            this.dgvPrestamos.Location = new System.Drawing.Point(15, 65);
             this.dgvPrestamos.Name = "dgvPrestamos";
-            this.dgvPrestamos.Size = new System.Drawing.Size(945, 230);
+            this.dgvPrestamos.Size = new System.Drawing.Size(804, 141);
             this.dgvPrestamos.TabIndex = 0;
             // 
             // groupBoxDatos
             // 
-            this.groupBoxDatos.Controls.Add(this.lblAdvertencia);
-            this.groupBoxDatos.Controls.Add(this.lblObservaciones);
-            this.groupBoxDatos.Controls.Add(this.txtObservaciones);
+            this.groupBoxDatos.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxDatos.Controls.Add(this.lblNuevaFechaDevolucion);
             this.groupBoxDatos.Controls.Add(this.txtNuevaFechaDevolucion);
             this.groupBoxDatos.Controls.Add(this.lblDiasExtension);
@@ -154,47 +144,18 @@ namespace UI.WinUi.Transacciones
             this.groupBoxDatos.Controls.Add(this.txtRenovaciones);
             this.groupBoxDatos.Controls.Add(this.lblFechaDevolucionActual);
             this.groupBoxDatos.Controls.Add(this.txtFechaDevolucionActual);
-            this.groupBoxDatos.Location = new System.Drawing.Point(12, 368);
+            this.groupBoxDatos.Location = new System.Drawing.Point(10, 233);
             this.groupBoxDatos.Name = "groupBoxDatos";
-            this.groupBoxDatos.Size = new System.Drawing.Size(980, 180);
+            this.groupBoxDatos.Size = new System.Drawing.Size(840, 70);
             this.groupBoxDatos.TabIndex = 1;
             this.groupBoxDatos.TabStop = false;
             this.groupBoxDatos.Text = "Datos de Renovación";
-            // 
-            // lblAdvertencia
-            // 
-            this.lblAdvertencia.AutoSize = true;
-            this.lblAdvertencia.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold);
-            this.lblAdvertencia.ForeColor = System.Drawing.Color.Red;
-            this.lblAdvertencia.Location = new System.Drawing.Point(520, 25);
-            this.lblAdvertencia.Name = "lblAdvertencia";
-            this.lblAdvertencia.Size = new System.Drawing.Size(121, 15);
-            this.lblAdvertencia.TabIndex = 18;
-            this.lblAdvertencia.Text = "Préstamo vencido";
-            this.lblAdvertencia.Visible = false;
-            // 
-            // lblObservaciones
-            // 
-            this.lblObservaciones.AutoSize = true;
-            this.lblObservaciones.Location = new System.Drawing.Point(520, 25);
-            this.lblObservaciones.Name = "lblObservaciones";
-            this.lblObservaciones.Size = new System.Drawing.Size(81, 13);
-            this.lblObservaciones.TabIndex = 17;
-            this.lblObservaciones.Text = "Observaciones:";
-            // 
-            // txtObservaciones
-            // 
-            this.txtObservaciones.Location = new System.Drawing.Point(523, 41);
-            this.txtObservaciones.Multiline = true;
-            this.txtObservaciones.Name = "txtObservaciones";
-            this.txtObservaciones.Size = new System.Drawing.Size(440, 120);
-            this.txtObservaciones.TabIndex = 16;
             // 
             // lblNuevaFechaDevolucion
             // 
             this.lblNuevaFechaDevolucion.AutoSize = true;
             this.lblNuevaFechaDevolucion.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold);
-            this.lblNuevaFechaDevolucion.Location = new System.Drawing.Point(270, 100);
+            this.lblNuevaFechaDevolucion.Location = new System.Drawing.Point(519, 19);
             this.lblNuevaFechaDevolucion.Name = "lblNuevaFechaDevolucion";
             this.lblNuevaFechaDevolucion.Size = new System.Drawing.Size(169, 15);
             this.lblNuevaFechaDevolucion.TabIndex = 15;
@@ -202,19 +163,19 @@ namespace UI.WinUi.Transacciones
             // 
             // txtNuevaFechaDevolucion
             // 
-            this.txtNuevaFechaDevolucion.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
+            this.txtNuevaFechaDevolucion.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold);
             this.txtNuevaFechaDevolucion.ForeColor = System.Drawing.Color.Green;
-            this.txtNuevaFechaDevolucion.Location = new System.Drawing.Point(270, 118);
+            this.txtNuevaFechaDevolucion.Location = new System.Drawing.Point(519, 39);
             this.txtNuevaFechaDevolucion.Name = "txtNuevaFechaDevolucion";
             this.txtNuevaFechaDevolucion.ReadOnly = true;
-            this.txtNuevaFechaDevolucion.Size = new System.Drawing.Size(230, 23);
+            this.txtNuevaFechaDevolucion.Size = new System.Drawing.Size(300, 21);
             this.txtNuevaFechaDevolucion.TabIndex = 14;
             this.txtNuevaFechaDevolucion.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // lblDiasExtension
             // 
             this.lblDiasExtension.AutoSize = true;
-            this.lblDiasExtension.Location = new System.Drawing.Point(15, 100);
+            this.lblDiasExtension.Location = new System.Drawing.Point(367, 21);
             this.lblDiasExtension.Name = "lblDiasExtension";
             this.lblDiasExtension.Size = new System.Drawing.Size(96, 13);
             this.lblDiasExtension.TabIndex = 13;
@@ -222,8 +183,8 @@ namespace UI.WinUi.Transacciones
             // 
             // numDiasExtension
             // 
-            this.numDiasExtension.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.numDiasExtension.Location = new System.Drawing.Point(15, 118);
+            this.numDiasExtension.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.numDiasExtension.Location = new System.Drawing.Point(367, 41);
             this.numDiasExtension.Maximum = new decimal(new int[] {
             60,
             0,
@@ -235,7 +196,7 @@ namespace UI.WinUi.Transacciones
             0,
             0});
             this.numDiasExtension.Name = "numDiasExtension";
-            this.numDiasExtension.Size = new System.Drawing.Size(230, 23);
+            this.numDiasExtension.Size = new System.Drawing.Size(98, 21);
             this.numDiasExtension.TabIndex = 12;
             this.numDiasExtension.Value = new decimal(new int[] {
             14,
@@ -247,7 +208,7 @@ namespace UI.WinUi.Transacciones
             // lblRenovaciones
             // 
             this.lblRenovaciones.AutoSize = true;
-            this.lblRenovaciones.Location = new System.Drawing.Point(270, 25);
+            this.lblRenovaciones.Location = new System.Drawing.Point(189, 24);
             this.lblRenovaciones.Name = "lblRenovaciones";
             this.lblRenovaciones.Size = new System.Drawing.Size(129, 13);
             this.lblRenovaciones.TabIndex = 11;
@@ -255,10 +216,10 @@ namespace UI.WinUi.Transacciones
             // 
             // txtRenovaciones
             // 
-            this.txtRenovaciones.Location = new System.Drawing.Point(270, 41);
+            this.txtRenovaciones.Location = new System.Drawing.Point(189, 41);
             this.txtRenovaciones.Name = "txtRenovaciones";
             this.txtRenovaciones.ReadOnly = true;
-            this.txtRenovaciones.Size = new System.Drawing.Size(230, 20);
+            this.txtRenovaciones.Size = new System.Drawing.Size(145, 20);
             this.txtRenovaciones.TabIndex = 10;
             this.txtRenovaciones.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtRenovaciones.TextChanged += new System.EventHandler(this.txtRenovaciones_TextChanged);
@@ -266,7 +227,7 @@ namespace UI.WinUi.Transacciones
             // lblFechaDevolucionActual
             // 
             this.lblFechaDevolucionActual.AutoSize = true;
-            this.lblFechaDevolucionActual.Location = new System.Drawing.Point(15, 25);
+            this.lblFechaDevolucionActual.Location = new System.Drawing.Point(18, 24);
             this.lblFechaDevolucionActual.Name = "lblFechaDevolucionActual";
             this.lblFechaDevolucionActual.Size = new System.Drawing.Size(130, 13);
             this.lblFechaDevolucionActual.TabIndex = 9;
@@ -274,10 +235,10 @@ namespace UI.WinUi.Transacciones
             // 
             // txtFechaDevolucionActual
             // 
-            this.txtFechaDevolucionActual.Location = new System.Drawing.Point(15, 41);
+            this.txtFechaDevolucionActual.Location = new System.Drawing.Point(18, 41);
             this.txtFechaDevolucionActual.Name = "txtFechaDevolucionActual";
             this.txtFechaDevolucionActual.ReadOnly = true;
-            this.txtFechaDevolucionActual.Size = new System.Drawing.Size(230, 20);
+            this.txtFechaDevolucionActual.Size = new System.Drawing.Size(138, 20);
             this.txtFechaDevolucionActual.TabIndex = 8;
             this.txtFechaDevolucionActual.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
@@ -286,11 +247,11 @@ namespace UI.WinUi.Transacciones
             this.btnRenovar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.btnRenovar.Enabled = false;
             this.btnRenovar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnRenovar.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold);
+            this.btnRenovar.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
             this.btnRenovar.ForeColor = System.Drawing.Color.White;
-            this.btnRenovar.Location = new System.Drawing.Point(12, 560);
+            this.btnRenovar.Location = new System.Drawing.Point(176, 309);
             this.btnRenovar.Name = "btnRenovar";
-            this.btnRenovar.Size = new System.Drawing.Size(240, 45);
+            this.btnRenovar.Size = new System.Drawing.Size(180, 35);
             this.btnRenovar.TabIndex = 2;
             this.btnRenovar.Text = "Renovar Préstamo";
             this.btnRenovar.UseVisualStyleBackColor = false;
@@ -299,11 +260,11 @@ namespace UI.WinUi.Transacciones
             // 
             this.btnLimpiar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
             this.btnLimpiar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.btnLimpiar.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.btnLimpiar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.btnLimpiar.Location = new System.Drawing.Point(270, 560);
+            this.btnLimpiar.Location = new System.Drawing.Point(376, 309);
             this.btnLimpiar.Name = "btnLimpiar";
-            this.btnLimpiar.Size = new System.Drawing.Size(240, 45);
+            this.btnLimpiar.Size = new System.Drawing.Size(150, 35);
             this.btnLimpiar.TabIndex = 3;
             this.btnLimpiar.Text = "Limpiar";
             this.btnLimpiar.UseVisualStyleBackColor = false;
@@ -312,28 +273,40 @@ namespace UI.WinUi.Transacciones
             // 
             this.btnVolver.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.btnVolver.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.btnVolver.Location = new System.Drawing.Point(752, 560);
+            this.btnVolver.Location = new System.Drawing.Point(546, 309);
             this.btnVolver.Name = "btnVolver";
-            this.btnVolver.Size = new System.Drawing.Size(240, 45);
+            this.btnVolver.Size = new System.Drawing.Size(150, 35);
             this.btnVolver.TabIndex = 4;
             this.btnVolver.Text = "Volver";
             this.btnVolver.UseVisualStyleBackColor = false;
+            // 
+            // lblTotalPrestamos
+            // 
+            this.lblTotalPrestamos.AutoSize = true;
+            this.lblTotalPrestamos.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Bold);
+            this.lblTotalPrestamos.Location = new System.Drawing.Point(9, 458);
+            this.lblTotalPrestamos.Name = "lblTotalPrestamos";
+            this.lblTotalPrestamos.Size = new System.Drawing.Size(112, 13);
+            this.lblTotalPrestamos.TabIndex = 7;
+            this.lblTotalPrestamos.Text = "Total préstamos: 0";
             // 
             // renovarPrestamo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.ClientSize = new System.Drawing.Size(1004, 620);
+            this.ClientSize = new System.Drawing.Size(1000, 460);
+            this.Controls.Add(this.lblTotalPrestamos);
             this.Controls.Add(this.btnVolver);
             this.Controls.Add(this.btnLimpiar);
             this.Controls.Add(this.btnRenovar);
             this.Controls.Add(this.groupBoxDatos);
             this.Controls.Add(this.groupBoxBusqueda);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.MaximumSize = new System.Drawing.Size(1000, 460);
+            this.MinimumSize = new System.Drawing.Size(1000, 460);
             this.Name = "renovarPrestamo";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Renovar Préstamo";
@@ -344,6 +317,7 @@ namespace UI.WinUi.Transacciones
             this.groupBoxDatos.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numDiasExtension)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -357,7 +331,6 @@ namespace UI.WinUi.Transacciones
         private System.Windows.Forms.TextBox txtBuscarTitulo;
         private System.Windows.Forms.Label lblBuscarEjemplar;
         private System.Windows.Forms.TextBox txtBuscarEjemplar;
-        private System.Windows.Forms.Label lblTotalPrestamos;
         private System.Windows.Forms.GroupBox groupBoxDatos;
         private System.Windows.Forms.Label lblFechaDevolucionActual;
         private System.Windows.Forms.TextBox txtFechaDevolucionActual;
@@ -367,11 +340,9 @@ namespace UI.WinUi.Transacciones
         private System.Windows.Forms.NumericUpDown numDiasExtension;
         private System.Windows.Forms.Label lblNuevaFechaDevolucion;
         private System.Windows.Forms.TextBox txtNuevaFechaDevolucion;
-        private System.Windows.Forms.Label lblObservaciones;
-        private System.Windows.Forms.TextBox txtObservaciones;
-        private System.Windows.Forms.Label lblAdvertencia;
         private System.Windows.Forms.Button btnRenovar;
         private System.Windows.Forms.Button btnLimpiar;
         private System.Windows.Forms.Button btnVolver;
+        private System.Windows.Forms.Label lblTotalPrestamos;
     }
 }

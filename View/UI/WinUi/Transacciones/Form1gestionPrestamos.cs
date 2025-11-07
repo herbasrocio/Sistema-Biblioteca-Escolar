@@ -16,7 +16,6 @@ namespace UI.WinUi.Transacciones
     {
         private Usuario _usuarioLogueado;
         private registrarPrestamo _formRegistrarPrestamo;
-        private registrarDevolucion _formRegistrarDevolucion;
         private renovarPrestamo _formRenovarPrestamo;
 
         public Form1gestionPrestamos()
@@ -39,16 +38,24 @@ namespace UI.WinUi.Transacciones
         private void GestionPrestamos_Load(object sender, EventArgs e)
         {
             AplicarTraducciones();
+            ConfigurarVisibilidadPestañas();
             CargarPestañaActual();
+        }
+
+        private void ConfigurarVisibilidadPestañas()
+        {
+            // La pestaña de renovar préstamo se muestra siempre si tiene permiso de Gestión Préstamos
+            // El permiso de renovar está unificado con Gestión Préstamos en Usuario.TienePermiso()
+            // Por lo tanto, si llegó aquí, ya tiene permiso de préstamos
+            // No ocultamos la pestaña de renovar
         }
 
         private void AplicarTraducciones()
         {
             try
             {
-                this.Text = LanguageManager.Translate("prestamos");
+                this.Text = LanguageManager.Translate("gestion_prestamos");
                 tabRegistrarPrestamo.Text = LanguageManager.Translate("registrar_prestamo");
-                tabRegistrarDevolucion.Text = LanguageManager.Translate("registrar_devolucion");
                 tabRenovarPrestamo.Text = LanguageManager.Translate("renovar_prestamo");
             }
             catch (Exception ex)
@@ -64,23 +71,22 @@ namespace UI.WinUi.Transacciones
 
         private void CargarPestañaActual()
         {
-            // Limpiar controles de todas las pestañas
-            tabRegistrarPrestamo.Controls.Clear();
-            tabRegistrarDevolucion.Controls.Clear();
-            tabRenovarPrestamo.Controls.Clear();
-
-            // Cargar el formulario correspondiente según la pestaña seleccionada
+            // Solo cargar el formulario de la pestaña seleccionada
             if (tabControl.SelectedTab == tabRegistrarPrestamo)
             {
-                CargarFormularioRegistrarPrestamo();
-            }
-            else if (tabControl.SelectedTab == tabRegistrarDevolucion)
-            {
-                CargarFormularioRegistrarDevolucion();
+                // Solo cargar si no está cargado ya
+                if (tabRegistrarPrestamo.Controls.Count == 0)
+                {
+                    CargarFormularioRegistrarPrestamo();
+                }
             }
             else if (tabControl.SelectedTab == tabRenovarPrestamo)
             {
-                CargarFormularioRenovarPrestamo();
+                // Solo cargar si no está cargado ya
+                if (tabRenovarPrestamo.Controls.Count == 0)
+                {
+                    CargarFormularioRenovarPrestamo();
+                }
             }
         }
 
@@ -98,38 +104,10 @@ namespace UI.WinUi.Transacciones
             _formRegistrarPrestamo.Show();
         }
 
-        private void CargarFormularioRegistrarDevolucion()
-        {
-            if (_formRegistrarDevolucion == null || _formRegistrarDevolucion.IsDisposed)
-            {
-                _formRegistrarDevolucion = new registrarDevolucion(_usuarioLogueado);
-                _formRegistrarDevolucion.TopLevel = false;
-                _formRegistrarDevolucion.FormBorderStyle = FormBorderStyle.None;
-                _formRegistrarDevolucion.Dock = DockStyle.Fill;
-            }
-
-            tabRegistrarDevolucion.Controls.Add(_formRegistrarDevolucion);
-            _formRegistrarDevolucion.Show();
-        }
-
         private void CargarFormularioRenovarPrestamo()
         {
-            // Verificar permiso antes de cargar el formulario
-            if (!TienePermiso("renovarPrestamo"))
-            {
-                MessageBox.Show(
-                    LanguageManager.Translate("sin_permisos"),
-                    LanguageManager.Translate("error"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-
-                // Cambiar a la primera pestaña si no tiene permiso
-                if (tabControl.TabPages.Count > 0)
-                    tabControl.SelectedIndex = 0;
-
-                return;
-            }
-
+            // El permiso ya fue verificado en el menú principal
+            // Renovar préstamo está unificado con Gestión Préstamos
             if (_formRenovarPrestamo == null || _formRenovarPrestamo.IsDisposed)
             {
                 _formRenovarPrestamo = new renovarPrestamo(_usuarioLogueado);
@@ -153,9 +131,6 @@ namespace UI.WinUi.Transacciones
             // Limpiar recursos
             if (_formRegistrarPrestamo != null && !_formRegistrarPrestamo.IsDisposed)
                 _formRegistrarPrestamo.Dispose();
-
-            if (_formRegistrarDevolucion != null && !_formRegistrarDevolucion.IsDisposed)
-                _formRegistrarDevolucion.Dispose();
 
             if (_formRenovarPrestamo != null && !_formRenovarPrestamo.IsDisposed)
                 _formRenovarPrestamo.Dispose();

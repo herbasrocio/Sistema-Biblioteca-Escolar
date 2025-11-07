@@ -172,27 +172,6 @@ namespace UI.WinUi.Administrador
 
                         // Si todo salió bien, confirmar la transacción
                         transaction.Complete();
-
-                        // Registrar en bitácora
-                        _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
-                        {
-                            IdUsuario = _usuarioLogueado.IdUsuario,
-                            NombreUsuario = _usuarioLogueado.Nombre,
-                            TipoOperacion = "GestionMaterial",
-                            Modulo = "Materiales",
-                            Accion = "Registrar material",
-                            EntidadAfectada = "Material",
-                            IdEntidad = null,
-                            Detalle = $"Material '{nuevoMaterial.Titulo}' de {nuevoMaterial.Autor} registrado. Tipo: {nuevoMaterial.Tipo}. ISBN: {nuevoMaterial.ISBN}. {cantidadCreada} ejemplar(es) creado(s)."
-                        });
-
-                        MessageBox.Show($"Material registrado exitosamente.\n{cantidadCreada} ejemplar(es) creado(s) automáticamente.",
-                            LanguageManager.Translate("exito"),
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
-
-                        LimpiarCampos();
-                        txtTitulo.Focus();
                     }
                     catch (Exception exTransaccion)
                     {
@@ -201,6 +180,27 @@ namespace UI.WinUi.Administrador
                         throw new Exception($"Error durante el registro: {exTransaccion.Message}\n\nLa operación completa ha sido cancelada.", exTransaccion);
                     }
                 }
+
+                // Registrar en bitácora DESPUÉS de cerrar el TransactionScope
+                _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                {
+                    IdUsuario = _usuarioLogueado.IdUsuario,
+                    NombreUsuario = _usuarioLogueado.Nombre,
+                    TipoOperacion = "Creacion",
+                    Modulo = "Administración - Materiales",
+                    Accion = "Registrar material",
+                    EntidadAfectada = "Material",
+                    IdEntidad = null,
+                    Detalle = $"Material '{nuevoMaterial.Titulo}' de {nuevoMaterial.Autor} registrado. Tipo: {nuevoMaterial.Tipo}. ISBN: {nuevoMaterial.ISBN ?? "N/A"}. {cantidadCreada} ejemplar(es) creado(s)."
+                });
+
+                MessageBox.Show($"Material registrado exitosamente.\n{cantidadCreada} ejemplar(es) creado(s) automáticamente.",
+                    LanguageManager.Translate("exito"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                LimpiarCampos();
+                txtTitulo.Focus();
             }
             catch (Exception ex)
             {

@@ -19,12 +19,14 @@ namespace UI.WinUi.Administrador
         private Material _material;
         private EjemplarBLL _ejemplarBLL;
         private MaterialBLL _materialBLL;
+        private BitacoraOperacionesBLL _bitacoraBLL;
 
         public GestionarEjemplares()
         {
             InitializeComponent();
             _ejemplarBLL = new EjemplarBLL();
             _materialBLL = new MaterialBLL();
+            _bitacoraBLL = new BitacoraOperacionesBLL();
         }
 
         public GestionarEjemplares(Usuario usuario, Material material) : this()
@@ -353,6 +355,19 @@ namespace UI.WinUi.Administrador
 
                         _ejemplarBLL.GuardarEjemplar(nuevoEjemplar);
 
+                        // Registrar en bitácora
+                        _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                        {
+                            IdUsuario = _usuarioLogueado.IdUsuario,
+                            NombreUsuario = _usuarioLogueado.Nombre,
+                            TipoOperacion = "Creacion",
+                            Modulo = "Administración - Ejemplares",
+                            Accion = "Agregar ejemplar",
+                            EntidadAfectada = "Ejemplar",
+                            IdEntidad = null,
+                            Detalle = $"Ejemplar agregado al material '{_material.Titulo}': Ejemplar #{proximoNumero}, Código: {txtCodigo.Text.Trim()}, Ubicación: {txtUbicacion.Text.Trim()}"
+                        });
+
                         MessageBox.Show(LanguageManager.Translate("ejemplar_guardado"),
                             LanguageManager.Translate("exito"),
                             MessageBoxButtons.OK,
@@ -490,6 +505,19 @@ namespace UI.WinUi.Administrador
                         ejemplar.Observaciones = string.Empty;
 
                         _ejemplarBLL.ActualizarEjemplar(ejemplar);
+
+                        // Registrar en bitácora
+                        _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                        {
+                            IdUsuario = _usuarioLogueado.IdUsuario,
+                            NombreUsuario = _usuarioLogueado.Nombre,
+                            TipoOperacion = "Modificacion",
+                            Modulo = "Administración - Ejemplares",
+                            Accion = "Editar ejemplar",
+                            EntidadAfectada = "Ejemplar",
+                            IdEntidad = null,
+                            Detalle = $"Ejemplar editado del material '{_material.Titulo}': Ejemplar #{ejemplar.NumeroEjemplar}, Código: {ejemplar.CodigoEjemplar}, Ubicación: {ejemplar.Ubicacion}"
+                        });
 
                         MessageBox.Show(LanguageManager.Translate("ejemplar_guardado"),
                             LanguageManager.Translate("exito"),
@@ -634,6 +662,7 @@ namespace UI.WinUi.Administrador
                             return;
                         }
 
+                        EstadoMaterial estadoAnterior = ejemplar.Estado;
                         EstadoMaterial nuevoEstado = ObtenerEstadoDesdeTexto(cmbEstado.SelectedItem.ToString());
 
                         // Validación adicional: Nunca permitir asignar "Prestado" manualmente
@@ -649,6 +678,19 @@ namespace UI.WinUi.Administrador
                         }
 
                         _ejemplarBLL.CambiarEstado(idEjemplar, nuevoEstado);
+
+                        // Registrar en bitácora
+                        _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                        {
+                            IdUsuario = _usuarioLogueado.IdUsuario,
+                            NombreUsuario = _usuarioLogueado.Nombre,
+                            TipoOperacion = "Modificacion",
+                            Modulo = "Administración - Ejemplares",
+                            Accion = "Cambiar estado ejemplar",
+                            EntidadAfectada = "Ejemplar",
+                            IdEntidad = null,
+                            Detalle = $"Estado cambiado del ejemplar del material '{_material.Titulo}': Ejemplar #{ejemplar.NumeroEjemplar} (Código: {ejemplar.CodigoEjemplar}). Estado anterior: {estadoAnterior}, Estado nuevo: {nuevoEstado}"
+                        });
 
                         MessageBox.Show(LanguageManager.Translate("estado_actualizado"),
                             LanguageManager.Translate("exito"),
@@ -722,6 +764,19 @@ namespace UI.WinUi.Administrador
                 if (confirmacion == DialogResult.Yes)
                 {
                     _ejemplarBLL.EliminarEjemplar(ejemplar);
+
+                    // Registrar en bitácora
+                    _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                    {
+                        IdUsuario = _usuarioLogueado.IdUsuario,
+                        NombreUsuario = _usuarioLogueado.Nombre,
+                        TipoOperacion = "Eliminacion",
+                        Modulo = "Administración - Ejemplares",
+                        Accion = "Eliminar ejemplar",
+                        EntidadAfectada = "Ejemplar",
+                        IdEntidad = null,
+                        Detalle = $"Ejemplar eliminado del material '{_material.Titulo}': Ejemplar #{ejemplar.NumeroEjemplar} (Código: {ejemplar.CodigoEjemplar})"
+                    });
 
                     MessageBox.Show(LanguageManager.Translate("ejemplar_eliminado"),
                         LanguageManager.Translate("exito"),

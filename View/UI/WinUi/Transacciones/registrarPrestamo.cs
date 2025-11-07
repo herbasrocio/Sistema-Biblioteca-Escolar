@@ -267,22 +267,22 @@ namespace UI.WinUi.Transacciones
 
                 if (cantidadVencidos > 0)
                 {
-                    lblUbicacion.Text = $"⚠ Alumno tiene {cantidadVencidos} préstamo(s) vencido(s)";
+                    lblUbicacion.Text = $"Alumno tiene {cantidadVencidos} préstamo(s) vencido(s)";
                     lblUbicacion.ForeColor = System.Drawing.Color.Red;
                 }
                 else if (cantidadActivos >= 5)
                 {
-                    lblUbicacion.Text = $"⚠ Alumno alcanzó el límite de préstamos ({cantidadActivos}/5)";
+                    lblUbicacion.Text = $"Alumno alcanzó el límite de préstamos ({cantidadActivos}/5)";
                     lblUbicacion.ForeColor = System.Drawing.Color.Orange;
                 }
                 else if (cantidadActivos > 0)
                 {
-                    lblUbicacion.Text = $"ℹ Préstamos activos: {cantidadActivos}/5";
+                    lblUbicacion.Text = $"Préstamos activos: {cantidadActivos}/5";
                     lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
                 }
                 else
                 {
-                    lblUbicacion.Text = "✓ Sin préstamos activos";
+                    lblUbicacion.Text = "Sin préstamos activos";
                     lblUbicacion.ForeColor = System.Drawing.Color.Green;
                 }
             }
@@ -424,19 +424,20 @@ namespace UI.WinUi.Transacciones
                 dgvMateriales.DataSource = null;
                 dgvMateriales.DataSource = _materialesFiltrados.OrderBy(m => m.Titulo).ToList();
 
-                // Reactivar la selección después de un breve delay
-                System.Threading.Tasks.Task.Delay(100).ContinueWith(t =>
-                {
-                    if (!this.IsDisposed)
-                    {
-                        this.Invoke((MethodInvoker)(() => _permitirSeleccion = true));
-                    }
-                });
+                // Limpiar selección de ejemplar anterior
+                _ejemplarSeleccionado = null;
+                lblUbicacion.Text = "Haga clic en un material para seleccionar el ejemplar específico";
+                lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
+
+                // Reactivar la selección inmediatamente después de cargar
+                // Se usa BeginInvoke para ejecutar después de que se complete el evento actual
+                this.BeginInvoke((MethodInvoker)(() => _permitirSeleccion = true));
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al cargar materiales: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _permitirSeleccion = true; // Asegurar que se reactive incluso con error
             }
         }
 
@@ -452,14 +453,26 @@ namespace UI.WinUi.Transacciones
 
                 if (materialDetalle != null)
                 {
-                    // Abrir diálogo para seleccionar ejemplar
-                    AbrirDialogoSeleccionEjemplar(materialDetalle);
+                    // Desactivar temporalmente para evitar múltiples aperturas
+                    _permitirSeleccion = false;
+
+                    try
+                    {
+                        // Abrir diálogo para seleccionar ejemplar
+                        AbrirDialogoSeleccionEjemplar(materialDetalle);
+                    }
+                    finally
+                    {
+                        // Reactivar la selección
+                        _permitirSeleccion = true;
+                    }
                 }
             }
             else
             {
                 _ejemplarSeleccionado = null;
-                lblUbicacion.Text = "";
+                lblUbicacion.Text = "Haga clic en un material para seleccionar el ejemplar específico";
+                lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
             }
         }
 
@@ -473,6 +486,23 @@ namespace UI.WinUi.Transacciones
                 if (material == null)
                 {
                     lblUbicacion.Text = "Error: Material no encontrado";
+                    lblUbicacion.ForeColor = System.Drawing.Color.Red;
+                    dgvMateriales.ClearSelection();
+                    return;
+                }
+
+                // Verificar que haya ejemplares disponibles
+                if (materialDetalle.CantidadDisponible <= 0)
+                {
+                    MessageBox.Show(
+                        $"El material '{materialDetalle.Titulo}' no tiene ejemplares disponibles en este momento.",
+                        "Sin ejemplares disponibles",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    dgvMateriales.ClearSelection();
+                    _ejemplarSeleccionado = null;
+                    lblUbicacion.Text = "Material sin ejemplares disponibles";
+                    lblUbicacion.ForeColor = System.Drawing.Color.Orange;
                     return;
                 }
 
@@ -486,7 +516,8 @@ namespace UI.WinUi.Transacciones
                         // Mostrar información del ejemplar seleccionado
                         if (_ejemplarSeleccionado != null)
                         {
-                            lblUbicacion.Text = $"📦 Buscar en: {_ejemplarSeleccionado.Ubicacion} | Código: {_ejemplarSeleccionado.CodigoEjemplar}";
+                            lblUbicacion.Text = $"Ejemplar #{_ejemplarSeleccionado.NumeroEjemplar} seleccionado | Ubicación: {_ejemplarSeleccionado.Ubicacion ?? "N/A"} | Código: {_ejemplarSeleccionado.CodigoEjemplar}";
+                            lblUbicacion.ForeColor = System.Drawing.Color.Green;
                         }
                     }
                     else
@@ -494,16 +525,19 @@ namespace UI.WinUi.Transacciones
                         // Usuario canceló - deseleccionar el material
                         dgvMateriales.ClearSelection();
                         _ejemplarSeleccionado = null;
-                        lblUbicacion.Text = "";
+                        lblUbicacion.Text = "Haga clic en un material para seleccionar el ejemplar específico";
+                        lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al seleccionar ejemplar: {ex.Message}", "Error",
+                MessageBox.Show($"Error al seleccionar ejemplar: {ex.Message}\n\nDetalles: {ex.StackTrace}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+                dgvMateriales.ClearSelection();
                 _ejemplarSeleccionado = null;
-                lblUbicacion.Text = "";
+                lblUbicacion.Text = "Error al seleccionar ejemplar";
+                lblUbicacion.ForeColor = System.Drawing.Color.Red;
             }
         }
 
@@ -580,21 +614,21 @@ namespace UI.WinUi.Transacciones
                 });
 
                 // Construir mensaje de éxito con formato mejorado
-                string mensaje = "✓ PRÉSTAMO REGISTRADO EXITOSAMENTE\n\n";
+                string mensaje = "PRÉSTAMO REGISTRADO EXITOSAMENTE\n\n";
                 mensaje += "═══════════════════════════════════════\n\n";
-                mensaje += $"📚 Material: {materialDetalle.Titulo}\n";
-                mensaje += $"👤 Alumno: {alumno.NombreCompleto}\n\n";
+                mensaje += $"Material: {materialDetalle.Titulo}\n";
+                mensaje += $"Alumno: {alumno.NombreCompleto}\n\n";
                 mensaje += "DATOS DEL EJEMPLAR:\n";
-                mensaje += $"  • Ejemplar #{_ejemplarSeleccionado.NumeroEjemplar}\n";
-                mensaje += $"  • Código: {_ejemplarSeleccionado.CodigoEjemplar}\n";
+                mensaje += $"  - Ejemplar #{_ejemplarSeleccionado.NumeroEjemplar}\n";
+                mensaje += $"  - Código: {_ejemplarSeleccionado.CodigoEjemplar}\n";
 
                 if (!string.IsNullOrEmpty(_ejemplarSeleccionado.Ubicacion))
                 {
-                    mensaje += $"  • Ubicación: {_ejemplarSeleccionado.Ubicacion}\n";
+                    mensaje += $"  - Ubicación: {_ejemplarSeleccionado.Ubicacion}\n";
                 }
 
-                mensaje += $"\n📅 Fecha de préstamo: {dtpFechaPrestamo.Value:dd/MM/yyyy}\n";
-                mensaje += $"📅 Devolución prevista: {dtpFechaDevolucion.Value:dd/MM/yyyy}\n\n";
+                mensaje += $"\nFecha de préstamo: {dtpFechaPrestamo.Value:dd/MM/yyyy}\n";
+                mensaje += $"Devolución prevista: {dtpFechaDevolucion.Value:dd/MM/yyyy}\n\n";
                 mensaje += "═══════════════════════════════════════\n";
                 mensaje += "Por favor, entregar el material al alumno.";
 
@@ -636,7 +670,8 @@ namespace UI.WinUi.Transacciones
             dtpFechaDevolucion.Value = DateTime.Now.AddDays(7);
 
             _ejemplarSeleccionado = null;
-            lblUbicacion.Text = "";
+            lblUbicacion.Text = "Haga clic en un material para seleccionar el ejemplar específico";
+            lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
 
             CargarMateriales();
             // _permitirSeleccion se activará automáticamente en CargarMateriales()

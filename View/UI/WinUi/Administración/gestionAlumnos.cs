@@ -18,6 +18,7 @@ namespace UI.WinUi.Administrador
         private Usuario _usuarioLogueado;
         private AlumnoBLL _alumnoBLL;
         private InscripcionBLL _inscripcionBLL;
+        private BitacoraOperacionesBLL _bitacoraBLL;
         private List<Alumno> _alumnosGrado;
         private int _anioLectivoSeleccionado;
 
@@ -26,6 +27,7 @@ namespace UI.WinUi.Administrador
             InitializeComponent();
             _alumnoBLL = new AlumnoBLL();
             _inscripcionBLL = new InscripcionBLL();
+            _bitacoraBLL = new BitacoraOperacionesBLL();
             _alumnosGrado = new List<Alumno>();
             _anioLectivoSeleccionado = DateTime.Now.Year;
         }
@@ -1051,6 +1053,22 @@ namespace UI.WinUi.Administrador
                                 MessageBoxButtons.OK,
                                 errores > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
 
+                            // Registrar en bitácora (solo si hubo actualizaciones exitosas)
+                            if (actualizados > 0)
+                            {
+                                _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                                {
+                                    IdUsuario = _usuarioLogueado.IdUsuario,
+                                    NombreUsuario = _usuarioLogueado.Nombre,
+                                    TipoOperacion = "Modificacion",
+                                    Modulo = "Administración - Alumnos",
+                                    Accion = "Promoción masiva de alumnos",
+                                    EntidadAfectada = "Alumno",
+                                    IdEntidad = null,
+                                    Detalle = $"Promoción de {actualizados} alumno(s) al grado {nuevoGradoSeleccionado}{(errores > 0 ? $" (con {errores} error(es))" : "")}"
+                                });
+                            }
+
                             // Recargar la lista
                             CargarGrados(); // Recargar grados por si el nuevo grado no existía
                             CmbGrado_SelectedIndexChanged(null, EventArgs.Empty);
@@ -1087,6 +1105,19 @@ namespace UI.WinUi.Administrador
 
                     // Guardar el alumno
                     _alumnoBLL.GuardarAlumno(formEditar.AlumnoEditado);
+
+                    // Registrar en bitácora
+                    _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                    {
+                        IdUsuario = _usuarioLogueado.IdUsuario,
+                        NombreUsuario = _usuarioLogueado.Nombre,
+                        TipoOperacion = "Creacion",
+                        Modulo = "Administración - Alumnos",
+                        Accion = "Registrar alumno",
+                        EntidadAfectada = "Alumno",
+                        IdEntidad = null,
+                        Detalle = $"Alumno creado: {formEditar.AlumnoEditado.NombreCompleto} (DNI: {formEditar.AlumnoEditado.DNI}, Grado: {formEditar.AlumnoEditado.Grado}, División: {formEditar.AlumnoEditado.Division})"
+                    });
 
                     // Crear inscripción automáticamente para el año lectivo seleccionado
                     try
@@ -1138,6 +1169,19 @@ namespace UI.WinUi.Administrador
                 {
                     _alumnoBLL.ActualizarAlumno(formEditar.AlumnoEditado);
 
+                    // Registrar en bitácora
+                    _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                    {
+                        IdUsuario = _usuarioLogueado.IdUsuario,
+                        NombreUsuario = _usuarioLogueado.Nombre,
+                        TipoOperacion = "Modificacion",
+                        Modulo = "Administración - Alumnos",
+                        Accion = "Editar alumno",
+                        EntidadAfectada = "Alumno",
+                        IdEntidad = null,
+                        Detalle = $"Alumno editado: {formEditar.AlumnoEditado.NombreCompleto} (DNI: {formEditar.AlumnoEditado.DNI}, Grado: {formEditar.AlumnoEditado.Grado}, División: {formEditar.AlumnoEditado.Division})"
+                    });
+
                     MessageBox.Show("Alumno actualizado exitosamente", "Éxito",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -1175,6 +1219,19 @@ namespace UI.WinUi.Administrador
                 if (resultado == DialogResult.Yes)
                 {
                     _alumnoBLL.EliminarAlumno(alumnoSeleccionado);
+
+                    // Registrar en bitácora
+                    _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                    {
+                        IdUsuario = _usuarioLogueado.IdUsuario,
+                        NombreUsuario = _usuarioLogueado.Nombre,
+                        TipoOperacion = "Eliminacion",
+                        Modulo = "Administración - Alumnos",
+                        Accion = "Eliminar alumno",
+                        EntidadAfectada = "Alumno",
+                        IdEntidad = null,
+                        Detalle = $"Alumno eliminado (baja lógica): {alumnoSeleccionado.NombreCompleto} (DNI: {alumnoSeleccionado.DNI}, Grado: {alumnoSeleccionado.Grado}, División: {alumnoSeleccionado.Division})"
+                    });
 
                     MessageBox.Show("Alumno eliminado exitosamente", "Éxito",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1570,6 +1627,22 @@ namespace UI.WinUi.Administrador
 
             MessageBox.Show(mensaje, "Resultado", MessageBoxButtons.OK,
                 errores > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+
+            // Registrar en bitácora (solo si hubo importaciones exitosas)
+            if (importados > 0)
+            {
+                _bitacoraBLL.RegistrarOperacion(new BitacoraOperaciones
+                {
+                    IdUsuario = _usuarioLogueado.IdUsuario,
+                    NombreUsuario = _usuarioLogueado.Nombre,
+                    TipoOperacion = "Creacion",
+                    Modulo = "Administración - Alumnos",
+                    Accion = "Importación masiva de alumnos",
+                    EntidadAfectada = "Alumno",
+                    IdEntidad = null,
+                    Detalle = $"Importación de {importados} alumno(s) con {inscripciones} inscripción(es) para el año {_anioLectivoSeleccionado}{(omitidos > 0 ? $", {omitidos} omitido(s)" : "")}{(errores > 0 ? $", {errores} error(es)" : "")}"
+                });
+            }
 
             // Recargar grados (por si se agregaron nuevos) y lista
             CargarGrados();

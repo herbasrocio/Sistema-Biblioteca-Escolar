@@ -161,7 +161,7 @@ namespace UI.WinUi.Reportes
             this.btnVolver.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnVolver.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnVolver.ForeColor = System.Drawing.Color.White;
-            this.btnVolver.Location = new System.Drawing.Point(1040, 13);
+            this.btnVolver.Location = new System.Drawing.Point(960, 13);
             this.btnVolver.Name = "btnVolver";
             this.btnVolver.Size = new System.Drawing.Size(120, 35);
             this.btnVolver.TabIndex = 2;
