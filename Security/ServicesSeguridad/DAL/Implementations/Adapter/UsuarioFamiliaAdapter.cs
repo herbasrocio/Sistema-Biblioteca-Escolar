@@ -39,11 +39,9 @@ namespace ServicesSecurity.DAL.Implementations.Adapter
                     idFamilia = Guid.Parse(values[1].ToString()),
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Bitacora.Current.LogException(ex);
                 return null;
-                throw;
             }
 
         }

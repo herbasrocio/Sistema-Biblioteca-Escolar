@@ -44,6 +44,8 @@
             this.bitacorasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.consultarBitacoraAdminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.consultarBitacoraBibliotecarioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.backupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.miPerfilToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cerrarSesionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelBienvenida = new System.Windows.Forms.Panel();
             this.lblBienvenida = new System.Windows.Forms.Label();
@@ -59,6 +61,7 @@
             this.menuStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.menuStrip1.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miPerfilToolStripMenuItem,
             this.usuariosToolStripMenuItem,
             this.permisosToolStripMenuItem,
             this.catalogoToolStripMenuItem,
@@ -67,6 +70,7 @@
             this.devolucionesToolStripMenuItem,
             this.reportesToolStripMenuItem,
             this.bitacorasToolStripMenuItem,
+            this.backupToolStripMenuItem,
             this.cerrarSesionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -195,6 +199,22 @@
             this.consultarBitacoraBibliotecarioToolStripMenuItem.Text = "Operaciones de Biblioteca";
             this.consultarBitacoraBibliotecarioToolStripMenuItem.Click += new System.EventHandler(this.consultarBitacoraBibliotecarioToolStripMenuItem_Click);
             //
+            // backupToolStripMenuItem
+            //
+            this.backupToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.backupToolStripMenuItem.Name = "backupToolStripMenuItem";
+            this.backupToolStripMenuItem.Size = new System.Drawing.Size(64, 23);
+            this.backupToolStripMenuItem.Text = "Backup";
+            this.backupToolStripMenuItem.Click += new System.EventHandler(this.backupToolStripMenuItem_Click);
+            //
+            // miPerfilToolStripMenuItem
+            //
+            this.miPerfilToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.miPerfilToolStripMenuItem.Name = "miPerfilToolStripMenuItem";
+            this.miPerfilToolStripMenuItem.Size = new System.Drawing.Size(75, 23);
+            this.miPerfilToolStripMenuItem.Text = "Mi Perfil";
+            this.miPerfilToolStripMenuItem.Click += new System.EventHandler(this.miPerfilToolStripMenuItem_Click);
+            //
             // cerrarSesionToolStripMenuItem
             //
             this.cerrarSesionToolStripMenuItem.ForeColor = System.Drawing.Color.White;
@@ -204,13 +224,13 @@
             this.cerrarSesionToolStripMenuItem.Click += new System.EventHandler(this.cerrarSesionToolStripMenuItem_Click);
             // 
             // panelBienvenida
-            // 
+            //
             this.panelBienvenida.BackColor = System.Drawing.Color.White;
             this.panelBienvenida.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelBienvenida.Controls.Add(this.lblBienvenida);
             this.panelBienvenida.Controls.Add(this.lblNombreUsuario);
             this.panelBienvenida.Controls.Add(this.lblRolUsuario);
-            this.panelBienvenida.Location = new System.Drawing.Point(206, 140);
+            this.panelBienvenida.Location = new System.Drawing.Point(325, 200);
             this.panelBienvenida.Name = "panelBienvenida";
             this.panelBienvenida.Size = new System.Drawing.Size(450, 120);
             this.panelBienvenida.TabIndex = 2;
@@ -249,12 +269,12 @@
             this.lblRolUsuario.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblTituloPrincipal
-            // 
+            //
             this.lblTituloPrincipal.AutoSize = true;
             this.lblTituloPrincipal.BackColor = System.Drawing.Color.Transparent;
             this.lblTituloPrincipal.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold);
             this.lblTituloPrincipal.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblTituloPrincipal.Location = new System.Drawing.Point(206, 60);
+            this.lblTituloPrincipal.Location = new System.Drawing.Point(346, 80);
             this.lblTituloPrincipal.Name = "lblTituloPrincipal";
             this.lblTituloPrincipal.Size = new System.Drawing.Size(408, 45);
             this.lblTituloPrincipal.TabIndex = 1;
@@ -265,7 +285,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.ClientSize = new System.Drawing.Size(863, 500);
+            this.ClientSize = new System.Drawing.Size(1100, 600);
             this.Controls.Add(this.panelBienvenida);
             this.Controls.Add(this.lblTituloPrincipal);
             this.Controls.Add(this.menuStrip1);
@@ -300,6 +320,8 @@
         private System.Windows.Forms.ToolStripMenuItem bitacorasToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem consultarBitacoraAdminToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem consultarBitacoraBibliotecarioToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem backupToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem miPerfilToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cerrarSesionToolStripMenuItem;
         private System.Windows.Forms.Panel panelBienvenida;
         private System.Windows.Forms.Label lblBienvenida;

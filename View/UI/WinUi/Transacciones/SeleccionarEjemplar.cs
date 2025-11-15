@@ -8,10 +8,11 @@ using BLL;
 using DomainModel;
 using DomainModel.Enums;
 using ServicesSecurity.Services;
+using UI.WinUi;
 
 namespace UI.WinUi.Transacciones
 {
-    public partial class SeleccionarEjemplar : Form
+    public partial class SeleccionarEjemplar : BaseForm
     {
         private readonly EjemplarBLL _ejemplarBLL;
         private readonly Material _material;
@@ -23,11 +24,11 @@ namespace UI.WinUi.Transacciones
             _ejemplarBLL = new EjemplarBLL();
             _material = material;
 
-            ConfigurarIdioma();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             CargarEjemplares();
         }
 
-        private void ConfigurarIdioma()
+        protected override void AplicarTraducciones()
         {
             this.Text = LanguageManager.Translate("seleccionar_ejemplar");
             lblTitulo.Text = _material.Titulo;

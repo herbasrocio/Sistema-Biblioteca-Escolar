@@ -34,6 +34,8 @@ namespace UI.WinUi.Administrador
             this.groupBoxPatentesRol = new System.Windows.Forms.GroupBox();
             this.checkedListPatentesRol = new System.Windows.Forms.CheckedListBox();
             this.groupBoxRol = new System.Windows.Forms.GroupBox();
+            this.btnEliminarRol = new System.Windows.Forms.Button();
+            this.btnCrearRol = new System.Windows.Forms.Button();
             this.cboRoles = new System.Windows.Forms.ComboBox();
             this.lblRol = new System.Windows.Forms.Label();
             this.tabGestionUsuarios = new System.Windows.Forms.TabPage();
@@ -123,8 +125,10 @@ namespace UI.WinUi.Administrador
             this.checkedListPatentesRol.SelectedIndexChanged += new System.EventHandler(this.checkedListPatentesRol_SelectedIndexChanged);
             // 
             // groupBoxRol
-            // 
+            //
             this.groupBoxRol.BackColor = System.Drawing.Color.White;
+            this.groupBoxRol.Controls.Add(this.btnEliminarRol);
+            this.groupBoxRol.Controls.Add(this.btnCrearRol);
             this.groupBoxRol.Controls.Add(this.cboRoles);
             this.groupBoxRol.Controls.Add(this.lblRol);
             this.groupBoxRol.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
@@ -135,19 +139,47 @@ namespace UI.WinUi.Administrador
             this.groupBoxRol.TabIndex = 0;
             this.groupBoxRol.TabStop = false;
             this.groupBoxRol.Text = "Seleccionar Rol";
-            // 
+            //
+            // btnEliminarRol
+            //
+            this.btnEliminarRol.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
+            this.btnEliminarRol.FlatAppearance.BorderSize = 0;
+            this.btnEliminarRol.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEliminarRol.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnEliminarRol.ForeColor = System.Drawing.Color.White;
+            this.btnEliminarRol.Location = new System.Drawing.Point(620, 32);
+            this.btnEliminarRol.Name = "btnEliminarRol";
+            this.btnEliminarRol.Size = new System.Drawing.Size(90, 30);
+            this.btnEliminarRol.TabIndex = 3;
+            this.btnEliminarRol.Text = "Eliminar";
+            this.btnEliminarRol.UseVisualStyleBackColor = false;
+            //
+            // btnCrearRol
+            //
+            this.btnCrearRol.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
+            this.btnCrearRol.FlatAppearance.BorderSize = 0;
+            this.btnCrearRol.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCrearRol.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnCrearRol.ForeColor = System.Drawing.Color.White;
+            this.btnCrearRol.Location = new System.Drawing.Point(520, 32);
+            this.btnCrearRol.Name = "btnCrearRol";
+            this.btnCrearRol.Size = new System.Drawing.Size(90, 30);
+            this.btnCrearRol.TabIndex = 2;
+            this.btnCrearRol.Text = "+ Crear";
+            this.btnCrearRol.UseVisualStyleBackColor = false;
+            //
             // cboRoles
-            // 
+            //
             this.cboRoles.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboRoles.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.cboRoles.FormattingEnabled = true;
             this.cboRoles.Location = new System.Drawing.Point(90, 35);
             this.cboRoles.Name = "cboRoles";
-            this.cboRoles.Size = new System.Drawing.Size(600, 25);
+            this.cboRoles.Size = new System.Drawing.Size(420, 25);
             this.cboRoles.TabIndex = 1;
-            // 
+            //
             // lblRol
-            // 
+            //
             this.lblRol.AutoSize = true;
             this.lblRol.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.lblRol.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
@@ -348,6 +380,8 @@ namespace UI.WinUi.Administrador
         private System.Windows.Forms.TabPage tabGestionRoles;
         private System.Windows.Forms.TabPage tabGestionUsuarios;
         private System.Windows.Forms.GroupBox groupBoxRol;
+        private System.Windows.Forms.Button btnEliminarRol;
+        private System.Windows.Forms.Button btnCrearRol;
         private System.Windows.Forms.ComboBox cboRoles;
         private System.Windows.Forms.Label lblRol;
         private System.Windows.Forms.GroupBox groupBoxPatentesRol;

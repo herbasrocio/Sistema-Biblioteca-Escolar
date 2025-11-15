@@ -9,7 +9,7 @@ using BLL;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class EditarMaterial : Form
+    public partial class EditarMaterial : BaseForm
     {
         private Usuario _usuarioLogueado;
         private Material _materialActual;
@@ -56,10 +56,10 @@ namespace UI.WinUi.Administrador
 
         private void EditarMaterial_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {

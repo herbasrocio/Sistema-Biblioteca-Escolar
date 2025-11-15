@@ -6,10 +6,11 @@ using Model.DomainModel.DTOs;
 using ServicesSecurity.Services;
 using ServicesSecurity.DomainModel.Security.Composite;
 using Services;
+using UI.WinUi;
 
 namespace UI.WinUi.Reportes
 {
-    public partial class ReportePrestamosActivos : Form
+    public partial class ReportePrestamosActivos : BaseForm
     {
         private readonly ReporteBLL _reporteBLL;
         private readonly ExportService _exportService;
@@ -43,6 +44,7 @@ namespace UI.WinUi.Reportes
                     return;
                 }
 
+                // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
                 ConfigurarFormulario();
                 ConfigurarDataGridView();
                 GenerarReporte();
@@ -54,7 +56,7 @@ namespace UI.WinUi.Reportes
             }
         }
 
-        private void ConfigurarFormulario()
+        protected override void AplicarTraducciones()
         {
             // Configurar títulos y traducciones
             this.Text = LanguageManager.Translate("reporte_prestamos_activos");
@@ -66,13 +68,39 @@ namespace UI.WinUi.Reportes
             btnImprimir.Text = LanguageManager.Translate("imprimir");
             btnVolver.Text = LanguageManager.Translate("volver");
 
-            // Configurar combo de estados
+            // Recargar combo de estados con traducciones
+            var selectedIndex = cmbEstado.SelectedIndex >= 0 ? cmbEstado.SelectedIndex : 0;
             cmbEstado.Items.Clear();
-            cmbEstado.Items.Add("TODOS");
-            cmbEstado.Items.Add("VIGENTE");
-            cmbEstado.Items.Add("POR VENCER");
-            cmbEstado.Items.Add("VENCIDO");
-            cmbEstado.SelectedIndex = 0;
+            cmbEstado.Items.Add(LanguageManager.Translate("todos"));
+            cmbEstado.Items.Add(LanguageManager.Translate("vigente"));
+            cmbEstado.Items.Add(LanguageManager.Translate("por_vencer"));
+            cmbEstado.Items.Add(LanguageManager.Translate("vencido"));
+            cmbEstado.SelectedIndex = selectedIndex;
+
+            // Reconfigurar columnas del DataGridView si ya están creadas
+            if (dgvReporte.Columns.Count > 0)
+            {
+                dgvReporte.Columns["Alumno"].HeaderText = LanguageManager.Translate("alumno");
+                dgvReporte.Columns["Titulo"].HeaderText = LanguageManager.Translate("titulo");
+                dgvReporte.Columns["Autor"].HeaderText = LanguageManager.Translate("autor");
+                dgvReporte.Columns["CodigoEjemplar"].HeaderText = LanguageManager.Translate("codigo_ejemplar");
+                dgvReporte.Columns["FechaPrestamo"].HeaderText = LanguageManager.Translate("fecha_prestamo");
+                dgvReporte.Columns["FechaDevolucionEsperada"].HeaderText = LanguageManager.Translate("fecha_devolucion");
+                dgvReporte.Columns["DiasRestantes"].HeaderText = LanguageManager.Translate("dias_restantes");
+                dgvReporte.Columns["EstadoPrestamo"].HeaderText = LanguageManager.Translate("estado");
+                dgvReporte.Columns["Grado"].HeaderText = LanguageManager.Translate("grado");
+                dgvReporte.Columns["Division"].HeaderText = LanguageManager.Translate("division");
+            }
+
+            // Actualizar estadísticas si hay datos
+            if (_prestamosActuales != null && _prestamosActuales.Count > 0)
+            {
+                ActualizarEstadisticas();
+            }
+        }
+
+        private void ConfigurarFormulario()
+        {
 
             // Configurar DateTimePickers
             // IMPORTANTE: establecer Value ANTES de MaxDate para evitar error

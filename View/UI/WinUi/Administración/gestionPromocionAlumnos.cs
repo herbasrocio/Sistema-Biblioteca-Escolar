@@ -10,7 +10,7 @@ using DomainModel;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class gestionPromocionAlumnos : Form
+    public partial class gestionPromocionAlumnos : BaseForm
     {
         private Usuario _usuarioLogueado;
         private InscripcionBLL _inscripcionBLL;
@@ -130,11 +130,11 @@ namespace UI.WinUi.Administrador
 
         private void GestionPromocionAlumnos_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             CargarEstadisticas();
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {

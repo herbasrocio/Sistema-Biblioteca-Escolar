@@ -33,6 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -66,6 +67,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WinUi\BaseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="WinUi\Administración\consultarMaterial.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,6 +196,18 @@
     <Compile Include="WinUi\Administración\Login.Designer.cs">
       <DependentUpon>Login.cs</DependentUpon>
     </Compile>
+    <Compile Include="WinUi\Administración\FrmMiPerfil.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Administración\FrmMiPerfil.Designer.cs">
+      <DependentUpon>FrmMiPerfil.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WinUi\Administración\FrmGestionBackup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinUi\Administración\FrmGestionBackup.Designer.cs">
+      <DependentUpon>FrmGestionBackup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\EstilosSistema.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -257,6 +273,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WinUi\Administración\Login.resx">
       <DependentUpon>Login.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinUi\Administración\FrmMiPerfil.resx">
+      <DependentUpon>FrmMiPerfil.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinUi\Administración\FrmGestionBackup.resx">
+      <DependentUpon>FrmGestionBackup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

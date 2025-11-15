@@ -6,10 +6,11 @@ using BLL;
 using DomainModel;
 using ServicesSecurity.Services;
 using ServicesSecurity.DomainModel.Security.Composite;
+using UI.WinUi;
 
 namespace UI.WinUi.Bitacoras
 {
-    public partial class ConsultarBitacoraSeguridad : Form
+    public partial class ConsultarBitacoraSeguridad : BaseForm
     {
         private readonly BitacoraSeguridadBLL _bitacoraAdminBLL;
         private Usuario _usuarioLogueado;
@@ -41,6 +42,7 @@ namespace UI.WinUi.Bitacoras
                     return;
                 }
 
+                // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
                 ConfigurarFormulario();
                 ConfigurarDataGridView();
                 CargarRegistros();
@@ -52,7 +54,7 @@ namespace UI.WinUi.Bitacoras
             }
         }
 
-        private void ConfigurarFormulario()
+        protected override void AplicarTraducciones()
         {
             // Configurar títulos y traducciones
             this.Text = LanguageManager.Translate("bitacora_admin_titulo");
@@ -64,13 +66,7 @@ namespace UI.WinUi.Bitacoras
             btnFiltrar.Text = LanguageManager.Translate("bitacora_filtrar");
             btnVolver.Text = LanguageManager.Translate("volver");
 
-            // Configurar DateTimePickers - últimos 30 días por defecto
-            dtpDesde.Value = DateTime.Now.AddDays(-30);
-            dtpHasta.Value = DateTime.Now;
-            dtpDesde.MaxDate = DateTime.Now;
-            dtpHasta.MaxDate = DateTime.Now;
-
-            // Cargar ComboBox de Gravedad
+            // Recargar ComboBox con traducciones
             cboCriticidad.Items.Clear();
             cboCriticidad.Items.Add(new ComboBoxItem { Text = LanguageManager.Translate("bitacora_todos"), Value = null });
             cboCriticidad.Items.Add(new ComboBoxItem { Text = LanguageManager.Translate("bitacora_gravedad_bajo"), Value = "Bajo" });
@@ -79,6 +75,15 @@ namespace UI.WinUi.Bitacoras
             cboCriticidad.DisplayMember = "Text";
             cboCriticidad.ValueMember = "Value";
             cboCriticidad.SelectedIndex = 0;
+        }
+
+        private void ConfigurarFormulario()
+        {
+            // Configurar DateTimePickers - últimos 30 días por defecto
+            dtpDesde.Value = DateTime.Now.AddDays(-30);
+            dtpHasta.Value = DateTime.Now;
+            dtpDesde.MaxDate = DateTime.Now;
+            dtpHasta.MaxDate = DateTime.Now;
         }
 
         // Clase auxiliar para ComboBox

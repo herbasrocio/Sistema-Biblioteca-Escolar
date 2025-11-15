@@ -7,10 +7,11 @@ using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.Services;
 using BLL;
 using DomainModel;
+using UI.WinUi;
 
 namespace UI.WinUi.Transacciones
 {
-    public partial class registrarDevolucion : Form
+    public partial class registrarDevolucion : BaseForm
     {
         private Usuario _usuarioLogueado;
         private PrestamoBLL _prestamoBLL;
@@ -104,7 +105,7 @@ namespace UI.WinUi.Transacciones
 
         private void RegistrarDevolucion_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             BuscarYCargarPrestamos();
         }
 
@@ -128,20 +129,43 @@ namespace UI.WinUi.Transacciones
             BuscarYCargarPrestamos();
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {
                 this.Text = LanguageManager.Translate("registrar_devolucion");
+                lblTitulo.Text = LanguageManager.Translate("prestamos_activos_y_vencidos");
+                groupBoxBusqueda.Text = LanguageManager.Translate("buscar_prestamo");
+                lblBuscarAlumno.Text = LanguageManager.Translate("nombre_alumno_label");
+                lblBuscarTitulo.Text = LanguageManager.Translate("titulo_material_label");
+                lblBuscarEjemplar.Text = LanguageManager.Translate("codigo_ejemplar_label");
                 groupBoxDatos.Text = LanguageManager.Translate("datos_devolucion");
                 lblObservaciones.Text = LanguageManager.Translate("observaciones");
                 btnRegistrar.Text = LanguageManager.Translate("registrar_devolucion");
                 btnLimpiar.Text = LanguageManager.Translate("limpiar");
                 btnVolver.Text = LanguageManager.Translate("volver");
+
+                // Actualizar textos dinámicos
+                ActualizarTextosDinamicos();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al aplicar traducciones: {ex.Message}");
+            }
+        }
+
+        private void ActualizarTextosDinamicos()
+        {
+            // Recargar la búsqueda para actualizar el texto de resultados
+            if (dgvPrestamos.DataSource != null)
+            {
+                BuscarYCargarPrestamos();
+            }
+
+            // Actualizar el texto de estado y ubicación si hay un préstamo seleccionado
+            if (dgvPrestamos.SelectedRows.Count > 0)
+            {
+                DgvPrestamos_SelectionChanged(dgvPrestamos, EventArgs.Empty);
             }
         }
 
@@ -167,7 +191,7 @@ namespace UI.WinUi.Transacciones
                 if (dtPrestamos.Rows.Count == 0)
                 {
                     dgvPrestamos.DataSource = null;
-                    lblResultados.Text = "No se encontraron préstamos con los criterios especificados";
+                    lblResultados.Text = LanguageManager.Translate("no_prestamos_encontrados");
                     lblResultados.ForeColor = System.Drawing.Color.FromArgb(127, 140, 141);
                     return;
                 }
@@ -194,7 +218,10 @@ namespace UI.WinUi.Transacciones
                 int totalPrestamos = dtPrestamos.Rows.Count;
                 int prestamosVencidos = dtPrestamos.AsEnumerable().Count(row => Convert.ToBoolean(row["EstaVencido"]));
 
-                lblResultados.Text = $"Resultados: {totalPrestamos} préstamos | Vencidos: {prestamosVencidos}";
+                string textoResultados = LanguageManager.Translate("resultados_prestamos");
+                string textoPrestamos = LanguageManager.Translate("prestamos");
+                string textoVencidos = LanguageManager.Translate("vencidos");
+                lblResultados.Text = $"{textoResultados}: {totalPrestamos} {textoPrestamos} | {textoVencidos}: {prestamosVencidos}";
                 lblResultados.ForeColor = totalPrestamos > 0 ? System.Drawing.Color.FromArgb(39, 174, 96) : System.Drawing.Color.FromArgb(127, 140, 141);
                 lblResultados.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
             }
@@ -247,17 +274,17 @@ namespace UI.WinUi.Transacciones
 
                 dgvPrestamos.Columns["NumeroEjemplar"].Visible = false; // Ocultar columna no relevante
 
-                dgvPrestamos.Columns["CodigoEjemplar"].HeaderText = "Código";
+                dgvPrestamos.Columns["CodigoEjemplar"].HeaderText = LanguageManager.Translate("codigo_ejemplar");
                 dgvPrestamos.Columns["CodigoEjemplar"].Width = 125;
                 dgvPrestamos.Columns["CodigoEjemplar"].DisplayIndex = 2;
 
-                dgvPrestamos.Columns["FechaDevolucionPrevista"].HeaderText = "F. Venc.";
+                dgvPrestamos.Columns["FechaDevolucionPrevista"].HeaderText = LanguageManager.Translate("fecha_vencimiento_abr");
                 dgvPrestamos.Columns["FechaDevolucionPrevista"].Width = 90;
                 dgvPrestamos.Columns["FechaDevolucionPrevista"].DisplayIndex = 3;
                 dgvPrestamos.Columns["FechaDevolucionPrevista"].DefaultCellStyle.Format = "dd/MM/yy";
                 dgvPrestamos.Columns["FechaDevolucionPrevista"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-                dgvPrestamos.Columns["DiasAtraso"].HeaderText = "Días";
+                dgvPrestamos.Columns["DiasAtraso"].HeaderText = LanguageManager.Translate("dias_atraso_abr");
                 dgvPrestamos.Columns["DiasAtraso"].Width = 50;
                 dgvPrestamos.Columns["DiasAtraso"].DisplayIndex = 4;
                 dgvPrestamos.Columns["DiasAtraso"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -295,27 +322,40 @@ namespace UI.WinUi.Transacciones
                 // Mostrar estado
                 if (estaVencido)
                 {
-                    lblEstado.Text = $"Estado: ATRASADO ({diasAtraso} días)";
+                    string textoEstado = LanguageManager.Translate("estado");
+                    string textoAtrasado = LanguageManager.Translate("atrasado");
+                    string textoDias = LanguageManager.Translate("dias");
+                    lblEstado.Text = $"{textoEstado}: {textoAtrasado.ToUpper()} ({diasAtraso} {textoDias})";
                     lblEstado.ForeColor = System.Drawing.Color.FromArgb(231, 76, 60);
                 }
                 else
                 {
-                    lblEstado.Text = $"Estado: Al día ({diasRestantes} días restantes)";
+                    string textoEstado = LanguageManager.Translate("estado");
+                    string textoAlDia = LanguageManager.Translate("al_dia");
+                    string textoDiasRestantes = LanguageManager.Translate("dias_restantes");
+                    lblEstado.Text = $"{textoEstado}: {textoAlDia} ({diasRestantes} {textoDiasRestantes})";
                     lblEstado.ForeColor = System.Drawing.Color.FromArgb(39, 174, 96);
                 }
 
-                lblFechaPrestamo.Text = $"Fecha préstamo: {fechaPrestamo:dd/MM/yyyy}";
-                lblFechaDevolucionPrevista.Text = $"Devolución prevista: {fechaDevolucionPrevista:dd/MM/yyyy}";
+                string textoFechaPrestamo = LanguageManager.Translate("fecha_prestamo");
+                string textoDevolucionPrevista = LanguageManager.Translate("devolucion_prevista");
+                lblFechaPrestamo.Text = $"{textoFechaPrestamo}: {fechaPrestamo:dd/MM/yyyy}";
+                lblFechaDevolucionPrevista.Text = $"{textoDevolucionPrevista}: {fechaDevolucionPrevista:dd/MM/yyyy}";
 
                 // Mostrar ubicación del ejemplar
                 if (!string.IsNullOrEmpty(ubicacion) && ubicacion != "No registrada")
                 {
-                    lblUbicacion.Text = $"UBICAR EN: {ubicacion.ToUpper()}  |  Código: {codigoEjemplar}";
+                    string textoUbicar = LanguageManager.Translate("ubicar_en");
+                    string textoCodigo = LanguageManager.Translate("codigo");
+                    lblUbicacion.Text = $"{textoUbicar.ToUpper()}: {ubicacion.ToUpper()}  |  {textoCodigo}: {codigoEjemplar}";
                     lblUbicacion.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
                 }
                 else
                 {
-                    lblUbicacion.Text = $"Código: {codigoEjemplar}  |  Ubicación: No registrada";
+                    string textoCodigo = LanguageManager.Translate("codigo");
+                    string textoUbicacion = LanguageManager.Translate("ubicacion");
+                    string textoNoRegistrada = LanguageManager.Translate("no_registrada");
+                    lblUbicacion.Text = $"{textoCodigo}: {codigoEjemplar}  |  {textoUbicacion}: {textoNoRegistrada}";
                     lblUbicacion.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
                 }
             }
@@ -456,7 +496,8 @@ namespace UI.WinUi.Transacciones
 
                 if (!string.IsNullOrEmpty(ubicacion) && ubicacion != "No registrada")
                 {
-                    mensaje += $"\nUBICAR EN: {ubicacion.ToUpper()}\n";
+                    string textoUbicar = LanguageManager.Translate("ubicar_en");
+                    mensaje += $"\n{textoUbicar.ToUpper()}: {ubicacion.ToUpper()}\n";
                 }
 
                 mensaje += "\n═══════════════════════════════════════\n";

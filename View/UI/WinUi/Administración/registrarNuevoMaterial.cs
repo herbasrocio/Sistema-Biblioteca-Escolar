@@ -7,7 +7,7 @@ using UI.Helpers;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class registrarNuevoMaterial : Form
+    public partial class registrarNuevoMaterial : BaseForm
     {
         private Usuario _usuarioLogueado;
 
@@ -47,11 +47,11 @@ namespace UI.WinUi.Administrador
 
         private void registrarNuevoMaterial_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             // CargarMateriales();
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {

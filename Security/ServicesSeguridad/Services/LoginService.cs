@@ -91,13 +91,17 @@ namespace ServicesSecurity.Services
             {
                 // Re-lanzar excepciones de integridad de datos
                 // No convertir a AutenticacionException - es un problema de seguridad diferente
-                Bitacora.Current.LogCritical($"Intento de login con datos comprometidos: {nombre}");
+                DAL.Implementations.BitacoraSeguridadRepository.Current.RegistrarError(
+                    null, nombre, "Login", "Intento de login con datos comprometidos",
+                    $"Intento de login con datos comprometidos: {nombre}", "Alto");
                 throw;
             }
             catch (Exception ex)
             {
                 // Registrar y manejar otras excepciones
-                Bitacora.Current.LogError($"Error inesperado en Login para usuario '{nombre}': {ex.GetType().Name} - {ex.Message}");
+                DAL.Implementations.BitacoraSeguridadRepository.Current.RegistrarError(
+                    null, nombre, "Login", "Error inesperado",
+                    $"Error inesperado en Login: {ex.GetType().Name} - {ex.Message}", "Alto");
                 ExceptionManager.Current.Handle(ex);
                 throw new AutenticacionException("Error al procesar la autenticación", ex);
             }

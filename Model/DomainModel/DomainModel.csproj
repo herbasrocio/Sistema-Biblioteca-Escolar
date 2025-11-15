@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Alumno.cs" />
     <Compile Include="AnioLectivo.cs" />
+    <Compile Include="Backup.cs" />
     <Compile Include="BitacoraSeguridad.cs" />
     <Compile Include="BitacoraOperaciones.cs" />
     <Compile Include="Devolucion.cs" />

@@ -21,6 +21,10 @@ namespace ServicesSecurity.DomainModel.Security.Composite
 
         public bool Activo { get; set; }
 
+        public string IdiomaPreferido { get; set; } // Idioma preferido del usuario (ej: "es-AR", "en-GB")
+
+        public DateTime? FechaUltimoAcceso { get; set; } // Fecha del último acceso del usuario
+
         public string DVH { get; set; } // Dígito Verificador Horizontal
 
         public string HashDH

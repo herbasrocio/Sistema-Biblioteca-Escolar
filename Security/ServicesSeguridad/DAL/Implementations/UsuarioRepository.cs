@@ -69,7 +69,9 @@ namespace ServicesSecurity.DAL.Implementations
             // Si no tiene DVH, no validar (compatibilidad con datos antiguos)
             if (string.IsNullOrWhiteSpace(usuario.DVH))
             {
-                Bitacora.Current.LogWarning($"Usuario '{usuario.Nombre}' no tiene DVH. Se recomienda recalcular.");
+                BitacoraSeguridadRepository.Current.RegistrarEventoSeguridad(
+                    usuario.IdUsuario, usuario.Nombre, "Integridad", "DVH faltante",
+                    $"Usuario '{usuario.Nombre}' no tiene DVH. Se recomienda recalcular.", "Medio");
                 return;
             }
 
@@ -78,9 +80,10 @@ namespace ServicesSecurity.DAL.Implementations
             if (usuario.DVH != dvhCalculado)
             {
                 // Log crítico de seguridad
-                Bitacora.Current.LogCritical($"DVH INVÁLIDO para usuario '{usuario.Nombre}' (ID: {usuario.IdUsuario}). " +
-                                            $"Posible alteración directa en base de datos. " +
-                                            $"DVH esperado: {dvhCalculado}, DVH en BD: {usuario.DVH}");
+                BitacoraSeguridadRepository.Current.RegistrarCambioCritico(
+                    usuario.IdUsuario, usuario.Nombre, "Integridad", "DVH inválido",
+                    $"DVH INVÁLIDO para usuario '{usuario.Nombre}'. Posible alteración directa en base de datos. DVH esperado: {dvhCalculado}, DVH en BD: {usuario.DVH}",
+                    "Alto");
 
                 throw new IntegridadException($"Los datos del usuario '{usuario.Nombre}' han sido alterados. " +
                                               "Contacte al administrador del sistema.");
@@ -92,12 +95,12 @@ namespace ServicesSecurity.DAL.Implementations
         #region Statements
         private string InsertStatement
         {
-            get => "INSERT INTO [dbo].[Usuario] (IdUsuario, Nombre, Email, Clave, Activo, DVH) VALUES (@IdUsuario, @Nombre, @Email, @Clave, @Activo, @DVH)";
+            get => "INSERT INTO [dbo].[Usuario] (IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, DVH) VALUES (@IdUsuario, @Nombre, @Email, @Clave, @Activo, @IdiomaPreferido, @DVH)";
         }
 
         private string UpdateStatement
         {
-            get => "UPDATE [dbo].[Usuario] SET Nombre = @Nombre, Email = @Email, Clave = @Clave, Activo = @Activo, DVH = @DVH WHERE IdUsuario = @IdUsuario";
+            get => "UPDATE [dbo].[Usuario] SET Nombre = @Nombre, Email = @Email, Clave = @Clave, Activo = @Activo, IdiomaPreferido = @IdiomaPreferido, DVH = @DVH WHERE IdUsuario = @IdUsuario";
         }
 
         private string DeleteStatement
@@ -107,17 +110,17 @@ namespace ServicesSecurity.DAL.Implementations
 
         private string SelectOneStatement
         {
-            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, DVH FROM [dbo].[Usuario] WHERE IdUsuario = @IdUsuario";
+            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, FechaUltimoAcceso, DVH FROM [dbo].[Usuario] WHERE IdUsuario = @IdUsuario";
         }
 
         private string SelectOneByNameStatement
         {
-            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, DVH FROM [dbo].[Usuario] WHERE Nombre = @Nombre";
+            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, FechaUltimoAcceso, DVH FROM [dbo].[Usuario] WHERE Nombre = @Nombre";
         }
 
         private string SelectAllStatement
         {
-            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, DVH FROM [dbo].[Usuario]";
+            get => "SELECT IdUsuario, Nombre, Email, Clave, Activo, IdiomaPreferido, FechaUltimoAcceso, DVH FROM [dbo].[Usuario]";
         }
         #endregion
 
@@ -132,6 +135,7 @@ namespace ServicesSecurity.DAL.Implementations
                 new SqlParameter("@Email", obj.Email ?? (object)DBNull.Value),
                 new SqlParameter("@Clave", obj.Clave),
                 new SqlParameter("@Activo", obj.Activo),
+                new SqlParameter("@IdiomaPreferido", obj.IdiomaPreferido ?? "es-AR"),
                 new SqlParameter("@DVH", obj.DVH)
             });
         }
@@ -155,6 +159,7 @@ namespace ServicesSecurity.DAL.Implementations
                 new SqlParameter("@Email", obj.Email ?? (object)DBNull.Value),
                 new SqlParameter("@Clave", obj.Clave),
                 new SqlParameter("@Activo", obj.Activo),
+                new SqlParameter("@IdiomaPreferido", obj.IdiomaPreferido ?? "es-AR"),
                 new SqlParameter("@DVH", obj.DVH)
             });
         }
@@ -188,7 +193,6 @@ namespace ServicesSecurity.DAL.Implementations
             }
             catch (Exception ex)
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
             }
 
@@ -223,7 +227,6 @@ namespace ServicesSecurity.DAL.Implementations
             }
             catch (Exception ex)
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
             }
 
@@ -258,7 +261,6 @@ namespace ServicesSecurity.DAL.Implementations
             }
             catch (Exception ex)
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
             }
 

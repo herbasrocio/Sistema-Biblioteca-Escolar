@@ -1,10 +1,11 @@
 using System;
 using System.Windows.Forms;
 using DomainModel;
+using ServicesSecurity.Services;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class editarAlumno : Form
+    public partial class editarAlumno : BaseForm
     {
         public Alumno AlumnoEditado { get; private set; }
         private bool _esNuevo;
@@ -16,7 +17,6 @@ namespace UI.WinUi.Administrador
 
             if (_esNuevo)
             {
-                this.Text = "Nuevo Alumno";
                 AlumnoEditado = new Alumno
                 {
                     IdAlumno = Guid.NewGuid()
@@ -24,12 +24,27 @@ namespace UI.WinUi.Administrador
             }
             else
             {
-                this.Text = "Editar Alumno";
                 AlumnoEditado = alumno;
                 CargarDatos();
             }
 
             ConfigurarFormulario();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
+        }
+
+        protected override void AplicarTraducciones()
+        {
+            // Traducir título según modo
+            this.Text = _esNuevo
+                ? LanguageManager.Translate("nuevo_alumno")
+                : LanguageManager.Translate("editar_alumno");
+
+            // Traducir botones
+            btnGuardar.Text = LanguageManager.Translate("guardar");
+            btnCancelar.Text = LanguageManager.Translate("cancelar");
+
+            // Traducir labels (si existen en el Designer)
+            // Nota: Si los labels no están definidos en el Designer, se pueden agregar después
         }
 
         private void ConfigurarFormulario()
@@ -63,7 +78,8 @@ namespace UI.WinUi.Administrador
                 // Validaciones
                 if (string.IsNullOrWhiteSpace(txtNombre.Text))
                 {
-                    MessageBox.Show("El nombre es obligatorio", "Validación",
+                    MessageBox.Show(LanguageManager.Translate("nombre_obligatorio"),
+                        LanguageManager.Translate("validacion"),
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     txtNombre.Focus();
                     return;
@@ -71,7 +87,8 @@ namespace UI.WinUi.Administrador
 
                 if (string.IsNullOrWhiteSpace(txtApellido.Text))
                 {
-                    MessageBox.Show("El apellido es obligatorio", "Validación",
+                    MessageBox.Show(LanguageManager.Translate("apellido_obligatorio"),
+                        LanguageManager.Translate("validacion"),
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     txtApellido.Focus();
                     return;
@@ -79,7 +96,8 @@ namespace UI.WinUi.Administrador
 
                 if (string.IsNullOrWhiteSpace(txtDNI.Text))
                 {
-                    MessageBox.Show("El DNI es obligatorio", "Validación",
+                    MessageBox.Show(LanguageManager.Translate("dni_obligatorio"),
+                        LanguageManager.Translate("validacion"),
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     txtDNI.Focus();
                     return;
@@ -87,7 +105,8 @@ namespace UI.WinUi.Administrador
 
                 if (string.IsNullOrWhiteSpace(cmbGrado.Text))
                 {
-                    MessageBox.Show("Debe ingresar un grado", "Validación",
+                    MessageBox.Show(LanguageManager.Translate("grado_obligatorio"),
+                        LanguageManager.Translate("validacion"),
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     cmbGrado.Focus();
                     return;
@@ -95,7 +114,8 @@ namespace UI.WinUi.Administrador
 
                 if (string.IsNullOrWhiteSpace(cmbDivision.Text))
                 {
-                    MessageBox.Show("Debe ingresar una división", "Validación",
+                    MessageBox.Show(LanguageManager.Translate("division_obligatoria"),
+                        LanguageManager.Translate("validacion"),
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     cmbDivision.Focus();
                     return;
@@ -113,7 +133,8 @@ namespace UI.WinUi.Administrador
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al guardar: {ex.Message}", "Error",
+                MessageBox.Show($"{LanguageManager.Translate("error_guardar")}: {ex.Message}",
+                    LanguageManager.Translate("error"),
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

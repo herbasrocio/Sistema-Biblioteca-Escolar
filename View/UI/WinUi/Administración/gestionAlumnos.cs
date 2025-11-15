@@ -13,7 +13,7 @@ using DomainModel;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class gestionAlumnos : Form
+    public partial class gestionAlumnos : BaseForm
     {
         private Usuario _usuarioLogueado;
         private AlumnoBLL _alumnoBLL;
@@ -90,7 +90,7 @@ namespace UI.WinUi.Administrador
         private void GestionAlumnos_Load(object sender, EventArgs e)
         {
             // AgregarSelectorAnioLectivo(); // Ya no es necesario, los controles están en el Designer
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             CargarGrados();
         }
 
@@ -371,23 +371,21 @@ namespace UI.WinUi.Administrador
                 // Configurar orden de columnas visibles
                 if (dgvAlumnos.Columns.Contains("Apellido"))
                 {
-                    dgvAlumnos.Columns["Apellido"].HeaderText = "Apellido";
                     dgvAlumnos.Columns["Apellido"].DisplayIndex = 0;
                 }
                 if (dgvAlumnos.Columns.Contains("Nombre"))
                 {
-                    dgvAlumnos.Columns["Nombre"].HeaderText = "Nombre";
                     dgvAlumnos.Columns["Nombre"].DisplayIndex = 1;
                 }
                 if (dgvAlumnos.Columns.Contains("DNI"))
                 {
-                    dgvAlumnos.Columns["DNI"].HeaderText = "DNI";
                     dgvAlumnos.Columns["DNI"].DisplayIndex = 2;
                 }
+                // Las traducciones de HeaderText se aplican en TraducirColumnasDataGridView()
             }
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {
@@ -402,10 +400,47 @@ namespace UI.WinUi.Administrador
                 btnPromocionAlumnos.Text = "🔄 " + LanguageManager.Translate("promocion");
                 groupOperacionesAlumno.Text = LanguageManager.Translate("operaciones_alumno");
                 groupOperacionesMasivas.Text = LanguageManager.Translate("operaciones_masivas");
+
+                // Traducir columnas del DataGridView
+                TraducirColumnasDataGridView();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al aplicar traducciones: {ex.Message}");
+            }
+        }
+
+        private void TraducirColumnasDataGridView()
+        {
+            if (dgvAlumnos.Columns.Count > 0)
+            {
+                if (dgvAlumnos.Columns.Contains("Apellido"))
+                    dgvAlumnos.Columns["Apellido"].HeaderText = LanguageManager.Translate("apellido");
+                if (dgvAlumnos.Columns.Contains("Nombre"))
+                    dgvAlumnos.Columns["Nombre"].HeaderText = LanguageManager.Translate("nombre");
+                if (dgvAlumnos.Columns.Contains("DNI"))
+                    dgvAlumnos.Columns["DNI"].HeaderText = "DNI";
+                if (dgvAlumnos.Columns.Contains("GradoCompleto"))
+                    dgvAlumnos.Columns["GradoCompleto"].HeaderText = LanguageManager.Translate("grado");
+            }
+
+            // También traducir dgvHistorial si existe
+            if (dgvHistorial != null && dgvHistorial.Columns.Count > 0)
+            {
+                if (dgvHistorial.Columns.Contains("Apellido"))
+                    dgvHistorial.Columns["Apellido"].HeaderText = LanguageManager.Translate("apellido");
+                if (dgvHistorial.Columns.Contains("Nombre"))
+                    dgvHistorial.Columns["Nombre"].HeaderText = LanguageManager.Translate("nombre");
+                if (dgvHistorial.Columns.Contains("DNI"))
+                    dgvHistorial.Columns["DNI"].HeaderText = "DNI";
+                if (dgvHistorial.Columns.Contains("Grado"))
+                    dgvHistorial.Columns["Grado"].HeaderText = LanguageManager.Translate("grado");
+                if (dgvHistorial.Columns.Contains("Division"))
+                    dgvHistorial.Columns["Division"].HeaderText = LanguageManager.Translate("division");
+                if (dgvHistorial.Columns.Contains("Estado"))
+                    dgvHistorial.Columns["Estado"].HeaderText = LanguageManager.Translate("estado");
+                if (dgvHistorial.Columns.Contains("FechaInscripcion"))
+                    dgvHistorial.Columns["FechaInscripcion"].HeaderText = LanguageManager.Translate("fecha_inscripcion");
             }
         }
 
@@ -567,20 +602,17 @@ namespace UI.WinUi.Administrador
                     dgvAlumnos.Columns["Grado"].Visible = false;
                     dgvAlumnos.Columns["Division"].Visible = false;
 
-                    dgvAlumnos.Columns["Apellido"].HeaderText = "Apellido";
                     dgvAlumnos.Columns["Apellido"].DisplayIndex = 0;
-                    dgvAlumnos.Columns["Nombre"].HeaderText = "Nombre";
                     dgvAlumnos.Columns["Nombre"].DisplayIndex = 1;
-                    dgvAlumnos.Columns["DNI"].HeaderText = "DNI";
                     dgvAlumnos.Columns["DNI"].DisplayIndex = 2;
 
                     // Mostrar GradoCompleto
                     if (dgvAlumnos.Columns.Contains("GradoCompleto"))
                     {
-                        dgvAlumnos.Columns["GradoCompleto"].HeaderText = "Grado";
                         dgvAlumnos.Columns["GradoCompleto"].DisplayIndex = 3;
                         dgvAlumnos.Columns["GradoCompleto"].Visible = true;
                     }
+                    // Las traducciones de HeaderText se aplican en TraducirColumnasDataGridView()
 
                     // Ocultar NombreCompleto si existe (es una propiedad calculada)
                     if (dgvAlumnos.Columns.Contains("NombreCompleto"))
@@ -1669,13 +1701,14 @@ namespace UI.WinUi.Administrador
 
             // Configurar columnas del DataGridView de historial
             dgvHistorial.Columns.Clear();
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Apellido", HeaderText = "Apellido", DataPropertyName = "Apellido", Width = 120 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre", Width = 120 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Apellido", HeaderText = "", DataPropertyName = "Apellido", Width = 120 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "", DataPropertyName = "Nombre", Width = 120 });
             dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "DNI", HeaderText = "DNI", DataPropertyName = "DNI", Width = 100 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Grado", HeaderText = "Grado", DataPropertyName = "Grado", Width = 80 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Division", HeaderText = "División", DataPropertyName = "Division", Width = 80 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Estado", HeaderText = "Estado", DataPropertyName = "Estado", Width = 100 });
-            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "FechaInscripcion", HeaderText = "Fecha Inscripción", DataPropertyName = "FechaInscripcion", Width = 130 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Grado", HeaderText = "", DataPropertyName = "Grado", Width = 80 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Division", HeaderText = "", DataPropertyName = "Division", Width = 80 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "Estado", HeaderText = "", DataPropertyName = "Estado", Width = 100 });
+            dgvHistorial.Columns.Add(new DataGridViewTextBoxColumn { Name = "FechaInscripcion", HeaderText = "", DataPropertyName = "FechaInscripcion", Width = 130 });
+            // Las traducciones de HeaderText se aplican en TraducirColumnasDataGridView()
 
             // Aplicar estilo al dgvHistorial
             ConfigurarEstiloDataGridViewHistorial();

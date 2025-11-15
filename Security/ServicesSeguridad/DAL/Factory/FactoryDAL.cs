@@ -43,9 +43,8 @@ namespace ServicesSecurity.DAL.Factory
                 UsuarioFamiliaRepository = (IGenericRepository<UsuarioFamilia>)Activator.CreateInstance
                                         (Type.GetType(sRepository + ".UsuarioFamiliaRepository"));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LoggerService.WriteLog(ex.Message, System.Diagnostics.Tracing.EventLevel.Critical, "FACTORY");
                 //MessageBox.Show(ex.Message);
                 throw new Exception();
             }

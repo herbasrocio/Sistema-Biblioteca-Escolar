@@ -6,10 +6,11 @@ using BLL;
 using DomainModel;
 using ServicesSecurity.Services;
 using ServicesSecurity.DomainModel.Security.Composite;
+using UI.WinUi;
 
 namespace UI.WinUi.Bitacoras
 {
-    public partial class ConsultarBitacoraOperaciones : Form
+    public partial class ConsultarBitacoraOperaciones : BaseForm
     {
         private readonly BitacoraOperacionesBLL _bitacoraBibliotecarioBLL;
         private Usuario _usuarioLogueado;
@@ -41,6 +42,7 @@ namespace UI.WinUi.Bitacoras
                     return;
                 }
 
+                // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
                 ConfigurarFormulario();
                 ConfigurarDataGridView();
                 CargarRegistros();
@@ -52,7 +54,7 @@ namespace UI.WinUi.Bitacoras
             }
         }
 
-        private void ConfigurarFormulario()
+        protected override void AplicarTraducciones()
         {
             // Configurar títulos y traducciones
             this.Text = LanguageManager.Translate("bitacora_bibliotecario_titulo");
@@ -62,6 +64,21 @@ namespace UI.WinUi.Bitacoras
 
             btnFiltrar.Text = LanguageManager.Translate("bitacora_filtrar");
             btnVolver.Text = LanguageManager.Translate("volver");
+
+            // Reconfigurar columnas del DataGridView con traducciones actualizadas
+            if (dgvBitacora.Columns.Count > 0)
+            {
+                if (dgvBitacora.Columns["colFecha"] != null)
+                    dgvBitacora.Columns["colFecha"].HeaderText = LanguageManager.Translate("bitacora_fecha");
+                if (dgvBitacora.Columns["colUsuario"] != null)
+                    dgvBitacora.Columns["colUsuario"].HeaderText = LanguageManager.Translate("bitacora_usuario");
+                if (dgvBitacora.Columns["colAccion"] != null)
+                    dgvBitacora.Columns["colAccion"].HeaderText = LanguageManager.Translate("bitacora_accion");
+            }
+        }
+
+        private void ConfigurarFormulario()
+        {
 
             // Configurar DateTimePickers - últimos 30 días por defecto
             dtpDesde.Value = DateTime.Now.AddDays(-30);

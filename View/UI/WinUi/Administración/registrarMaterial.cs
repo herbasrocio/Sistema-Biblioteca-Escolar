@@ -10,7 +10,7 @@ using BLL;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class RegistrarMaterial : Form
+    public partial class RegistrarMaterial : BaseForm
     {
         private Usuario _usuarioLogueado;
         private MaterialBLL _materialBLL;
@@ -54,10 +54,10 @@ namespace UI.WinUi.Administrador
 
         private void RegistrarMaterial_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {

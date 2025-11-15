@@ -9,7 +9,7 @@ using DomainModel;
 
 namespace UI.WinUi.Transacciones
 {
-    public partial class registrarPrestamo : Form
+    public partial class registrarPrestamo : BaseForm
     {
         private Usuario _usuarioLogueado;
         private MaterialBLL _materialBLL;
@@ -84,47 +84,42 @@ namespace UI.WinUi.Transacciones
             dgvMateriales.AutoGenerateColumns = false;
             dgvMateriales.Columns.Clear();
 
-            // Columna Título
+            // Columna Título (HeaderText se configura en TraducirColumnasDataGridView)
             dgvMateriales.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Titulo",
-                HeaderText = "Título",
                 DataPropertyName = "Titulo",
                 Width = 150
             });
 
-            // Columna Autor
+            // Columna Autor (HeaderText se configura en TraducirColumnasDataGridView)
             dgvMateriales.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Autor",
-                HeaderText = "Autor",
                 DataPropertyName = "Autor",
                 Width = 100
             });
 
-            // Columna Tipo
+            // Columna Tipo (HeaderText se configura en TraducirColumnasDataGridView)
             dgvMateriales.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Tipo",
-                HeaderText = "Tipo",
                 DataPropertyName = "Tipo",
                 Width = 70
             });
 
-            // Columna Género
+            // Columna Género (HeaderText se configura en TraducirColumnasDataGridView)
             dgvMateriales.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Genero",
-                HeaderText = "Género",
                 DataPropertyName = "Genero",
                 Width = 90
             });
 
-            // Columna Disponibles
+            // Columna Disponibles (HeaderText se configura en TraducirColumnasDataGridView)
             dgvMateriales.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "CantidadDisponible",
-                HeaderText = "Disp.",
                 DataPropertyName = "CantidadDisponible",
                 Width = 60
             });
@@ -141,13 +136,13 @@ namespace UI.WinUi.Transacciones
 
         private void RegistrarPrestamo_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             CargarGrados();
             CargarOpcionesFiltro();
             LimpiarCampos();
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {
@@ -161,10 +156,50 @@ namespace UI.WinUi.Transacciones
                 lblFechaPrestamo.Text = LanguageManager.Translate("fecha_prestamo");
                 lblFechaDevolucion.Text = LanguageManager.Translate("fecha_devolucion");
                 btnConfirmarPrestamo.Text = LanguageManager.Translate("confirmar_prestamo");
+
+                // Traducir columnas del DataGridView
+                TraducirColumnasDataGridView();
+
+                // Actualizar textos dinámicos si ya están cargados
+                ActualizarTextosDinamicos();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al aplicar traducciones: {ex.Message}");
+            }
+        }
+
+        private void TraducirColumnasDataGridView()
+        {
+            if (dgvMateriales.Columns.Count > 0)
+            {
+                if (dgvMateriales.Columns["Titulo"] != null)
+                    dgvMateriales.Columns["Titulo"].HeaderText = LanguageManager.Translate("titulo");
+                if (dgvMateriales.Columns["Autor"] != null)
+                    dgvMateriales.Columns["Autor"].HeaderText = LanguageManager.Translate("autor");
+                if (dgvMateriales.Columns["Tipo"] != null)
+                    dgvMateriales.Columns["Tipo"].HeaderText = LanguageManager.Translate("tipo");
+                if (dgvMateriales.Columns["Genero"] != null)
+                    dgvMateriales.Columns["Genero"].HeaderText = LanguageManager.Translate("genero");
+                if (dgvMateriales.Columns["CantidadDisponible"] != null)
+                    dgvMateriales.Columns["CantidadDisponible"].HeaderText = LanguageManager.Translate("disp_abr");
+            }
+        }
+
+        private void ActualizarTextosDinamicos()
+        {
+            // Actualizar texto de ubicación si está en su estado inicial
+            if (lblUbicacion.Text == "Haga clic en un material para seleccionar el ejemplar específico" ||
+                lblUbicacion.Text.Contains("Click on a material"))
+            {
+                lblUbicacion.Text = LanguageManager.Translate("seleccionar_ejemplar_instruccion");
+                lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
+            }
+
+            // Recargar combos para aplicar traducciones
+            if (cmbGradoDivision.Items.Count > 0)
+            {
+                CargarGrados();
             }
         }
 
@@ -173,7 +208,7 @@ namespace UI.WinUi.Transacciones
             try
             {
                 cmbGradoDivision.Items.Clear();
-                cmbGradoDivision.Items.Add("-- Seleccione grado --");
+                cmbGradoDivision.Items.Add(LanguageManager.Translate("seleccione_grado"));
 
                 // Obtener estadísticas del año actual
                 int anioActual = DateTime.Now.Year;
@@ -237,7 +272,7 @@ namespace UI.WinUi.Transacciones
             {
                 cmbAlumno.DataSource = null;
                 cmbAlumno.Items.Clear();
-                cmbAlumno.Items.Add("-- Elegi un grado para cargar --");
+                cmbAlumno.Items.Add(LanguageManager.Translate("seleccione_grado_primero"));
                 cmbAlumno.SelectedIndex = 0;
             }
         }
@@ -426,7 +461,7 @@ namespace UI.WinUi.Transacciones
 
                 // Limpiar selección de ejemplar anterior
                 _ejemplarSeleccionado = null;
-                lblUbicacion.Text = "Haga clic en un material para seleccionar el ejemplar específico";
+                lblUbicacion.Text = LanguageManager.Translate("seleccionar_ejemplar_instruccion");
                 lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
 
                 // Reactivar la selección inmediatamente después de cargar
@@ -471,7 +506,7 @@ namespace UI.WinUi.Transacciones
             else
             {
                 _ejemplarSeleccionado = null;
-                lblUbicacion.Text = "Haga clic en un material para seleccionar el ejemplar específico";
+                lblUbicacion.Text = LanguageManager.Translate("seleccionar_ejemplar_instruccion");
                 lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
             }
         }
@@ -525,7 +560,7 @@ namespace UI.WinUi.Transacciones
                         // Usuario canceló - deseleccionar el material
                         dgvMateriales.ClearSelection();
                         _ejemplarSeleccionado = null;
-                        lblUbicacion.Text = "Haga clic en un material para seleccionar el ejemplar específico";
+                        lblUbicacion.Text = LanguageManager.Translate("seleccionar_ejemplar_instruccion");
                         lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
                     }
                 }
@@ -658,7 +693,7 @@ namespace UI.WinUi.Transacciones
 
             cmbAlumno.DataSource = null;
             cmbAlumno.Items.Clear();
-            cmbAlumno.Items.Add("-- Elegi un grado para cargar --");
+            cmbAlumno.Items.Add(LanguageManager.Translate("seleccione_grado_primero"));
             cmbAlumno.SelectedIndex = 0;
 
             if (cmbFiltrarPor.Items.Count > 0)
@@ -670,7 +705,7 @@ namespace UI.WinUi.Transacciones
             dtpFechaDevolucion.Value = DateTime.Now.AddDays(7);
 
             _ejemplarSeleccionado = null;
-            lblUbicacion.Text = "Haga clic en un material para seleccionar el ejemplar específico";
+            lblUbicacion.Text = LanguageManager.Translate("seleccionar_ejemplar_instruccion");
             lblUbicacion.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
 
             CargarMateriales();

@@ -17,6 +17,15 @@ namespace ServicesSecurity.DAL.Tools
         {
             conString = ConfigurationManager.ConnectionStrings["ServicesConString"].ConnectionString;
         }
+
+        /// <summary>
+        /// Obtiene una nueva conexión SQL usando la cadena de conexión configurada
+        /// </summary>
+        public static SqlConnection GetConnection()
+        {
+            return new SqlConnection(conString);
+        }
+
         public static Int32 ExecuteNonQuery(String commandText,
             CommandType commandType, params SqlParameter[] parameters)
         {

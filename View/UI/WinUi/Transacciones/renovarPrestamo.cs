@@ -6,10 +6,11 @@ using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.Services;
 using BLL;
 using DomainModel;
+using UI.WinUi;
 
 namespace UI.WinUi.Transacciones
 {
-    public partial class renovarPrestamo : Form
+    public partial class renovarPrestamo : BaseForm
     {
         private Usuario _usuarioLogueado;
         private PrestamoBLL _prestamoBLL;
@@ -90,7 +91,7 @@ namespace UI.WinUi.Transacciones
         private void RenovarPrestamo_Load(object sender, EventArgs e)
         {
             // El permiso ya fue verificado (renovar está unificado con Gestión Préstamos)
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             BuscarYCargarPrestamos();
             LimpiarFormulario();
         }
@@ -101,7 +102,7 @@ namespace UI.WinUi.Transacciones
             return _usuarioLogueado?.TienePermiso(nombrePatente) ?? false;
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {
@@ -188,7 +189,6 @@ namespace UI.WinUi.Transacciones
                 if (dgvPrestamos.Columns.Contains("NombreAlumno"))
                 {
                     dgvPrestamos.Columns["NombreAlumno"].Visible = true;
-                    dgvPrestamos.Columns["NombreAlumno"].HeaderText = "Alumno";
                     dgvPrestamos.Columns["NombreAlumno"].Width = 150;
                     dgvPrestamos.Columns["NombreAlumno"].DisplayIndex = displayIndex++;
                 }
@@ -196,7 +196,6 @@ namespace UI.WinUi.Transacciones
                 if (dgvPrestamos.Columns.Contains("TituloMaterial"))
                 {
                     dgvPrestamos.Columns["TituloMaterial"].Visible = true;
-                    dgvPrestamos.Columns["TituloMaterial"].HeaderText = "Título";
                     dgvPrestamos.Columns["TituloMaterial"].Width = 150;
                     dgvPrestamos.Columns["TituloMaterial"].DisplayIndex = displayIndex++;
                 }
@@ -204,7 +203,6 @@ namespace UI.WinUi.Transacciones
                 if (dgvPrestamos.Columns.Contains("CodigoEjemplar"))
                 {
                     dgvPrestamos.Columns["CodigoEjemplar"].Visible = true;
-                    dgvPrestamos.Columns["CodigoEjemplar"].HeaderText = "Código";
                     dgvPrestamos.Columns["CodigoEjemplar"].Width = 130;
                     dgvPrestamos.Columns["CodigoEjemplar"].DisplayIndex = displayIndex++;
                 }
@@ -212,7 +210,6 @@ namespace UI.WinUi.Transacciones
                 if (dgvPrestamos.Columns.Contains("Estado"))
                 {
                     dgvPrestamos.Columns["Estado"].Visible = true;
-                    dgvPrestamos.Columns["Estado"].HeaderText = "Estado";
                     dgvPrestamos.Columns["Estado"].Width = 80;
                     dgvPrestamos.Columns["Estado"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                     dgvPrestamos.Columns["Estado"].DisplayIndex = displayIndex++;
@@ -221,7 +218,6 @@ namespace UI.WinUi.Transacciones
                 if (dgvPrestamos.Columns.Contains("FechaPrestamo"))
                 {
                     dgvPrestamos.Columns["FechaPrestamo"].Visible = true;
-                    dgvPrestamos.Columns["FechaPrestamo"].HeaderText = "F. Préstamo";
                     dgvPrestamos.Columns["FechaPrestamo"].Width = 95;
                     dgvPrestamos.Columns["FechaPrestamo"].DefaultCellStyle.Format = "dd/MM/yy";
                     dgvPrestamos.Columns["FechaPrestamo"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -231,7 +227,6 @@ namespace UI.WinUi.Transacciones
                 if (dgvPrestamos.Columns.Contains("FechaDevolucionPrevista"))
                 {
                     dgvPrestamos.Columns["FechaDevolucionPrevista"].Visible = true;
-                    dgvPrestamos.Columns["FechaDevolucionPrevista"].HeaderText = "F. Devolución";
                     dgvPrestamos.Columns["FechaDevolucionPrevista"].Width = 95;
                     dgvPrestamos.Columns["FechaDevolucionPrevista"].DefaultCellStyle.Format = "dd/MM/yy";
                     dgvPrestamos.Columns["FechaDevolucionPrevista"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -241,7 +236,6 @@ namespace UI.WinUi.Transacciones
                 if (dgvPrestamos.Columns.Contains("DiasRestantes"))
                 {
                     dgvPrestamos.Columns["DiasRestantes"].Visible = true;
-                    dgvPrestamos.Columns["DiasRestantes"].HeaderText = "Días Rest.";
                     dgvPrestamos.Columns["DiasRestantes"].DisplayIndex = displayIndex++;
                     dgvPrestamos.Columns["DiasRestantes"].Width = 50;
                 }
@@ -250,7 +244,6 @@ namespace UI.WinUi.Transacciones
                 {
                     System.Diagnostics.Debug.WriteLine(">>> Configurando columna CantidadRenovaciones con Width=50");
                     dgvPrestamos.Columns["CantidadRenovaciones"].Visible = true;
-                    dgvPrestamos.Columns["CantidadRenovaciones"].HeaderText = "Cant. Renov.";
                     dgvPrestamos.Columns["CantidadRenovaciones"].DisplayIndex = displayIndex++;
                     dgvPrestamos.Columns["CantidadRenovaciones"].Width = 50;
                     dgvPrestamos.Columns["CantidadRenovaciones"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -264,7 +257,6 @@ namespace UI.WinUi.Transacciones
                 {
                     System.Diagnostics.Debug.WriteLine(">>> Configurando columna FechaUltimaRenovacion con Width=90");
                     dgvPrestamos.Columns["FechaUltimaRenovacion"].Visible = true;
-                    dgvPrestamos.Columns["FechaUltimaRenovacion"].HeaderText = "F. Ult. Renov.";
                     dgvPrestamos.Columns["FechaUltimaRenovacion"].DisplayIndex = displayIndex++;
                     dgvPrestamos.Columns["FechaUltimaRenovacion"].Width = 90;
                     dgvPrestamos.Columns["FechaUltimaRenovacion"].DefaultCellStyle.Format = "dd/MM/yy";

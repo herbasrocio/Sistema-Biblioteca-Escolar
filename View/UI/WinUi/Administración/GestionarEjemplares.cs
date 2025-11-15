@@ -13,7 +13,7 @@ using UI.Helpers;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class GestionarEjemplares : Form
+    public partial class GestionarEjemplares : BaseForm
     {
         private Usuario _usuarioLogueado;
         private Material _material;
@@ -68,11 +68,11 @@ namespace UI.WinUi.Administrador
 
         private void GestionarEjemplares_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             CargarEjemplares();
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {

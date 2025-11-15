@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.Services;
+using UI.WinUi;
 
 namespace UI.WinUi.Transacciones
 {
-    public partial class Form1gestionPrestamos : Form
+    public partial class Form1gestionPrestamos : BaseForm
     {
         private Usuario _usuarioLogueado;
         private registrarPrestamo _formRegistrarPrestamo;
@@ -37,7 +38,7 @@ namespace UI.WinUi.Transacciones
 
         private void GestionPrestamos_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             ConfigurarVisibilidadPestañas();
             CargarPestañaActual();
         }
@@ -50,7 +51,7 @@ namespace UI.WinUi.Transacciones
             // No ocultamos la pestaña de renovar
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {

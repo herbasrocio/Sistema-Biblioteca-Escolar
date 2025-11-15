@@ -126,9 +126,9 @@ namespace ServicesSecurity.DAL.Implementations
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Services.Bitacora.Current.LogException(ex);
+                // Silenciar errores de escritura
             }
         }
 
@@ -155,9 +155,9 @@ namespace ServicesSecurity.DAL.Implementations
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Services.Bitacora.Current.LogException(ex);
+                // Silenciar errores de lectura
             }
 
             return translations;
@@ -193,9 +193,9 @@ namespace ServicesSecurity.DAL.Implementations
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Services.Bitacora.Current.LogException(ex);
+                // Silenciar errores
             }
 
             return cultures;

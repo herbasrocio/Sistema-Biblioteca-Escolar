@@ -7,10 +7,11 @@ using Model.DomainModel.DTOs;
 using ServicesSecurity.Services;
 using ServicesSecurity.DomainModel.Security.Composite;
 using Services;
+using UI.WinUi;
 
 namespace UI.WinUi.Reportes
 {
-    public partial class ReporteUsoPorGrado : Form
+    public partial class ReporteUsoPorGrado : BaseForm
     {
         private readonly ReporteBLL _reporteBLL;
         private readonly ExportService _exportService;
@@ -63,7 +64,7 @@ namespace UI.WinUi.Reportes
             this.lblTitulo.Location = new Point(20, 20);
             this.lblTitulo.Name = "lblTitulo";
             this.lblTitulo.Size = new Size(400, 25);
-            this.lblTitulo.Text = "Reporte de Uso por Grado/División";
+            this.lblTitulo.Text = "";  // Se establecerá en AplicarTraducciones()
 
             // panelControles
             this.panelControles.BorderStyle = BorderStyle.FixedSingle;
@@ -75,7 +76,7 @@ namespace UI.WinUi.Reportes
             this.lblAnio.AutoSize = true;
             this.lblAnio.Location = new Point(10, 20);
             this.lblAnio.Name = "lblAnio";
-            this.lblAnio.Text = "Año Lectivo:";
+            this.lblAnio.Text = "";  // Se establecerá en AplicarTraducciones()
 
             // nudAnio
             this.nudAnio.Location = new Point(100, 18);
@@ -92,7 +93,7 @@ namespace UI.WinUi.Reportes
             this.btnGenerar.Location = new Point(200, 15);
             this.btnGenerar.Name = "btnGenerar";
             this.btnGenerar.Size = new Size(120, 30);
-            this.btnGenerar.Text = "Generar";
+            this.btnGenerar.Text = "";  // Se establecerá en AplicarTraducciones()
             this.btnGenerar.UseVisualStyleBackColor = false;
             this.btnGenerar.Click += new EventHandler(this.btnGenerar_Click);
 
@@ -103,7 +104,7 @@ namespace UI.WinUi.Reportes
             this.btnExportarCsv.Location = new Point(340, 15);
             this.btnExportarCsv.Name = "btnExportarCsv";
             this.btnExportarCsv.Size = new Size(120, 30);
-            this.btnExportarCsv.Text = "Exportar CSV";
+            this.btnExportarCsv.Text = "";  // Se establecerá en AplicarTraducciones()
             this.btnExportarCsv.UseVisualStyleBackColor = false;
             this.btnExportarCsv.Click += new EventHandler(this.btnExportarCsv_Click);
 
@@ -114,7 +115,7 @@ namespace UI.WinUi.Reportes
             this.btnVolver.Location = new Point(480, 15);
             this.btnVolver.Name = "btnVolver";
             this.btnVolver.Size = new Size(120, 30);
-            this.btnVolver.Text = "Volver";
+            this.btnVolver.Text = "";  // Se establecerá en AplicarTraducciones()
             this.btnVolver.UseVisualStyleBackColor = false;
             this.btnVolver.Click += new EventHandler(this.btnVolver_Click);
 
@@ -152,7 +153,7 @@ namespace UI.WinUi.Reportes
             this.Controls.Add(this.lblEstadisticas);
             this.Name = "ReporteUsoPorGrado";
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = "Reporte de Uso por Grado/División";
+            this.Text = "";  // Se establecerá en AplicarTraducciones()
             this.Load += new EventHandler(this.ReporteUsoPorGrado_Load);
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvReporte)).EndInit();
@@ -178,6 +179,7 @@ namespace UI.WinUi.Reportes
                     return;
                 }
 
+                // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
                 ConfigurarDataGridView();
                 GenerarReporte();
             }
@@ -185,6 +187,31 @@ namespace UI.WinUi.Reportes
             {
                 MessageBox.Show($"Error al cargar el formulario: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        protected override void AplicarTraducciones()
+        {
+            this.Text = LanguageManager.Translate("reporte_uso_por_grado");
+            lblTitulo.Text = LanguageManager.Translate("reporte_uso_por_grado");
+            lblAnio.Text = LanguageManager.Translate("anio_lectivo") + ":";
+            btnGenerar.Text = LanguageManager.Translate("generar_reporte");
+            btnExportarCsv.Text = LanguageManager.Translate("exportar_csv");
+            btnVolver.Text = LanguageManager.Translate("volver");
+
+            // Reconfigurar columnas si ya están creadas
+            if (dgvReporte.Columns.Count > 0)
+            {
+                if (dgvReporte.Columns["Grado"] != null)
+                    dgvReporte.Columns["Grado"].HeaderText = LanguageManager.Translate("grado");
+                if (dgvReporte.Columns["Division"] != null)
+                    dgvReporte.Columns["Division"].HeaderText = LanguageManager.Translate("division");
+                if (dgvReporte.Columns["CantidadAlumnos"] != null)
+                    dgvReporte.Columns["CantidadAlumnos"].HeaderText = LanguageManager.Translate("cantidad_alumnos");
+                if (dgvReporte.Columns["CantidadPrestamos"] != null)
+                    dgvReporte.Columns["CantidadPrestamos"].HeaderText = LanguageManager.Translate("cantidad_prestamos");
+                if (dgvReporte.Columns["PromedioPrestamosPorAlumno"] != null)
+                    dgvReporte.Columns["PromedioPrestamosPorAlumno"].HeaderText = LanguageManager.Translate("promedio_prestamos_alumno");
             }
         }
 

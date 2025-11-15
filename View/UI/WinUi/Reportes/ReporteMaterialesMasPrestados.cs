@@ -7,10 +7,11 @@ using Model.DomainModel.DTOs;
 using ServicesSecurity.Services;
 using ServicesSecurity.DomainModel.Security.Composite;
 using Services;
+using UI.WinUi;
 
 namespace UI.WinUi.Reportes
 {
-    public partial class ReporteMaterialesMasPrestados : Form
+    public partial class ReporteMaterialesMasPrestados : BaseForm
     {
         private readonly ReporteBLL _reporteBLL;
         private readonly ExportService _exportService;
@@ -92,7 +93,7 @@ namespace UI.WinUi.Reportes
             this.btnGenerar.Location = new Point(220, 15);
             this.btnGenerar.Name = "btnGenerar";
             this.btnGenerar.Size = new Size(120, 30);
-            this.btnGenerar.Text = "Generar";
+            this.btnGenerar.Text = "";  // Se establecerá en AplicarTraducciones()
             this.btnGenerar.UseVisualStyleBackColor = false;
             this.btnGenerar.Click += new EventHandler(this.btnGenerar_Click);
 
@@ -103,7 +104,7 @@ namespace UI.WinUi.Reportes
             this.btnExportarCsv.Location = new Point(360, 15);
             this.btnExportarCsv.Name = "btnExportarCsv";
             this.btnExportarCsv.Size = new Size(120, 30);
-            this.btnExportarCsv.Text = "Exportar CSV";
+            this.btnExportarCsv.Text = "";  // Se establecerá en AplicarTraducciones()
             this.btnExportarCsv.UseVisualStyleBackColor = false;
             this.btnExportarCsv.Click += new EventHandler(this.btnExportarCsv_Click);
 
@@ -114,7 +115,7 @@ namespace UI.WinUi.Reportes
             this.btnVolver.Location = new Point(500, 15);
             this.btnVolver.Name = "btnVolver";
             this.btnVolver.Size = new Size(120, 30);
-            this.btnVolver.Text = "Volver";
+            this.btnVolver.Text = "";  // Se establecerá en AplicarTraducciones()
             this.btnVolver.UseVisualStyleBackColor = false;
             this.btnVolver.Click += new EventHandler(this.btnVolver_Click);
 
@@ -152,7 +153,7 @@ namespace UI.WinUi.Reportes
             this.Controls.Add(this.lblEstadisticas);
             this.Name = "ReporteMaterialesMasPrestados";
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = "Reporte de Materiales Más Prestados";
+            this.Text = "";  // Se establecerá en AplicarTraducciones()
             this.Load += new EventHandler(this.ReporteMaterialesMasPrestados_Load);
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvReporte)).EndInit();
@@ -178,6 +179,7 @@ namespace UI.WinUi.Reportes
                     return;
                 }
 
+                // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
                 ConfigurarDataGridView();
                 GenerarReporte();
             }
@@ -185,6 +187,31 @@ namespace UI.WinUi.Reportes
             {
                 MessageBox.Show($"Error al cargar el formulario: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        protected override void AplicarTraducciones()
+        {
+            this.Text = LanguageManager.Translate("reporte_materiales_mas_prestados");
+            lblTitulo.Text = LanguageManager.Translate("reporte_materiales_mas_prestados");
+            lblTop.Text = LanguageManager.Translate("top") + ":";
+            btnGenerar.Text = LanguageManager.Translate("generar_reporte");
+            btnExportarCsv.Text = LanguageManager.Translate("exportar_csv");
+            btnVolver.Text = LanguageManager.Translate("volver");
+
+            // Reconfigurar columnas si ya están creadas
+            if (dgvReporte.Columns.Count > 0)
+            {
+                if (dgvReporte.Columns["Titulo"] != null)
+                    dgvReporte.Columns["Titulo"].HeaderText = LanguageManager.Translate("titulo");
+                if (dgvReporte.Columns["Autor"] != null)
+                    dgvReporte.Columns["Autor"].HeaderText = LanguageManager.Translate("autor");
+                if (dgvReporte.Columns["Tipo"] != null)
+                    dgvReporte.Columns["Tipo"].HeaderText = LanguageManager.Translate("tipo");
+                if (dgvReporte.Columns["CantidadPrestamos"] != null)
+                    dgvReporte.Columns["CantidadPrestamos"].HeaderText = LanguageManager.Translate("cantidad_prestamos");
+                if (dgvReporte.Columns["CantidadAlumnos"] != null)
+                    dgvReporte.Columns["CantidadAlumnos"].HeaderText = LanguageManager.Translate("cantidad_alumnos");
             }
         }
 

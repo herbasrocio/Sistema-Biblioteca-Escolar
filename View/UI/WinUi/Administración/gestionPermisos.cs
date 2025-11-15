@@ -9,7 +9,7 @@ using BLL;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class gestionPermisos : Form
+    public partial class gestionPermisos : BaseForm
     {
         private Usuario _usuarioLogueado;
         private Familia _familiaSeleccionada;
@@ -41,6 +41,8 @@ namespace UI.WinUi.Administrador
             // Eventos de gestión de roles
             cboRoles.SelectedIndexChanged += CboRoles_SelectedIndexChanged;
             btnGuardarRol.Click += BtnGuardarRol_Click;
+            btnCrearRol.Click += BtnCrearRol_Click;
+            btnEliminarRol.Click += BtnEliminarRol_Click;
 
             // Eventos de gestión de usuarios
             cboUsuarios.SelectedIndexChanged += CboUsuarios_SelectedIndexChanged;
@@ -62,7 +64,7 @@ namespace UI.WinUi.Administrador
 
         private void GestionPermisos_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             CargarPatentesDisponibles();
             CargarRoles();
             CargarUsuarios();
@@ -79,7 +81,7 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             // Sobrescribir con traducciones si están disponibles
             this.Text = LanguageManager.Translate("gestion_permisos");
@@ -220,13 +222,14 @@ namespace UI.WinUi.Administrador
                 // 1. Patentes del menú principal (FormName = "menu")
                 // 2. Patentes de reportes (FormName contiene "reporte")
                 // 3. Patentes de bitácoras (FormName contiene "bitacora")
-                // 4. Patentes específicas de formularios (renovarPrestamo, etc.)
-                // Excluir: Patentes internas de gestión (FormName empieza con "frm")
+                // 4. Patentes específicas de formularios (renovarPrestamo, FrmGestionBackup, etc.)
+                // Excluir: Patentes internas de gestión (FormName empieza con "frm" excepto FrmGestionBackup)
                 var patentesVisibles = patentes.Where(p =>
                     p.FormName == "menu" ||
                     p.FormName.ToLower().Contains("reporte") ||
                     p.FormName.ToLower().Contains("bitacora") ||
-                    (p.FormName == "renovarPrestamo")
+                    p.FormName == "renovarPrestamo" ||
+                    p.FormName == "FrmGestionBackup"
                 ).ToList();
 
                 // Ordenar patentes: primero las del menú, luego reportes, luego bitácoras
@@ -249,12 +252,6 @@ namespace UI.WinUi.Administrador
                         ? textoTraducido
                         : patente.MenuItemName;
 
-                    // Agregar prefijo "Reporte: " si es un reporte
-                    if (patente.FormName.ToLower().Contains("reporte"))
-                    {
-                        textoMostrar = "Reporte: " + textoMostrar;
-                    }
-
                     checkedListPatentesRol.Items.Add(new PatenteDisplay { Patente = patente, TextoMostrar = textoMostrar }, false);
                 }
 
@@ -270,12 +267,6 @@ namespace UI.WinUi.Administrador
                     string textoMostrar = !string.IsNullOrEmpty(textoTraducido) && textoTraducido != claveTraduccion
                         ? textoTraducido
                         : patente.MenuItemName;
-
-                    // Agregar prefijo "Reporte: " si es un reporte
-                    if (patente.FormName.ToLower().Contains("reporte"))
-                    {
-                        textoMostrar = "Reporte: " + textoMostrar;
-                    }
 
                     checkedListPatentesUsuario.Items.Add(new PatenteDisplay { Patente = patente, TextoMostrar = textoMostrar }, false);
                 }
@@ -308,7 +299,11 @@ namespace UI.WinUi.Administrador
             if (formName.ToLower().Contains("bitacora"))
                 return 3;
 
-            // 4. Otras patentes (no deberían aparecer debido al filtro)
+            // 4. Funciones administrativas
+            if (formName == "renovarPrestamo" || formName == "FrmGestionBackup")
+                return 4;
+
+            // 5. Otras patentes (no deberían aparecer debido al filtro)
             return 999;
         }
 
@@ -328,7 +323,8 @@ namespace UI.WinUi.Administrador
                 .Replace("é", "e")
                 .Replace("í", "i")
                 .Replace("ó", "o")
-                .Replace("ú", "u");
+                .Replace("ú", "u")
+                .Replace("ñ", "n");
 
             return $"permiso_{clave}";
         }
@@ -392,6 +388,150 @@ namespace UI.WinUi.Administrador
             }
         }
 
+        private void BtnCrearRol_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Solicitar nombre del nuevo rol
+                string nombreRol = Microsoft.VisualBasic.Interaction.InputBox(
+                    LanguageManager.Translate("ingrese_nombre_rol"),
+                    LanguageManager.Translate("crear_rol"),
+                    "",
+                    -1, -1);
+
+                // Validar que no esté vacío
+                if (string.IsNullOrWhiteSpace(nombreRol))
+                {
+                    return; // Usuario canceló o dejó vacío
+                }
+
+                // Crear el rol
+                var nuevoRol = FamiliaBLL.CrearRol(nombreRol);
+
+                // Registrar en bitácora
+                _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                    modulo: "Permisos",
+                    accion: "Creación de rol",
+                    detalle: $"Nuevo rol creado: '{nuevoRol.Nombre}'",
+                    idUsuario: _usuarioLogueado.IdUsuario,
+                    nombreUsuario: _usuarioLogueado.Nombre,
+                    gravedad: "Alto"
+                );
+
+                MessageBox.Show(
+                    LanguageManager.Translate("rol_creado_exitosamente"),
+                    LanguageManager.Translate("exito"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                // Recargar roles
+                CargarRoles();
+
+                // Seleccionar el nuevo rol
+                var rolDisplay = (cboRoles.DataSource as List<RolDisplay>)?.FirstOrDefault(r => r.Familia.IdComponent == nuevoRol.IdComponent);
+                if (rolDisplay != null)
+                {
+                    cboRoles.SelectedItem = rolDisplay;
+                }
+            }
+            catch (ServicesSecurity.DomainModel.Exceptions.ValidacionException vex)
+            {
+                MessageBox.Show(vex.Message,
+                    LanguageManager.Translate("error_validacion"),
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                // Registrar error en bitácora
+                _bitacoraSeguridadBLL.RegistrarError(
+                    modulo: "Permisos",
+                    accion: "Error al crear rol",
+                    detalle: $"Error al crear nuevo rol. Error: {ex.Message}. StackTrace: {ex.StackTrace}",
+                    idUsuario: _usuarioLogueado?.IdUsuario,
+                    nombreUsuario: _usuarioLogueado?.Nombre,
+                    gravedad: "Alto"
+                );
+
+                MessageBox.Show($"Error al crear rol: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void BtnEliminarRol_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_familiaSeleccionada == null)
+                {
+                    MessageBox.Show(LanguageManager.Translate("seleccione_rol"),
+                        LanguageManager.Translate("validacion"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Confirmar eliminación
+                var resultado = MessageBox.Show(
+                    $"¿Está seguro de que desea eliminar el rol '{_familiaSeleccionada.NombreRol}'?\n\n" +
+                    "Esta acción no se puede deshacer.",
+                    LanguageManager.Translate("confirmar_eliminacion"),
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (resultado != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                string nombreRolEliminado = _familiaSeleccionada.NombreRol;
+                Guid idRolEliminado = _familiaSeleccionada.IdComponent;
+
+                // Eliminar el rol
+                FamiliaBLL.EliminarRol(_familiaSeleccionada.IdComponent);
+
+                // Registrar en bitácora
+                _bitacoraSeguridadBLL.RegistrarEventoSeguridad(
+                    modulo: "Permisos",
+                    accion: "Eliminación de rol",
+                    detalle: $"Rol eliminado: '{nombreRolEliminado}'",
+                    idUsuario: _usuarioLogueado.IdUsuario,
+                    nombreUsuario: _usuarioLogueado.Nombre,
+                    gravedad: "Alto"
+                );
+
+                MessageBox.Show(
+                    LanguageManager.Translate("rol_eliminado_exitosamente"),
+                    LanguageManager.Translate("exito"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                // Limpiar selección
+                _familiaSeleccionada = null;
+
+                // Recargar roles
+                CargarRoles();
+            }
+            catch (ServicesSecurity.DomainModel.Exceptions.ValidacionException vex)
+            {
+                MessageBox.Show(vex.Message,
+                    LanguageManager.Translate("error_validacion"),
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                // Registrar error en bitácora
+                _bitacoraSeguridadBLL.RegistrarError(
+                    modulo: "Permisos",
+                    accion: "Error al eliminar rol",
+                    detalle: $"Error al eliminar rol '{_familiaSeleccionada?.NombreRol}'. Error: {ex.Message}. StackTrace: {ex.StackTrace}",
+                    idUsuario: _usuarioLogueado?.IdUsuario,
+                    nombreUsuario: _usuarioLogueado?.Nombre,
+                    gravedad: "Alto"
+                );
+
+                MessageBox.Show($"Error al eliminar rol: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void BtnGuardarRol_Click(object sender, EventArgs e)
         {
             try
@@ -436,8 +576,11 @@ namespace UI.WinUi.Administrador
                     gravedad: "Alto"
                 );
 
+                // Notificar a todos los usuarios que los permisos han cambiado (patrón Observer)
+                PermissionManager.Instance.NotifyAllUsersPermissionsChanged();
+
                 string mensaje = LanguageManager.Translate("permisos_actualizados") + "\n\n" +
-                                 "IMPORTANTE: Los usuarios afectados deben cerrar sesión y volver a entrar para que los cambios surtan efecto.";
+                                 "Los usuarios afectados verán los cambios actualizados automáticamente.";
                 MessageBox.Show(mensaje,
                     LanguageManager.Translate("exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -548,8 +691,11 @@ namespace UI.WinUi.Administrador
                     gravedad: "Alto"
                 );
 
+                // Notificar al usuario que su rol cambió (patrón Observer)
+                PermissionManager.Instance.NotifyPermissionsChanged(_usuarioSeleccionado.IdUsuario);
+
                 string mensaje = LanguageManager.Translate("rol_actualizado") + "\n\n" +
-                                 "IMPORTANTE: El usuario debe cerrar sesión y volver a entrar para que los cambios surtan efecto.";
+                                 "Los cambios se aplicarán automáticamente si el usuario tiene una sesión activa.";
                 MessageBox.Show(mensaje,
                     LanguageManager.Translate("exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -626,10 +772,13 @@ namespace UI.WinUi.Administrador
                         nombreUsuario: _usuarioLogueado.Nombre,
                         gravedad: "Alto"
                     );
+
+                    // Notificar al usuario específico que sus permisos cambiaron (patrón Observer)
+                    PermissionManager.Instance.NotifyPermissionsChanged(_usuarioSeleccionado.IdUsuario);
                 }
 
                 string mensaje = LanguageManager.Translate("permisos_actualizados") + "\n\n" +
-                                 "IMPORTANTE: El usuario debe cerrar sesión y volver a entrar para que los cambios surtan efecto.";
+                                 "Los cambios se aplicarán automáticamente si el usuario tiene una sesión activa.";
                 MessageBox.Show(mensaje,
                     LanguageManager.Translate("exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

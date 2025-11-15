@@ -35,9 +35,6 @@
             this.btnIngresar = new System.Windows.Forms.Button();
             this.lblMenu = new System.Windows.Forms.Label();
             this.btnRecuperarContraseña = new System.Windows.Forms.Button();
-            this.lnkEspañol = new System.Windows.Forms.LinkLabel();
-            this.lnkEnglish = new System.Windows.Forms.LinkLabel();
-            this.lblSeparadorIdioma = new System.Windows.Forms.Label();
             this.btnMostrarContraseña = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -134,48 +131,7 @@
             this.btnRecuperarContraseña.TabIndex = 3;
             this.btnRecuperarContraseña.Text = "¿Olvidó su contraseña?";
             this.btnRecuperarContraseña.UseVisualStyleBackColor = false;
-            // 
-            // lnkEspañol
-            // 
-            this.lnkEspañol.ActiveLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.lnkEspañol.AutoSize = true;
-            this.lnkEspañol.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lnkEspañol.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-            this.lnkEspañol.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.lnkEspañol.Location = new System.Drawing.Point(175, 485);
-            this.lnkEspañol.Name = "lnkEspañol";
-            this.lnkEspañol.Size = new System.Drawing.Size(48, 15);
-            this.lnkEspañol.TabIndex = 4;
-            this.lnkEspañol.TabStop = true;
-            this.lnkEspañol.Text = "Español";
-            this.lnkEspañol.VisitedLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            // 
-            // lnkEnglish
-            // 
-            this.lnkEnglish.ActiveLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.lnkEnglish.AutoSize = true;
-            this.lnkEnglish.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lnkEnglish.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-            this.lnkEnglish.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            this.lnkEnglish.Location = new System.Drawing.Point(237, 485);
-            this.lnkEnglish.Name = "lnkEnglish";
-            this.lnkEnglish.Size = new System.Drawing.Size(45, 15);
-            this.lnkEnglish.TabIndex = 5;
-            this.lnkEnglish.TabStop = true;
-            this.lnkEnglish.Text = "English";
-            this.lnkEnglish.VisitedLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
-            // 
-            // lblSeparadorIdioma
-            // 
-            this.lblSeparadorIdioma.AutoSize = true;
-            this.lblSeparadorIdioma.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSeparadorIdioma.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
-            this.lblSeparadorIdioma.Location = new System.Drawing.Point(225, 485);
-            this.lblSeparadorIdioma.Name = "lblSeparadorIdioma";
-            this.lblSeparadorIdioma.Size = new System.Drawing.Size(10, 15);
-            this.lblSeparadorIdioma.TabIndex = 6;
-            this.lblSeparadorIdioma.Text = "|";
-            // 
+            //
             // btnMostrarContraseña
             // 
             this.btnMostrarContraseña.BackColor = System.Drawing.Color.White;
@@ -199,9 +155,6 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
             this.ClientSize = new System.Drawing.Size(450, 520);
             this.Controls.Add(this.btnMostrarContraseña);
-            this.Controls.Add(this.lblSeparadorIdioma);
-            this.Controls.Add(this.lnkEnglish);
-            this.Controls.Add(this.lnkEspañol);
             this.Controls.Add(this.btnRecuperarContraseña);
             this.Controls.Add(this.lblMenu);
             this.Controls.Add(this.btnIngresar);
@@ -229,9 +182,6 @@
         private System.Windows.Forms.Button btnIngresar;
         private System.Windows.Forms.Label lblMenu;
         private System.Windows.Forms.Button btnRecuperarContraseña;
-        private System.Windows.Forms.LinkLabel lnkEspañol;
-        private System.Windows.Forms.LinkLabel lnkEnglish;
-        private System.Windows.Forms.Label lblSeparadorIdioma;
         private System.Windows.Forms.Button btnMostrarContraseña;
     }
 }

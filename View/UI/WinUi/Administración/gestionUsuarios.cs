@@ -16,13 +16,25 @@ using BLL;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class gestionUsuarios : Form
+    public partial class gestionUsuarios : BaseForm
     {
         private Usuario _usuarioLogueado;
         private Usuario _usuarioSeleccionado;
         private bool _modoEdicion = false;
         private const string PLACEHOLDER_PASSWORD = "••••••••";
         private BitacoraSeguridadBLL _bitacoraSeguridadBLL;
+
+        // Clase wrapper para traducir nombres de roles en el ComboBox
+        private class RolComboBoxItem
+        {
+            public Familia Familia { get; set; }
+            public string NombreTraducido { get; set; }
+
+            public override string ToString()
+            {
+                return NombreTraducido;
+            }
+        }
 
         public gestionUsuarios()
         {
@@ -91,12 +103,13 @@ namespace UI.WinUi.Administrador
 
                 foreach (var rol in rolesDisponibles)
                 {
-                    comboBoxPerfil.Items.Add(rol);
+                    string nombreTraducido = TraducirNombreRol(rol.NombreRol);
+                    comboBoxPerfil.Items.Add(new RolComboBoxItem
+                    {
+                        Familia = rol,
+                        NombreTraducido = nombreTraducido
+                    });
                 }
-
-                // Configurar cómo se muestra el texto en el ComboBox
-                comboBoxPerfil.DisplayMember = "NombreRol";  // Muestra nombre sin prefijo "ROL_"
-                comboBoxPerfil.ValueMember = "IdComponent";  // Valor es el ID
             }
             catch (Exception ex)
             {
@@ -105,14 +118,32 @@ namespace UI.WinUi.Administrador
             }
         }
 
+        private string TraducirNombreRol(string nombreRol)
+        {
+            // Mapeo de nombres de roles a sus keys de traducción
+            switch (nombreRol?.ToLower())
+            {
+                case "administrador":
+                    return LanguageManager.Translate("rol_administrador");
+                case "bibliotecario":
+                    return LanguageManager.Translate("rol_bibliotecario");
+                case "docente":
+                    return LanguageManager.Translate("rol_docente");
+                case "ayudante":
+                    return LanguageManager.Translate("rol_ayudante");
+                default:
+                    return nombreRol ?? "Sin rol";
+            }
+        }
+
 
         private void GestionUsuarios_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             CargarTodosLosUsuarios();
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {
@@ -137,11 +168,64 @@ namespace UI.WinUi.Administrador
                 btnEliminar.Text = LanguageManager.Translate("eliminar");
                 btnBuscar.Text = LanguageManager.Translate("buscar");
                 btnVolver.Text = LanguageManager.Translate("volver");
+
+                // Traducir encabezados del DataGridView
+                TraducirColumnasDataGridView();
+
+                // Recargar ComboBox de roles con traducciones
+                RecargarRolesConTraducciones();
+
+                // Recargar DataGridView para actualizar los nombres de roles traducidos
+                if (dgvUsuarios.DataSource != null)
+                {
+                    CargarTodosLosUsuarios();
+                }
             }
             catch (Exception ex)
             {
                 // Log error pero no interrumpir la carga del formulario
                 Console.WriteLine($"Error al aplicar traducciones: {ex.Message}");
+            }
+        }
+
+        private void RecargarRolesConTraducciones()
+        {
+            // Guardar el rol seleccionado actualmente (si hay uno)
+            RolComboBoxItem rolSeleccionadoActual = comboBoxPerfil.SelectedItem as RolComboBoxItem;
+            Guid? idRolSeleccionado = rolSeleccionadoActual?.Familia.IdComponent;
+
+            // Recargar el ComboBox con traducciones actualizadas
+            CargarRolesEnComboBox();
+
+            // Restaurar la selección si había un rol seleccionado
+            if (idRolSeleccionado.HasValue)
+            {
+                foreach (RolComboBoxItem item in comboBoxPerfil.Items)
+                {
+                    if (item.Familia.IdComponent == idRolSeleccionado.Value)
+                    {
+                        comboBoxPerfil.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Traduce los encabezados de las columnas del DataGridView
+        /// </summary>
+        private void TraducirColumnasDataGridView()
+        {
+            if (dgvUsuarios.Columns.Count > 0)
+            {
+                if (dgvUsuarios.Columns["Nombre"] != null)
+                    dgvUsuarios.Columns["Nombre"].HeaderText = LanguageManager.Translate("nombre");
+
+                if (dgvUsuarios.Columns["Email"] != null)
+                    dgvUsuarios.Columns["Email"].HeaderText = LanguageManager.Translate("email");
+
+                if (dgvUsuarios.Columns["Rol"] != null)
+                    dgvUsuarios.Columns["Rol"].HeaderText = LanguageManager.Translate("rol");
             }
         }
 
@@ -160,7 +244,7 @@ namespace UI.WinUi.Administrador
                     u.IdUsuario,
                     Nombre = u.Nombre,
                     Email = u.Email ?? "",
-                    Rol = u.ObtenerNombreRol() ?? "Sin asignar"
+                    Rol = TraducirNombreRol(u.ObtenerNombreRol()) ?? LanguageManager.Translate("sin_rol")
                 }).ToList();
 
                 // Ocultar columna ID
@@ -259,7 +343,8 @@ namespace UI.WinUi.Administrador
                 }
 
                 // Obtener la Familia de rol seleccionada
-                var rolSeleccionado = comboBoxPerfil.SelectedItem as Familia;
+                var rolComboBoxItem = comboBoxPerfil.SelectedItem as RolComboBoxItem;
+                var rolSeleccionado = rolComboBoxItem?.Familia;
                 if (rolSeleccionado == null)
                 {
                     MessageBox.Show("Debe seleccionar un rol", "Validación",
@@ -539,9 +624,9 @@ namespace UI.WinUi.Administrador
                 if (familiaRol != null)
                 {
                     // Buscar la Familia en el ComboBox por su ID
-                    foreach (Familia item in comboBoxPerfil.Items)
+                    foreach (RolComboBoxItem item in comboBoxPerfil.Items)
                     {
-                        if (item.IdComponent == familiaRol.IdComponent)
+                        if (item.Familia.IdComponent == familiaRol.IdComponent)
                         {
                             comboBoxPerfil.SelectedItem = item;
                             break;

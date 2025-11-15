@@ -27,18 +27,8 @@ namespace ServicesSecurity.Services
         /// </summary>
         public void Handle(Exception ex)
         {
-            if (ex != null)
-            {
-                // Registrar en bitácora
-                Bitacora.Current.LogException(ex);
-
-                // Log adicional para excepciones críticas
-                LoggerService.WriteLog(
-                    $"Exception: {ex.Message} | StackTrace: {ex.StackTrace}",
-                    EventLevel.Error,
-                    "System"
-                );
-            }
+            // Las excepciones ahora se manejan silenciosamente
+            // o se registran en BitacoraSeguridad según el contexto
         }
 
         /// <summary>
@@ -46,18 +36,8 @@ namespace ServicesSecurity.Services
         /// </summary>
         public void Handle(Exception ex, object sender)
         {
-            if (ex != null)
-            {
-                string senderInfo = sender?.GetType().Name ?? "Unknown";
-
-                Bitacora.Current.LogException(ex);
-
-                LoggerService.WriteLog(
-                    $"[{senderInfo}] Exception: {ex.Message}",
-                    EventLevel.Error,
-                    senderInfo
-                );
-            }
+            // Las excepciones ahora se manejan silenciosamente
+            // o se registran en BitacoraSeguridad según el contexto
         }
     }
 }

@@ -14,14 +14,14 @@ using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.DomainModel.Exceptions;
 using ServicesSecurity.BLL;
 using UI.WinUi.Administrador;
+using UI.WinUi;
 using BLL;
 
 namespace UI
 {
-    public partial class Login : Form
+    public partial class Login : BaseForm
     {
         private bool contraseñaVisible = false;
-        private string _idiomaSeleccionadoEnLogin = "es-AR"; // Siempre iniciar en español
         private readonly BitacoraSeguridadBLL _bitacoraSeguridadBLL;
 
         public Login()
@@ -32,11 +32,9 @@ namespace UI
             // IMPORTANTE: Establecer español como idioma por defecto al iniciar
             CambiarIdioma("es-AR");
 
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             this.btnIngresar.Click += BtnIngresar_Click;
             this.btnRecuperarContraseña.Click += BtnRecuperarContraseña_Click;
-            this.lnkEspañol.LinkClicked += LnkEspañol_LinkClicked;
-            this.lnkEnglish.LinkClicked += LnkEnglish_LinkClicked;
             this.txtContraseña.KeyPress += TxtContraseña_KeyPress;
             this.btnMostrarContraseña.Click += BtnMostrarContraseña_Click;
             this.Load += Login_Load;
@@ -71,27 +69,14 @@ namespace UI
             }
         }
 
-        private void LnkEspañol_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            _idiomaSeleccionadoEnLogin = "es-AR"; // Guardar idioma seleccionado
-            CambiarIdioma("es-AR");
-        }
-
-        private void LnkEnglish_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            _idiomaSeleccionadoEnLogin = "en-GB"; // Guardar idioma seleccionado
-            CambiarIdioma("en-GB");
-        }
-
         private void CambiarIdioma(string cultura)
         {
             try
             {
-                CultureInfo nuevaCultura = new CultureInfo(cultura);
-                Thread.CurrentThread.CurrentCulture = nuevaCultura;
-                Thread.CurrentThread.CurrentUICulture = nuevaCultura;
-
-                AplicarTraducciones();
+                // Usar LanguageManager para cambiar el idioma (patrón Observer)
+                // Esto notificará automáticamente a todos los formularios abiertos
+                // BaseForm se encargará de llamar a AplicarTraducciones() automáticamente
+                LanguageManager.ChangeLanguage(cultura);
             }
             catch (Exception ex)
             {
@@ -100,7 +85,7 @@ namespace UI
             }
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             // Traducir título del formulario
             this.Text = LanguageManager.Translate("login");
@@ -211,8 +196,10 @@ namespace UI
 
         private void RedirigirPorRol(Usuario usuario)
         {
-            // Usar el idioma seleccionado en el login (español por defecto, o inglés si el usuario lo cambió)
-            CambiarIdioma(_idiomaSeleccionadoEnLogin);
+            // El idioma se obtiene del perfil del usuario guardado en la BD
+            // Si no tiene idioma configurado, se usa español por defecto
+            string idiomaAUsar = usuario.IdiomaPreferido ?? "es-AR";
+            CambiarIdioma(idiomaAUsar);
 
             // Verificar que el usuario tenga un rol asignado
             string nombreRol = usuario.ObtenerNombreRol();

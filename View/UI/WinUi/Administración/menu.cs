@@ -3,11 +3,12 @@ using System.Linq;
 using System.Windows.Forms;
 using ServicesSecurity.DomainModel.Security.Composite;
 using ServicesSecurity.Services;
+using ServicesSecurity.BLL;
 using BLL;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class menu : Form
+    public partial class menu : BaseForm, IPermissionObserver
     {
         private Usuario _usuarioLogueado;
         private BitacoraSeguridadBLL _bitacoraSeguridadBLL;
@@ -25,6 +26,7 @@ namespace UI.WinUi.Administrador
         private const string PATENTE_REPORTES = "consultarReportes";
         private const string PATENTE_BITACORA_SEGURIDAD = "consultarBitacoraSeguridad";
         private const string PATENTE_BITACORA_OPERACIONES = "consultarBitacoraOperaciones";
+        private const string PATENTE_BACKUP = "FrmGestionBackup";
 
         public menu()
         {
@@ -36,8 +38,20 @@ namespace UI.WinUi.Administrador
         {
             _usuarioLogueado = usuario;
             _bitacoraSeguridadBLL = new BitacoraSeguridadBLL();
-            ActualizarTextos();
+            // AplicarTraducciones() se llamará automáticamente desde BaseForm.Load
             ConfigurarVisibilidadPorPermisos();
+
+            // Registrar este formulario como observador de cambios de permisos
+            PermissionManager.Instance.Attach(this);
+
+            // Desregistrar cuando se cierre el formulario
+            this.FormClosing += Menu_FormClosing;
+        }
+
+        private void Menu_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Desregistrar este formulario como observador
+            PermissionManager.Instance.Detach(this);
         }
 
         private void ConfigurarEstiloVisual()
@@ -52,7 +66,7 @@ namespace UI.WinUi.Administrador
             }
         }
 
-        private void ActualizarTextos()
+        protected override void AplicarTraducciones()
         {
             // Traducir textos del formulario
             this.Text = LanguageManager.Translate("menu_principal");
@@ -70,6 +84,8 @@ namespace UI.WinUi.Administrador
             bitacorasToolStripMenuItem.Text = LanguageManager.Translate("bitacoras");
             consultarBitacoraAdminToolStripMenuItem.Text = LanguageManager.Translate("bitacora_admin_titulo");
             consultarBitacoraBibliotecarioToolStripMenuItem.Text = LanguageManager.Translate("bitacora_bibliotecario_titulo");
+            backupToolStripMenuItem.Text = LanguageManager.Translate("backup_menu");
+            miPerfilToolStripMenuItem.Text = LanguageManager.Translate("mi_perfil");
             cerrarSesionToolStripMenuItem.Text = LanguageManager.Translate("cerrar_sesion");
 
             // Actualizar información del usuario en el panel de bienvenida
@@ -127,6 +143,9 @@ namespace UI.WinUi.Administrador
             bitacorasToolStripMenuItem.Visible = tieneBitacoraSeguridad || tieneBitacoraOperaciones;
             consultarBitacoraAdminToolStripMenuItem.Visible = tieneBitacoraSeguridad;
             consultarBitacoraBibliotecarioToolStripMenuItem.Visible = tieneBitacoraOperaciones;
+
+            // Backup: solo visible para usuarios con permiso
+            backupToolStripMenuItem.Visible = TienePermiso(PATENTE_BACKUP);
         }
 
         private bool TienePermiso(string nombrePatente)
@@ -411,6 +430,45 @@ namespace UI.WinUi.Administrador
             }
         }
 
+        private void backupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!VerificarYRegistrarAcceso(PATENTE_BACKUP, "Gestión de Backup"))
+                {
+                    MessageBox.Show(LanguageManager.Translate("acceso_denegado"),
+                        "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                FrmGestionBackup formBackup = new FrmGestionBackup(_usuarioLogueado);
+                formBackup.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir gestión de backup: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void miPerfilToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Mi Perfil no requiere permiso especial - todos los usuarios pueden acceder
+                FrmMiPerfil formMiPerfil = new FrmMiPerfil(_usuarioLogueado);
+                formMiPerfil.ShowDialog();
+
+                // Refrescar traducciones en caso de que el usuario haya cambiado el idioma
+                AplicarTraducciones();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir Mi Perfil: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void cerrarSesionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -447,5 +505,66 @@ namespace UI.WinUi.Administrador
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        #region IPermissionObserver Implementation
+
+        /// <summary>
+        /// Implementación del patrón Observer: se ejecuta cuando los permisos del usuario cambian.
+        /// Actualiza dinámicamente la visibilidad de las opciones del menú.
+        /// </summary>
+        public void OnPermissionsChanged(Usuario usuario)
+        {
+            // Si no se proporciona usuario, recargar el usuario actual
+            if (usuario == null)
+            {
+                // Recargar usuario actual desde la base de datos
+                usuario = UsuarioBLL.ObtenerUsuarioPorId(_usuarioLogueado.IdUsuario);
+                if (usuario == null)
+                    return;
+            }
+
+            // Verificar que sea el usuario actualmente logueado
+            if (usuario.IdUsuario != _usuarioLogueado.IdUsuario)
+                return;
+
+            // Actualizar referencia al usuario con permisos actualizados
+            _usuarioLogueado = usuario;
+
+            // Invocar en el thread de UI si es necesario
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => ActualizarInterfazPorPermisos()));
+            }
+            else
+            {
+                ActualizarInterfazPorPermisos();
+            }
+        }
+
+        /// <summary>
+        /// Actualiza la interfaz del menú según los permisos actuales del usuario
+        /// </summary>
+        private void ActualizarInterfazPorPermisos()
+        {
+            try
+            {
+                // Reconfigurar visibilidad de opciones del menú
+                ConfigurarVisibilidadPorPermisos();
+
+                // Mostrar mensaje informativo al usuario
+                MessageBox.Show(
+                    LanguageManager.Translate("permisos_actualizados") ??
+                    "Tus permisos han sido actualizados. El menú se ha actualizado automáticamente.",
+                    LanguageManager.Translate("informacion") ?? "Información",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al actualizar interfaz por permisos: {ex.Message}");
+            }
+        }
+
+        #endregion
     }
 }

@@ -81,7 +81,6 @@ namespace ServicesSecurity.DAL.Implementations
             }
             catch (Exception ex)
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
                 throw;
             }
@@ -97,7 +96,6 @@ namespace ServicesSecurity.DAL.Implementations
             }
             catch (Exception ex)
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
                 throw;
             }
@@ -114,7 +112,6 @@ namespace ServicesSecurity.DAL.Implementations
             }
             catch (Exception ex)
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
                 throw;
             }
@@ -176,7 +173,6 @@ namespace ServicesSecurity.DAL.Implementations
             catch (Exception ex)
 
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
 
             }
@@ -206,7 +202,6 @@ namespace ServicesSecurity.DAL.Implementations
             catch (Exception ex)
 
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
 
             }
@@ -225,7 +220,6 @@ namespace ServicesSecurity.DAL.Implementations
             }
             catch (Exception ex)
             {
-                Bitacora.Current.LogException(ex);
                 ExceptionManager.Current.Handle(ex);
                 throw;
             }

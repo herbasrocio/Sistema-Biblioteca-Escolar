@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace UI.WinUi.Administrador
 {
-    public partial class consultarMaterial : Form
+    public partial class consultarMaterial : BaseForm
     {
         private Usuario _usuarioLogueado;
         private MaterialBLL _materialBLL;
@@ -96,12 +96,12 @@ namespace UI.WinUi.Administrador
 
         private void ConsultarMaterial_Load(object sender, EventArgs e)
         {
-            AplicarTraducciones();
+            // AplicarTraducciones() se llama automáticamente desde BaseForm.Load
             CargarComboBoxes();
             CargarTodosMateriales();
         }
 
-        private void AplicarTraducciones()
+        protected override void AplicarTraducciones()
         {
             try
             {

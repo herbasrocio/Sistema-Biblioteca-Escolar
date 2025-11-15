@@ -35,9 +35,7 @@ namespace ServicesSecurity.BLL
 
         private static void DALPolicy(Exception ex)
         {
-            //1) Registrar
-            LoggerService.WriteLog($"Message; {ex.Message}, StackTrace: {ex.StackTrace}", EventLevel.Error, String.Empty);
-            //2) Propagar
+            //1) Propagar
             throw new Exception(String.Empty, ex);
         }
 
@@ -51,9 +49,7 @@ namespace ServicesSecurity.BLL
             }
             else
             {
-                //Es una exception propia de BLL
-                LoggerService.WriteLog($"Message; {ex.Message}, StackTrace: {ex.StackTrace}", EventLevel.Error, String.Empty);
-                //2) Propagar
+                //Es una exception propia de BLL - Propagar
                 throw ex;
             }
         }

@@ -483,6 +483,132 @@ namespace ServicesSecurity.BLL
 
         #endregion
 
+        #region Gestión de Perfil de Usuario
+
+        /// <summary>
+        /// Actualiza el perfil del usuario (idioma preferido y opcionalmente contraseña)
+        /// Este método es para que un usuario actualice su propio perfil
+        /// </summary>
+        /// <param name="idUsuario">ID del usuario</param>
+        /// <param name="idiomaPreferido">Idioma preferido (ej: "es-AR", "en-GB")</param>
+        /// <param name="nuevaPassword">Nueva contraseña (opcional, dejar null o vacío para no cambiar)</param>
+        /// <param name="passwordActual">Contraseña actual (requerida si se cambia la contraseña)</param>
+        public static void ActualizarPerfil(Guid idUsuario, string idiomaPreferido, string nuevaPassword = null, string passwordActual = null)
+        {
+            try
+            {
+                // Obtener usuario actual
+                var usuario = ServicesSecurity.DAL.Implementations.UsuarioRepository.Current.SelectOne(idUsuario);
+                if (usuario == null)
+                {
+                    throw new UsuarioNoEncontradoException($"Usuario con ID {idUsuario}");
+                }
+
+                // Variables para registrar los cambios en la bitácora
+                List<string> cambiosRealizados = new List<string>();
+                string idiomaAnterior = usuario.IdiomaPreferido;
+
+                // Si se proporciona nueva contraseña, validar la actual
+                if (!string.IsNullOrWhiteSpace(nuevaPassword))
+                {
+                    ValidarLongitudMinima(nuevaPassword, "Nueva contraseña", 6);
+
+                    if (string.IsNullOrWhiteSpace(passwordActual))
+                    {
+                        throw new ValidacionException("Debe proporcionar la contraseña actual para cambiarla");
+                    }
+
+                    // Verificar que la contraseña actual sea correcta
+                    string hashPasswordActual = CryptographyService.HashPassword(passwordActual);
+                    if (usuario.Clave != hashPasswordActual)
+                    {
+                        // Registrar intento fallido de cambio de contraseña en bitácora de seguridad
+                        DAL.Implementations.BitacoraSeguridadRepository.Current.RegistrarEventoSeguridad(
+                            usuario.IdUsuario,
+                            usuario.Nombre,
+                            "Mi Perfil",
+                            "Intento de cambio de contraseña",
+                            "Intento fallido de cambio de contraseña. Contraseña actual incorrecta",
+                            "Alto"
+                        );
+                        throw new ContraseñaInvalidaException("La contraseña actual es incorrecta");
+                    }
+
+                    // Actualizar contraseña
+                    usuario.Password = nuevaPassword;
+                    usuario.Clave = CryptographyService.HashPassword(nuevaPassword);
+                    cambiosRealizados.Add("contraseña modificada");
+                }
+
+                // Actualizar idioma preferido
+                if (!string.IsNullOrWhiteSpace(idiomaPreferido) && idiomaPreferido != idiomaAnterior)
+                {
+                    usuario.IdiomaPreferido = idiomaPreferido;
+                    cambiosRealizados.Add($"idioma cambiado de '{idiomaAnterior ?? "no definido"}' a '{idiomaPreferido}'");
+                }
+
+                // Solo actualizar si hubo cambios
+                if (cambiosRealizados.Count > 0)
+                {
+                    ServicesSecurity.DAL.Implementations.UsuarioRepository.Current.Update(usuario);
+
+                    // Registrar en bitácora de seguridad con detalle de todos los cambios
+                    string detallesCambios = string.Join(", ", cambiosRealizados);
+
+                    // Determinar el tipo de evento y gravedad según los cambios
+                    bool incluyeCambioPassword = cambiosRealizados.Any(c => c.Contains("contraseña"));
+                    string tipoEvento = incluyeCambioPassword ? "CambioCritico" : "Seguridad";
+                    string gravedad = incluyeCambioPassword ? "Alto" : "Medio";
+
+                    DAL.Implementations.BitacoraSeguridadRepository.Current.Registrar(
+                        usuario.IdUsuario,
+                        usuario.Nombre,
+                        tipoEvento,
+                        "Mi Perfil",
+                        "Actualización de perfil",
+                        $"Perfil actualizado exitosamente. Cambios: {detallesCambios}",
+                        gravedad
+                    );
+                }
+            }
+            catch (ContraseñaInvalidaException)
+            {
+                // Re-lanzar sin manejar, ya fue registrado en la bitácora
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ExceptionManager.Current.Handle(ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el idioma preferido de un usuario
+        /// </summary>
+        /// <param name="idUsuario">ID del usuario</param>
+        /// <returns>Código de idioma (ej: "es-AR", "en-GB") o "es-AR" por defecto</returns>
+        public static string ObtenerIdiomaPreferido(Guid idUsuario)
+        {
+            try
+            {
+                var usuario = ServicesSecurity.DAL.Implementations.UsuarioRepository.Current.SelectOne(idUsuario);
+                if (usuario == null)
+                {
+                    throw new UsuarioNoEncontradoException($"Usuario con ID {idUsuario}");
+                }
+
+                return usuario.IdiomaPreferido ?? "es-AR";
+            }
+            catch (Exception ex)
+            {
+                ExceptionManager.Current.Handle(ex);
+                throw;
+            }
+        }
+
+        #endregion
+
         #region Métodos de Validación Privados
 
         private static void ValidarCampoRequerido(string value, string fieldName)

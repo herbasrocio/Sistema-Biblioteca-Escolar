@@ -11,12 +11,9 @@ namespace ServicesSecurity.DAL.Factory
     {
         public static LanguageRepository LanguageRepository { get; private set; }
 
-        public static LoggerRepository LoggerRepository { get; private set; }
-
         static ServiceFactory()
         {
             LanguageRepository = LanguageRepository.Current;
-            LoggerRepository = LoggerRepository.Current;
         }
     }
 }
