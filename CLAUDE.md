@@ -2,254 +2,245 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Overview
+## Quick Overview
 
-**Sistema Biblioteca Escolar** is a C# .NET Framework 4.7.2 Windows Forms application for managing a school library. The system handles student management, library materials (books and other resources), loans, returns, renewals, and includes comprehensive security and audit logging capabilities.
+N-tier school library system: C# / .NET 4.7.2 / WinForms / SQL Server
 
-## Technology Stack
+**6 Layers**: Domain Model → DAL (Repository + UoW) → BLL → Services → Security Services → UI
 
-- .NET Framework 4.7.2
-- Windows Forms (WinForms)
-- SQL Server (two databases: SeguridadBiblioteca, NegocioBiblioteca)
-- Microsoft Report Viewer 15.0 (SSRS for reports)
-- Integrated Security for SQL Server
+**2 Databases**: SeguridadBiblioteca (auth/security) + NegocioBiblioteca (library operations)
 
-## Building and Running
+## Build and Run
 
-**Build the solution:**
+**Build the solution**:
 ```bash
-msbuild "Sistema Biblioteca Escolar.sln" /p:Configuration=Debug
-# Or use Visual Studio: Build > Build Solution (Ctrl+Shift+B)
+# Using build.bat (preferred)
+./build.bat
+
+# Or using MSBuild directly
+"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" "Sistema Biblioteca Escolar.sln" /p:Configuration=Debug
 ```
 
-**Run the application:**
-The main entry point is `View/UI/UI.csproj`. Run from Visual Studio or execute the compiled `.exe` from `View/UI/bin/Debug/`.
+**Database setup**:
+```sql
+-- Execute master script to create both databases
+:r "Database/00_EJECUTAR_TODO.sql"
 
-**Database setup:**
-1. Ensure SQL Server is running on localhost
-2. Execute `Database/00_EJECUTAR_TODO.sql` to create the security database and initial data
-3. Execute `Database/Negocio/00_EJECUTAR_TODO_NEGOCIO.sql` to create the business database and test data
-
-**Connection strings** are configured in `View/UI/App.config`:
-- `ServicesConString`: SeguridadBiblioteca (security, users, permissions, audit logs)
-- `NegocioConString`: NegocioBiblioteca (students, materials, loans, returns)
-
-## Architecture: Layered (N-Tier)
-
-The application follows a strict layered architecture with clear separation of concerns:
-
-```
-View/UI (Presentation)
-    ↓
-Model/BLL (Business Logic)
-    ↓
-Model/DAL (Data Access with Repository Pattern)
-    ↓
-Model/DomainModel (Domain Entities)
-    ↓
-SQL Server Databases
+-- Or execute individual scripts in order (see Database folder)
 ```
 
-**Security** is a cross-cutting concern implemented in `Security/ServicesSeguridad/`.
+**Run the application**:
+- Build the solution first
+- Run from Visual Studio (F5) or execute `View\UI\bin\Debug\UI.exe`
+- Default credentials: username=`admin`, password=`admin`
 
-### Project Dependencies
+---
 
-- **UI** → BLL, Services, ServicesSecurity
-- **BLL** → DAL, DomainModel, Services
-- **DAL** → DomainModel, Services (connection strings)
-- **Services** → DomainModel
-- **ServicesSecurity** → standalone (security domain model + DAL)
+## 1. Architecture Layers
 
-## Key Projects
+**Layer 1: DomainModel** (`Model/DomainModel/`)
+- Pure POCOs: Alumno, Material, Ejemplar, Prestamo, Devolucion, BitacoraSeguridad
+- No dependencies, Guid-based identifiers auto-initialized
+- Enums: TipoMaterial, EstadoMaterial
 
-### Model/DomainModel
-Domain entities representing the business model:
-- **Alumno**: Student (IdAlumno, Nombre, Apellido, DNI, Grado, Division)
-- **Material**: Library catalog item (Titulo, Autor, Editorial, Tipo, Genero, ISBN)
-- **Ejemplar**: Physical copy of a material (CodigoEjemplar/barcode, Estado, Ubicacion)
-- **Prestamo**: Loan (IdPrestamo, IdAlumno, IdEjemplar, FechaPrestamo, FechaDevolucionPrevista, Estado)
-- **Devolucion**: Return (IdDevolucion, IdPrestamo, FechaDevolucion)
-- **RenovacionPrestamo**: Loan renewal (IdRenovacion, IdPrestamo, FechaRenovacion, FechaDevolucionAnterior, FechaDevolucionNueva)
-- **BitacoraSeguridad**: Security audit log
-- **BitacoraOperaciones**: Operations audit log
-- **Inscripcion**: Student enrollment
-- **AnioLectivo**: School year
-- **HistorialEstadoEjemplar**: Copy state history
+**Layer 2: DAL** (`Model/DAL/`)
+- Repository Pattern with Unit of Work
+- Direct SQL queries (no ORM), SqlCommand + DataTable
+- Adapters: DataRow → Domain objects
+- Connection strings from App.config
 
-### Model/DAL
-Repository pattern with Unit of Work for transactional operations:
-- **Contracts/**: Repository interfaces (IPrestamoRepository, IEjemplarRepository, IAlumnoRepository, etc.)
-- **Implementations/**: Concrete repository classes
-- **Tools/Adapter**: DataReader → object mapping
-- **IUnitOfWork**: Coordinates multiple repository operations in a single transaction
+**Layer 3: BLL** (`Model/BLL/`)
+- Business logic, validation, rules
+- AlumnoBLL, MaterialBLL, PrestamoBLL, DevolucionBLL, ReporteBLL
+- Transactions via Unit of Work
 
-### Model/BLL
-Business logic layer with validation and calculations:
-- **PrestamoBLL**: Loan business rules (eligibility, maximum loans, due date calculation)
-- **DevolucionBLL**: Return processing
-- **RenovacionBLL**: Renewal logic (max 2 renewals, extends by ~14 days)
-- **MaterialBLL**, **AlumnoBLL**, **EjemplarBLL**: CRUD operations with business rules
-- **ReporteBLL**: Report data preparation
-- **ValidationBLL**: Cross-cutting validations
+**Layer 4: Services** (`Model/Services/`)
+- ExportService: CSV export for reports
 
-### View/UI
-Windows Forms organized by functional area:
-- **Administración/**: Login, main menu, student/material/user/copy management
-- **Transacciones/**: Loan registration, returns, renewals, loan management
-- **Reportes/**: SSRS-based reports (active loans, most borrowed materials, usage by grade)
-- **Bitacoras/**: Audit log viewers (security and operations)
+**Layer 5: Services Security** (`Model/ServicesSeguridad/`)
+- LoginService: Authentication
+- PermissionManager: Observer pattern for permission updates
+- CryptographyService: Password hashing (SHA256)
+- LanguageManager: Multilingual support
+- BackupBLL/Repository: Backup and restore
 
-### Security/ServicesSeguridad
-Complete authentication and authorization system using the **Composite Pattern**:
-- **DomainModel/Security/Composite/**: Component, Patente (leaf), Familia (composite), Usuario
-- **Services/**: Cryptography, Login, Logger, LanguageManager
-- **DAL/**: Repositories for security entities
+**Layer 6: View** (`View/UI/`)
+- WinForms application
+- Entry point: Login.cs form
+- Forms in WinUi/Administración/
 
-## Security System (Composite Pattern)
+---
 
-The permission system uses a hierarchical tree structure:
+## 2. Key Patterns
 
-- **Component** (abstract base): Base class for the hierarchy
-- **Patente** (leaf): Individual permission (FormName, MenuItemName)
-- **Familia** (composite): Permission group/role that can contain Patentes or other Familias
-- **Usuario**: Has a List<Component> called Permisos representing the full permission tree
+### 1. Repository Pattern
+CRUD: Add, Update, Delete, GetAll, ObtenerPorId
+Each entity has IRepository interface + Implementation
 
-**Important permission methods on Usuario.cs:68-142:**
-- `TienePermiso(nombrePatente)`: Checks if user has a specific permission with special rules:
-  - "Gestión Alumnos" grants "Promoción Alumnos"
-  - "Gestión Préstamos" grants "Renovar Préstamo"
-  - "Consultar Reportes" grants all individual report permissions
-- `TieneRol(nombreRol)`: Checks if user has a specific role
-- `ObtenerNombreRol()`: Gets role name without "ROL_" prefix
+### 2. Unit of Work
+- Manages transactions across multiple repositories
+- Usage: BeginTransaction() → operations → Commit() or Rollback()
+- Implementation: TransactionScope, ReadCommitted, 2-min timeout
 
-## Unit of Work Pattern
+### 3. Composite Pattern (Security)
+```
+Component (abstract)
+  ├── Patente (leaf) - individual permission
+  └── Familia (composite) - role or group (e.g., "ROL_Administrador")
 
-The `IUnitOfWork` interface (Model/DAL/Contracts/IUnitOfWork.cs) coordinates transactional operations across multiple repositories:
+Usuario.Permisos: List<Component>
+Methods:
+  usuario.TienePermiso("FormName")  - recursive search
+  usuario.TieneRol("Administrador") - check ROL_ family
+```
 
+### 4. Observer Pattern
+PermissionManager notifies UI when permissions change
+
+### 5. Adapter Pattern
+Convert DataTable rows to domain objects
+
+### 6. Factory Pattern
+ServiceFactory creates repository instances
+
+---
+
+## 3. Databases
+
+### SeguridadBiblioteca (Security)
+- Usuario, Familia (roles), Patente (permissions)
+- FamiliaPatente, UsuarioFamilia, UsuarioPatente (relationships)
+- BitacoraSeguridad, Backup, Idioma
+
+### NegocioBiblioteca (Business)
+- Alumno, Material, Ejemplar, Prestamo, Devolucion
+- HistorialEstadoEjemplar, RenovacionPrestamo
+- BitacoraOperaciones, AnioLectivo, Inscripcion
+
+---
+
+## 4. Security System
+
+**Authentication**: LoginService validates credentials, loads permission tree
+
+**Authorization**: Usuario.TienePermiso() recursively searches Composite tree
+
+**Real-Time Updates**: PermissionManager notifies observers of permission changes
+
+**Audit Logging**: BitacoraSeguridad captures all critical events
+
+---
+
+## 5. Multilingual Support
+
+**LanguageManager** (Static Singleton):
+- LanguageManager.Translate("key") - returns translation
+- LanguageManager.ChangeLanguage("es-AR") - switches language, fires event
+- Storage: Idioma table in SeguridadBiblioteca
+- Supported: es-AR (Spanish), en-GB (English)
+
+---
+
+## 6. Domain Entities
+
+**Alumno**: Student (Name, Grade, Division, DNI)
+**Material**: Catalog entry (Title, Author, Type, Quantity)
+**Ejemplar**: Physical copy (Barcode, State, Location)
+**Prestamo**: Loan (Dates, Status, Renewals)
+**Devolucion**: Return (Date, Observations)
+**BitacoraSeguridad**: Security audit log
+
+---
+
+## 7. Naming Conventions
+
+**Repositories**: I{Entity}Repository, {Entity}Repository
+**BLL**: {Entity}BLL
+**Domain Models**: {Entity}
+**Methods**: PascalCase, Obtener*, Esta*, Puede*, Fue*
+**Variables**: _camelCase (private), PascalCase (public)
+**Database**: PascalCase tables/columns
+**UI Controls**: btn*, lbl*, txt*, dgv*, cmb*
+
+---
+
+## 8. Backup & Restore
+
+**Components**:
+- Backup.cs domain model
+- BackupRepository.cs (BACKUP/RESTORE commands)
+- BackupBLL.cs (validation, naming)
+- FrmGestionBackup.cs (UI form)
+
+**Features**:
+- Full and Differential backup types
+- Automatic filename generation with timestamp
+- Disk space validation
+- Restore from catalog or external file
+- Permissions-based access control
+- Comprehensive audit logging
+
+---
+
+## 9. Configuration
+
+**App.config**:
+- ServicesConString: SeguridadBiblioteca
+- NegocioConString: NegocioBiblioteca
+- LanguagePath: Resources\I18n\idioma
+- .NET Framework: 4.7.2
+- Authentication: Windows/Integrated Security
+
+---
+
+## 10. Common Tasks
+
+**Authenticate**:
+```csharp
+var usuario = LoginService.Authenticate(username, password);
+```
+
+**Check Permission**:
+```csharp
+if (usuario.TienePermiso("FormName")) { }
+```
+
+**Transaction**:
 ```csharp
 using (var uow = new UnitOfWork())
 {
     uow.BeginTransaction();
-    try
-    {
-        // Multiple repository operations
-        uow.Prestamos.Insert(prestamo);
-        uow.Ejemplares.Update(ejemplar);
-        uow.Commit();
-    }
-    catch
-    {
-        uow.Rollback();
-        throw;
-    }
+    try { ... uow.Commit(); }
+    catch { uow.Rollback(); }
 }
 ```
 
-**Use cases requiring Unit of Work:**
-- Creating a loan: Insert Prestamo + Update Ejemplar.Estado to "Prestado"
-- Processing a return: Update Prestamo.Estado + Update Ejemplar.Estado + Insert Devolucion
-- Renewing a loan: Insert RenovacionPrestamo + Update Prestamo.FechaDevolucionPrevista
+**Translate**:
+```csharp
+string text = LanguageManager.Translate("key");
+LanguageManager.ChangeLanguage("es-AR");
+```
 
-## Business Rules
+**Export**:
+```csharp
+var service = new ExportService();
+service.ExportarPrestamosCsv(prestamos, "path.csv");
+```
 
-### Loan System (Préstamos)
-- Default loan period: ~14 days from registration date
-- Maximum concurrent loans per student: configurable (typically 3)
-- States: Activo, Devuelto, Atrasado
-- Late loans (Atrasado) are automatically identified when current date > FechaDevolucionPrevista
-- Students with overdue loans cannot borrow new materials
+---
 
-### Renewal System (Renovaciones)
-- Maximum renewals per loan: 2
-- Each renewal extends the due date by ~14 days
-- Cannot renew if loan is overdue
-- Tracks RenovacionPrestamo records with old and new due dates
+## Summary
 
-### Copy States (Estado de Ejemplares)
-- **Disponible**: Available for loan
-- **Prestado**: Currently on loan
-- **Reparación**: Under repair, not available
-- **Perdido**: Lost
-- **Dado de baja**: Decommissioned
+Professional N-tier library system with:
+- Clean architecture and separation of concerns
+- Advanced design patterns (Repository, UoW, Composite, Observer)
+- Comprehensive security and RBAC
+- Multilingual support with dynamic switching
+- Transaction management for data integrity
+- Professional code organization and naming
 
-State transitions are tracked in `HistorialEstadoEjemplar`.
+---
 
-## Internationalization (i18n)
-
-The application supports multiple languages:
-- **Spanish (es-AR)**: Default
-- **English (en-GB)**: Available
-
-Language files: `View/UI/Resources/I18n/idioma.es-AR` and `idioma.en-GB`
-
-Managed by `LanguageManager` in ServicesSecurity. UI labels are dynamically loaded based on the selected language.
-
-## Reports
-
-Three SSRS reports using Microsoft Report Viewer:
-1. **ReportePrestamosActivos**: Active loans with student info and due dates
-2. **ReporteMaterialesMasPrestados**: Most borrowed materials (ranking)
-3. **ReporteUsoPorGrado**: Library usage breakdown by student grade level
-
-Reports are accessed through the "Reportes" menu with the "Consultar Reportes" permission.
-
-## Audit Logging (Bitácoras)
-
-Two comprehensive audit logs:
-
-**BitacoraSeguridad** (Security database):
-- Login attempts, permission changes, user management
-- Fields: Fecha, IdUsuario, TipoEvento, Descripcion, Gravedad (INFO/WARNING/ERROR/CRITICAL)
-
-**BitacoraOperaciones** (Business database):
-- Business operations: loans created, returns processed, materials modified
-- Same structure as BitacoraSeguridad
-
-Both logs are queryable through dedicated UI forms in `View/UI/WinUi/Bitacoras/`.
-
-## Design Patterns
-
-1. **Layered Architecture**: Clear separation of UI, BLL, DAL, Domain
-2. **Repository Pattern**: Abstraction over data access with interfaces
-3. **Unit of Work Pattern**: Transactional integrity across operations
-4. **Composite Pattern**: Hierarchical permissions (Patente/Familia/Component)
-5. **Adapter Pattern**: DataReader → domain object conversion
-6. **Dependency Injection**: BLL constructors accept repository interfaces for testing
-
-## Common Development Workflows
-
-### Adding a new entity
-1. Create domain class in `Model/DomainModel/`
-2. Add repository interface in `Model/DAL/Contracts/`
-3. Implement repository in `Model/DAL/Implementations/`
-4. Create adapter in `Model/DAL/Tools/`
-5. Add BLL class in `Model/BLL/`
-6. Create UI forms in `View/UI/WinUi/[Category]/`
-7. Update `IUnitOfWork` if transactional operations are needed
-
-### Adding a new permission
-1. Add Patente record in database (table: Patente)
-2. Assign Patente to appropriate Familia (role)
-3. Check forms for permission with `Usuario.TienePermiso(FormName)`
-4. Consider adding special rules in `Usuario.TienePermiso()` if needed
-
-### Database migrations
-- Add numbered SQL scripts in `Database/` (e.g., `15_NewFeature.sql`)
-- Update `Database/00_EJECUTAR_TODO.sql` to include the new script
-- For business database changes, use `Database/Negocio/` folder
-
-## Important Files
-
-- `View/UI/App.config`: Connection strings, language path, security settings
-- `Security/ServicesSeguridad/DomainModel/Security/Composite/Usuario.cs`: Core security logic and permission rules
-- `Model/DAL/Contracts/IUnitOfWork.cs`: Transaction coordination interface
-- `Database/00_EJECUTAR_TODO.sql`: Master security database setup script
-- `Database/Negocio/00_EJECUTAR_TODO_NEGOCIO.sql`: Master business database setup script
-
-## Code Quality Notes
-
-- DVH (Dígito Verificador Horizontal): Checksum for data integrity on Usuario table
-- All passwords are hashed using `CryptographyService.HashPassword()`
-- Use parameterized queries in all DAL methods to prevent SQL injection
-- Forms implement proper disposal of database connections
-- BLL methods throw descriptive exceptions that are caught and displayed in the UI layer
+**Last Updated**: November 16, 2025
+**Framework**: .NET Framework 4.7.2
+**Language**: C#

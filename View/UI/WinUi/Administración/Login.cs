@@ -9,10 +9,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ServicesSecurity.Services;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.DomainModel.Exceptions;
-using ServicesSecurity.BLL;
+using Services.Services;
+using Services.DomainModel.Security.Composite;
+using Services.DomainModel.Exceptions;
+using Services.BLL;
 using UI.WinUi.Administrador;
 using UI.WinUi;
 using BLL;
@@ -116,7 +116,7 @@ namespace UI
             try
             {
                 // Validar campos usando ValidationBLL
-                ServicesSecurity.BLL.ValidationBLL.ValidarCredencialesLogin(txtUsuario.Text, txtContraseña.Text);
+                Services.BLL.ValidationBLL.ValidarCredencialesLogin(txtUsuario.Text, txtContraseña.Text);
 
                 // Intentar login usando LoginService
                 Usuario usuarioLogueado = LoginService.Login(txtUsuario.Text.Trim(), txtContraseña.Text);

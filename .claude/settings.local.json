@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(find . -type d ( -name \"bin\" -o -name \"obj\" ))",
-      "Bash(xargs -I {} bash -c 'echo \"\"\"\"File: {}\"\"\"\" && wc -l {}')"
+      "Bash(xargs -I {} bash -c 'echo \"\"\"\"File: {}\"\"\"\" && wc -l {}')",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

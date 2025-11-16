@@ -16,13 +16,13 @@ Se ha implementado un sistema completo de **Gestión de Backup y Restore** para 
 ### 2. **Capa de Dominio** (`Model/DomainModel`)
 - ✅ **`Backup.cs`**: Entidad con propiedades calculadas (NombreArchivo, TamañoFormateado, etc.)
 
-### 3. **Capa de Datos** (`Security/ServicesSeguridad/DAL`)
+### 3. **Capa de Datos** (`Model/ServicesSeguridad/DAL`)
 - ✅ **`BackupRepository.cs`**:
   - Gestión del catálogo (CRUD)
   - Ejecución de comandos BACKUP/RESTORE de SQL Server
   - Manejo de transacciones y seguridad
 
-### 4. **Capa de Negocio** (`Security/ServicesSeguridad/BLL`)
+### 4. **Capa de Negocio** (`Model/ServicesSeguridad/BLL`)
 - ✅ **`BackupBLL.cs`**:
   - Validaciones de permisos y reglas de negocio
   - Generación automática de nombres de archivo con timestamp
@@ -360,7 +360,7 @@ PROYECTO BIBLIOTECA ESCOLAR/
 ├── Model/DomainModel/
 │   └── Backup.cs                         ← Entidad de dominio
 │
-├── Security/ServicesSeguridad/
+├── Model/ServicesSeguridad/
 │   ├── DAL/Implementations/
 │   │   └── BackupRepository.cs           ← Repositorio (catálogo + física)
 │   └── BLL/

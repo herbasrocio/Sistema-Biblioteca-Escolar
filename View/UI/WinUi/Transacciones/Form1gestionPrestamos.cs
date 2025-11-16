@@ -7,8 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.Services;
+using Services.DomainModel.Security.Composite;
+using Services.Services;
 using UI.WinUi;
 
 namespace UI.WinUi.Transacciones

@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Windows.Forms;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.Services;
-using ServicesSecurity.BLL;
+using Services.DomainModel.Security.Composite;
+using Services.Services;
+using Services.BLL;
 using BLL;
 
 namespace UI.WinUi.Administrador

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.Services;
-using ServicesSecurity.BLL;
+using Services.DomainModel.Security.Composite;
+using Services.Services;
+using Services.BLL;
 using BLL;
 
 namespace UI.WinUi.Administrador
@@ -434,7 +434,7 @@ namespace UI.WinUi.Administrador
                     cboRoles.SelectedItem = rolDisplay;
                 }
             }
-            catch (ServicesSecurity.DomainModel.Exceptions.ValidacionException vex)
+            catch (DomainModel.Exceptions.ValidacionException vex)
             {
                 MessageBox.Show(vex.Message,
                     LanguageManager.Translate("error_validacion"),
@@ -509,7 +509,7 @@ namespace UI.WinUi.Administrador
                 // Recargar roles
                 CargarRoles();
             }
-            catch (ServicesSecurity.DomainModel.Exceptions.ValidacionException vex)
+            catch (DomainModel.Exceptions.ValidacionException vex)
             {
                 MessageBox.Show(vex.Message,
                     LanguageManager.Translate("error_validacion"),

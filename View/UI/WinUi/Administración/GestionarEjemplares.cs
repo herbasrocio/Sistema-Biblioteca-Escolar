@@ -7,8 +7,8 @@ using System.Windows.Forms;
 using BLL;
 using DomainModel;
 using DomainModel.Enums;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.Services;
+using Services.DomainModel.Security.Composite;
+using Services.Services;
 using UI.Helpers;
 
 namespace UI.WinUi.Administrador

@@ -1,6 +1,6 @@
 using System;
 using System.Windows.Forms;
-using ServicesSecurity.Services;
+using Services.Services;
 
 namespace UI.WinUi
 {

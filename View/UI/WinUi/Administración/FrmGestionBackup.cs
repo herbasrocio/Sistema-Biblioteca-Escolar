@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using DomainModel;
-using ServicesSecurity.BLL;
-using ServicesSecurity.Services;
-using ServicesSecurity.DomainModel.Security.Composite;
+using Services.BLL;
+using Services.Services;
+using Services.DomainModel.Security.Composite;
 
 namespace UI.WinUi.Administrador
 {

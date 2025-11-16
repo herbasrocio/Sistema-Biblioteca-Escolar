@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using BLL;
 using Model.DomainModel.DTOs;
-using ServicesSecurity.Services;
-using ServicesSecurity.DomainModel.Security.Composite;
+using Services.Services;
+using Services.DomainModel.Security.Composite;
 using Services;
 using UI.WinUi;
 

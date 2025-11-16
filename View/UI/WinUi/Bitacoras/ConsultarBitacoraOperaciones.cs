@@ -4,8 +4,8 @@ using System.Linq;
 using System.Windows.Forms;
 using BLL;
 using DomainModel;
-using ServicesSecurity.Services;
-using ServicesSecurity.DomainModel.Security.Composite;
+using Services.Services;
+using Services.DomainModel.Security.Composite;
 using UI.WinUi;
 
 namespace UI.WinUi.Bitacoras

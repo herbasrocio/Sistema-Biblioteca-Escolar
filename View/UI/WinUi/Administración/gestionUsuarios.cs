@@ -8,10 +8,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.DomainModel.Exceptions;
-using ServicesSecurity.BLL;
-using ServicesSecurity.Services;
+using Services.DomainModel.Security.Composite;
+using Services.DomainModel.Exceptions;
+using Services.BLL;
+using Services.Services;
 using BLL;
 
 namespace UI.WinUi.Administrador

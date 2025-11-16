@@ -1,7 +1,7 @@
 using DomainModel;
 using DomainModel.Enums;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.Services;
+using Services.DomainModel.Security.Composite;
+using Services.Services;
 using System;
 using System.Windows.Forms;
 using UI.Helpers;

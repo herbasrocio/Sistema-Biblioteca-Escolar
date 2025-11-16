@@ -9,10 +9,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ServicesSecurity.BLL;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.DomainModel.Exceptions;
-using ServicesSecurity.Services;
+using Services.BLL;
+using Services.DomainModel.Security.Composite;
+using Services.DomainModel.Exceptions;
+using Services.Services;
 
 namespace UI.WinUi.Administrador
 {

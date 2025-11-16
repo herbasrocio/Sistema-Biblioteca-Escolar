@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using ServicesSecurity.DomainModel.Security.Composite;
-using ServicesSecurity.Services;
+using Services.DomainModel.Security.Composite;
+using Services.Services;
 using BLL;
 using DomainModel;
 

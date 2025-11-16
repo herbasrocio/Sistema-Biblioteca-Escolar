@@ -55,6 +55,7 @@
     <Compile Include="Enums\EstadoMaterial.cs" />
     <Compile Include="Enums\TipoMaterial.cs" />
     <Compile Include="Exceptions\ValidacionException.cs" />
+    <Compile Include="Exceptions\WordNotFoundException.cs" />
     <Compile Include="HistorialEstadoEjemplar.cs" />
     <Compile Include="Inscripcion.cs" />
     <Compile Include="Material.cs" />
