@@ -1,0 +1,129 @@
+@startuml Casos_Uso_Seguridad_Sistema_Biblioteca
+
+title Casos de Uso - Módulo de Seguridad
+
+left to right direction
+
+' ============================================================================
+' ACTORES
+' ============================================================================
+
+actor "Usuario\nAnónimo" as Anonimo
+actor "Bibliotecario" as Biblio
+actor "Administrador" as Admin
+actor "Sistema" as Sistema
+
+' ============================================================================
+' CASO DE USO 1: GESTIÓN DE LOGIN Y LOGOUT
+' ============================================================================
+
+package "Gestión de Login y Logout" {
+  usecase "Iniciar Sesión" as UC_Login
+  usecase "Validar Credenciales" as UC_ValidarCred
+  usecase "Cargar Permisos\nde Usuario" as UC_CargarPermisos
+  usecase "Registrar Acceso\nen Bitácora" as UC_RegistrarAcceso
+  usecase "Aplicar Idioma\nPreferido" as UC_AplicarIdioma
+  usecase "Cerrar Sesión" as UC_Logout
+  usecase "Limpiar Sesión" as UC_LimpiarSesion
+}
+
+' Relaciones Login
+Anonimo --> UC_Login
+UC_Login ..> UC_ValidarCred : <<include>>
+UC_Login ..> UC_CargarPermisos : <<include>>
+UC_Login ..> UC_RegistrarAcceso : <<include>>
+UC_Login ..> UC_AplicarIdioma : <<include>>
+
+' Relaciones Logout
+Biblio --> UC_Logout
+Admin --> UC_Logout
+UC_Logout ..> UC_LimpiarSesion : <<include>>
+UC_Logout ..> UC_RegistrarAcceso : <<include>>
+
+' ============================================================================
+' CASO DE USO 2: GESTIÓN DE IDIOMAS
+' ============================================================================
+
+package "Gestión de Idiomas" {
+  usecase "Cambiar Idioma" as UC_CambiarIdioma
+  usecase "Obtener Traducciones" as UC_ObtenerTrad
+  usecase "Actualizar Interfaz" as UC_ActualizarUI
+  usecase "Guardar Preferencia\nde Idioma" as UC_GuardarPref
+  usecase "Notificar Cambio\na Observers" as UC_NotificarCambio
+}
+
+' Relaciones Idiomas
+Biblio --> UC_CambiarIdioma
+Admin --> UC_CambiarIdioma
+UC_CambiarIdioma ..> UC_ObtenerTrad : <<include>>
+UC_CambiarIdioma ..> UC_ActualizarUI : <<include>>
+UC_CambiarIdioma ..> UC_GuardarPref : <<extend>>
+UC_CambiarIdioma ..> UC_NotificarCambio : <<include>>
+
+' ============================================================================
+' CASO DE USO 3: CRIPTOGRAFÍA
+' ============================================================================
+
+package "Criptografía" {
+  usecase "Hash de Contraseña" as UC_HashPass
+  usecase "Aplicar SHA-256" as UC_SHA256
+  usecase "Validar Contraseña" as UC_ValidarPass
+  usecase "Comparar Hashes" as UC_CompararHash
+  usecase "Calcular DVH\n(Dígito Verificador)" as UC_CalcularDVH
+}
+
+' Relaciones Criptografía
+Sistema --> UC_HashPass
+UC_HashPass ..> UC_SHA256 : <<include>>
+Sistema --> UC_ValidarPass
+UC_ValidarPass ..> UC_CompararHash : <<include>>
+Sistema --> UC_CalcularDVH
+UC_CalcularDVH ..> UC_HashPass : <<include>>
+
+' ============================================================================
+' CASO DE USO 4: BITÁCORA
+' ============================================================================
+
+package "Gestión de Bitácora" {
+  usecase "Registrar Evento\nde Seguridad" as UC_RegSeguridad
+  usecase "Registrar Operación\nde Negocio" as UC_RegOperacion
+  usecase "Consultar Bitácora\nde Seguridad" as UC_ConsultarSeg
+  usecase "Consultar Bitácora\nde Operaciones" as UC_ConsultarOp
+  usecase "Filtrar Registros" as UC_Filtrar
+  usecase "Exportar Bitácora" as UC_ExportarBit
+}
+
+' Relaciones Bitácora
+Sistema --> UC_RegSeguridad
+Sistema --> UC_RegOperacion
+
+Admin --> UC_ConsultarSeg
+Admin --> UC_ConsultarOp
+Biblio --> UC_ConsultarOp
+
+UC_ConsultarSeg ..> UC_Filtrar : <<include>>
+UC_ConsultarOp ..> UC_Filtrar : <<include>>
+UC_ConsultarSeg ..> UC_ExportarBit : <<extend>>
+UC_ConsultarOp ..> UC_ExportarBit : <<extend>>
+
+' ============================================================================
+' CASO DE USO 5: GESTIÓN DE EXCEPCIONES
+' ============================================================================
+
+package "Gestión de Excepciones" {
+  usecase "Capturar Excepción" as UC_CapturarExc
+  usecase "Registrar en Log" as UC_RegistrarLog
+  usecase "Registrar en\nBitácora Seguridad" as UC_RegBitExc
+  usecase "Mostrar Mensaje\nal Usuario" as UC_MostrarMsg
+  usecase "Verificar Integridad\nde Datos" as UC_VerificarInt
+}
+
+' Relaciones Excepciones
+Sistema --> UC_CapturarExc
+UC_CapturarExc ..> UC_RegistrarLog : <<include>>
+UC_CapturarExc ..> UC_RegBitExc : <<include>>
+UC_CapturarExc ..> UC_MostrarMsg : <<include>>
+Sistema --> UC_VerificarInt
+UC_VerificarInt ..> UC_CapturarExc : <<extend>>
+
+@enduml

@@ -1,0 +1,6 @@
+Type,Name,Author,Version,Stereotype,Notes
+Actor,Usuario Anónimo,Sistema,1.0,Actor,"Usuario que aún no ha iniciado sesión en el sistema"
+Actor,Bibliotecario,Sistema,1.0,Actor,"Usuario autenticado con permisos de bibliotecario (permisos básicos de operación)"
+Actor,Administrador,Sistema,1.0,Actor,"Usuario con permisos administrativos completos (gestión de usuarios, backups, permisos)"
+Actor,Sistema,Sistema,1.0,Actor,"Actor interno que representa procesos automáticos del sistema"
+Actor,Docente,Sistema,1.0,Actor,"Usuario docente del establecimiento educativo"

@@ -1,0 +1,129 @@
+@startuml Casos_Uso_Backup_Permisos
+
+title Casos de Uso - Backup y Gestión de Permisos
+
+left to right direction
+
+' ============================================================================
+' ACTORES
+' ============================================================================
+
+actor "Administrador" as Admin
+actor "Sistema" as Sistema
+actor "Bibliotecario" as Biblio
+
+' ============================================================================
+' CASO DE USO 6: BACKUP Y RESTORE
+' ============================================================================
+
+package "Respaldo de Datos (Backup & Restore)" {
+  usecase "Crear Backup" as UC_CrearBackup
+  usecase "Validar Ruta\nde Destino" as UC_ValidarRuta
+  usecase "Ejecutar Backup\nSQL Server" as UC_EjecutarBackup
+  usecase "Registrar Backup\nen Catálogo" as UC_RegistrarBackup
+  usecase "Verificar Integridad\ndel Backup" as UC_VerificarBackup
+
+  usecase "Restaurar Backup" as UC_RestaurarBackup
+  usecase "Seleccionar Archivo\nde Backup" as UC_SeleccionarBackup
+  usecase "Validar Archivo\nde Backup" as UC_ValidarArchivo
+  usecase "Ejecutar Restore\nSQL Server" as UC_EjecutarRestore
+  usecase "Verificar Restauración" as UC_VerificarRestore
+
+  usecase "Consultar Catálogo\nde Backups" as UC_ConsultarCatalogo
+  usecase "Eliminar Backup" as UC_EliminarBackup
+}
+
+' Relaciones Crear Backup
+Admin --> UC_CrearBackup
+UC_CrearBackup ..> UC_ValidarRuta : <<include>>
+UC_CrearBackup ..> UC_EjecutarBackup : <<include>>
+UC_CrearBackup ..> UC_RegistrarBackup : <<include>>
+UC_CrearBackup ..> UC_VerificarBackup : <<extend>>
+
+' Relaciones Restaurar Backup
+Admin --> UC_RestaurarBackup
+UC_RestaurarBackup ..> UC_SeleccionarBackup : <<include>>
+UC_RestaurarBackup ..> UC_ValidarArchivo : <<include>>
+UC_RestaurarBackup ..> UC_EjecutarRestore : <<include>>
+UC_RestaurarBackup ..> UC_VerificarRestore : <<include>>
+
+' Relaciones Catálogo
+Admin --> UC_ConsultarCatalogo
+Admin --> UC_EliminarBackup
+
+' ============================================================================
+' CASO DE USO 7: GESTIÓN DE PERFILES Y PERMISOS
+' ============================================================================
+
+package "Gestión de Perfiles y Permisos" {
+
+  ' Gestión de Familias (Roles)
+  usecase "Crear Familia\n(Rol)" as UC_CrearFamilia
+  usecase "Modificar Familia" as UC_ModificarFamilia
+  usecase "Eliminar Familia" as UC_EliminarFamilia
+  usecase "Consultar Familias" as UC_ConsultarFamilias
+
+  ' Gestión de Patentes (Permisos)
+  usecase "Crear Patente" as UC_CrearPatente
+  usecase "Modificar Patente" as UC_ModificarPatente
+  usecase "Eliminar Patente" as UC_EliminarPatente
+  usecase "Consultar Patentes" as UC_ConsultarPatentes
+
+  ' Composición de Familias
+  usecase "Agregar Patente\na Familia" as UC_AgregarPatente
+  usecase "Quitar Patente\nde Familia" as UC_QuitarPatente
+  usecase "Agregar Familia Hija\na Familia Padre" as UC_AgregarFamiliaHija
+  usecase "Validar Estructura\nJerárquica" as UC_ValidarEstructura
+
+  ' Asignación a Usuarios
+  usecase "Asignar Familia\na Usuario" as UC_AsignarFamilia
+  usecase "Asignar Patente\na Usuario" as UC_AsignarPatente
+  usecase "Quitar Permisos\nde Usuario" as UC_QuitarPermisos
+  usecase "Consultar Permisos\nde Usuario" as UC_ConsultarPermisos
+
+  ' Validación y Verificación
+  usecase "Verificar Permiso\nde Usuario" as UC_VerificarPermiso
+  usecase "Recalcular DVH\nde Usuarios" as UC_RecalcularDVH
+  usecase "Notificar Cambio\nde Permisos" as UC_NotificarCambio
+}
+
+' Relaciones Gestión de Familias
+Admin --> UC_CrearFamilia
+Admin --> UC_ModificarFamilia
+Admin --> UC_EliminarFamilia
+Admin --> UC_ConsultarFamilias
+Biblio --> UC_ConsultarFamilias
+
+' Relaciones Gestión de Patentes
+Admin --> UC_CrearPatente
+Admin --> UC_ModificarPatente
+Admin --> UC_EliminarPatente
+Admin --> UC_ConsultarPatentes
+Biblio --> UC_ConsultarPatentes
+
+' Relaciones Composición
+Admin --> UC_AgregarPatente
+Admin --> UC_QuitarPatente
+Admin --> UC_AgregarFamiliaHija
+UC_AgregarFamiliaHija ..> UC_ValidarEstructura : <<include>>
+
+' Relaciones Asignación
+Admin --> UC_AsignarFamilia
+Admin --> UC_AsignarPatente
+Admin --> UC_QuitarPermisos
+Admin --> UC_ConsultarPermisos
+Biblio --> UC_ConsultarPermisos
+
+UC_AsignarFamilia ..> UC_RecalcularDVH : <<include>>
+UC_AsignarPatente ..> UC_RecalcularDVH : <<include>>
+UC_QuitarPermisos ..> UC_RecalcularDVH : <<include>>
+
+UC_AsignarFamilia ..> UC_NotificarCambio : <<include>>
+UC_AsignarPatente ..> UC_NotificarCambio : <<include>>
+UC_QuitarPermisos ..> UC_NotificarCambio : <<include>>
+
+' Relaciones Validación
+Sistema --> UC_VerificarPermiso
+Admin --> UC_RecalcularDVH
+
+@enduml

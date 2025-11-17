@@ -1,0 +1,222 @@
+@startuml Diagrama_Secuencia_Gestor_Catalogo
+
+title Diagrama de Secuencia - Gestor de Catálogo
+
+actor "Usuario\n(Bibliotecario)" as Usuario
+boundary "Módulo Gestión\nde Catálogo" as UI
+control ":MaterialBLL" as BLL
+entity ":MaterialRepository" as Repo
+entity "Material" as Mat
+
+' ============================================================================
+' CU-05.1: REGISTRAR MATERIAL
+' ============================================================================
+
+== CU-05.1: Registrar Material ==
+
+Usuario -> UI: Ingresar datos y [Guardar]
+activate UI
+
+create Mat
+UI --> Mat: <<create>>
+
+UI -> BLL: GuardarMaterial(material)
+activate BLL
+
+ref over BLL
+  Validar Material
+end ref
+
+alt Validación exitosa
+    BLL -> Repo: Add(material)
+    activate Repo
+
+    ref over Repo
+      DAL - Insert Material
+    end ref
+
+    Repo --> BLL: [Éxito]
+    deactivate Repo
+
+    BLL --> UI: Material guardado
+    deactivate BLL
+
+    UI --> Usuario: "Material registrado correctamente"
+
+else Validación fallida
+    BLL --> UI: [Error: Datos inválidos]
+    deactivate BLL
+    UI --> Usuario: Mensaje de error
+end
+
+deactivate UI
+
+|||
+
+' ============================================================================
+' CU-05.2: MODIFICAR MATERIAL
+' ============================================================================
+
+== CU-05.2: Modificar Material ==
+
+Usuario -> UI: Modificar datos y [Guardar]
+activate UI
+
+UI -> BLL: ActualizarMaterial(material)
+activate BLL
+
+ref over BLL
+  Validar Material
+end ref
+
+alt Validación exitosa
+    BLL -> Repo: Update(material)
+    activate Repo
+
+    ref over Repo
+      DAL - Update Material
+    end ref
+
+    Repo --> BLL: [Éxito]
+    deactivate Repo
+
+    BLL --> UI: Material actualizado
+    deactivate BLL
+
+    UI --> Usuario: "Material actualizado correctamente"
+
+else Validación fallida
+    BLL --> UI: [Error: Datos inválidos]
+    deactivate BLL
+    UI --> Usuario: Mensaje de error
+end
+
+deactivate UI
+
+|||
+
+' ============================================================================
+' CU-05.3: ELIMINAR MATERIAL
+' ============================================================================
+
+== CU-05.3: Eliminar Material ==
+
+Usuario -> UI: Seleccionar material y [Eliminar]
+activate UI
+
+UI --> Usuario: Confirmar eliminación
+
+Usuario -> UI: [Confirmar]
+
+UI -> BLL: EliminarMaterial(material)
+activate BLL
+
+BLL -> Repo: VerificarPrestamosActivos(idMaterial)
+activate Repo
+
+ref over Repo
+  DAL - Verificar Préstamos
+end ref
+
+Repo --> BLL: [Sin préstamos activos]
+deactivate Repo
+
+alt Sin préstamos activos
+    BLL -> Repo: Delete(material)
+    activate Repo
+
+    ref over Repo
+      DAL - Delete Material
+      (Eliminación Lógica)
+    end ref
+
+    Repo --> BLL: [Éxito]
+    deactivate Repo
+
+    destroy Mat
+
+    BLL --> UI: Material eliminado
+    deactivate BLL
+
+    UI --> Usuario: "Material eliminado correctamente"
+
+else Con préstamos activos
+    BLL --> UI: [Error: Préstamos activos]
+    deactivate BLL
+    UI --> Usuario: "No se puede eliminar.\nExisten préstamos activos"
+end
+
+deactivate UI
+
+|||
+
+' ============================================================================
+' CU-05.4: BÚSQUEDA Y CONSULTA
+' ============================================================================
+
+== CU-05.4: Búsqueda y Consulta ==
+
+Usuario -> UI: Abrir formulario
+activate UI
+
+UI -> BLL: ObtenerTodosMateriales()
+activate BLL
+
+BLL -> Repo: GetAll()
+activate Repo
+
+ref over Repo
+  DAL - Select All Materials
+end ref
+
+loop Para cada registro
+    create Mat
+    Repo --> Mat: <<create>>
+end
+
+Repo --> BLL: List<Material>
+deactivate Repo
+
+BLL --> UI: List<Material>
+deactivate BLL
+
+ref over UI
+  Listar Materiales
+end ref
+
+UI --> Usuario: Mostrar lista de materiales
+
+...
+
+Usuario -> UI: Ingresar filtros y [Buscar]
+
+UI -> BLL: BuscarMateriales(titulo, autor, tipo)
+activate BLL
+
+BLL -> Repo: BuscarPorFiltros(filtros)
+activate Repo
+
+ref over Repo
+  DAL - Select Filtered Materials
+end ref
+
+loop Para cada registro filtrado
+    create Mat
+    Repo --> Mat: <<create>>
+end
+
+Repo --> BLL: List<Material>
+deactivate Repo
+
+BLL --> UI: List<Material>
+deactivate BLL
+
+ref over UI
+  Listar Materiales
+end ref
+
+UI --> Usuario: Mostrar resultados de búsqueda
+
+deactivate UI
+
+@enduml

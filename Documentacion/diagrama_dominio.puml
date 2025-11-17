@@ -1,0 +1,369 @@
+@startuml Diagrama_Dominio_Sistema_Biblioteca
+
+!define ENTITY class
+!define ENUM enum
+
+title Sistema de Gestión de Biblioteca Escolar - Modelo de Dominio
+
+' ============================================================================
+' MÓDULO PRINCIPAL: GESTIÓN BIBLIOTECA (DomainModel)
+' ============================================================================
+
+package "DomainModel - Dominio Biblioteca" #DDFFDD {
+
+  ' ========== Entidades Principales ==========
+
+  ENTITY Material {
+    + IdMaterial : Guid <<PK>>
+    --
+    + Titulo : String
+    + Autor : String
+    + Editorial : String
+    + Tipo : TipoMaterial
+    + Genero : String
+    + ISBN : String
+    + AnioPublicacion : Integer?
+    + Nivel : String
+    + CantidadTotal : Integer
+    + CantidadDisponible : Integer
+    + FechaRegistro : DateTime
+    + Activo : Boolean
+  }
+
+  ENTITY Ejemplar {
+    + IdEjemplar : Guid <<PK>>
+    + IdMaterial : Guid <<FK>>
+    --
+    + NumeroEjemplar : Integer
+    + CodigoEjemplar : String
+    + Estado : EstadoMaterial
+    + Ubicacion : String
+    + Observaciones : String
+    + FechaRegistro : DateTime
+    + Activo : Boolean
+  }
+
+  ENTITY Prestamo {
+    + IdPrestamo : Guid <<PK>>
+    + IdMaterial : Guid <<FK>>
+    + IdEjemplar : Guid <<FK>>
+    + IdAlumno : Guid <<FK>>
+    + IdUsuario : Guid <<FK>>
+    --
+    + FechaPrestamo : DateTime
+    + FechaDevolucionPrevista : DateTime
+    + Estado : String
+    + CantidadRenovaciones : Integer
+    + FechaUltimaRenovacion : DateTime?
+    --
+    + EstaAtrasado() : Boolean
+    + DiasRestantes() : Integer
+    + PuedeRenovarse(max) : Boolean
+  }
+
+  ENTITY Alumno {
+    + IdAlumno : Guid <<PK>>
+    --
+    + Nombre : String
+    + Apellido : String
+    + DNI : String
+    + Grado : String
+    + Division : String
+    + FechaRegistro : DateTime
+    --
+    + NombreCompleto : String {readOnly}
+    + GradoCompleto : String {readOnly}
+  }
+
+  ENTITY Inscripcion {
+    + IdInscripcion : Guid <<PK>>
+    + IdAlumno : Guid <<FK>>
+    --
+    + AnioLectivo : Integer
+    + Grado : String
+    + Division : String
+    + FechaInscripcion : DateTime
+    + Estado : String
+    --
+    + EsActiva : Boolean {readOnly}
+  }
+
+  ENTITY Devolucion {
+    + IdDevolucion : Guid <<PK>>
+    + IdPrestamo : Guid <<FK>>
+    + IdUsuario : Guid <<FK>>
+    --
+    + FechaDevolucion : DateTime
+    + Observaciones : String
+    --
+    + FueDevueltoATiempo() : Boolean
+    + DiasDeAtraso() : Integer
+  }
+
+  ENTITY RenovacionPrestamo {
+    + IdRenovacion : Guid <<PK>>
+    + IdPrestamo : Guid <<FK>>
+    + IdUsuario : Guid <<FK>>
+    --
+    + FechaRenovacion : DateTime
+    + NuevaFechaDevolucion : DateTime
+  }
+
+  ENTITY HistorialEstadoEjemplar {
+    + IdHistorial : Guid <<PK>>
+    + IdEjemplar : Guid <<FK>>
+    + IdUsuario : Guid <<FK>>
+    --
+    + EstadoAnterior : EstadoMaterial
+    + EstadoNuevo : EstadoMaterial
+    + FechaCambio : DateTime
+    + Motivo : String
+  }
+
+  ' ========== Enumeraciones ==========
+
+  ENUM TipoMaterial {
+    Libro
+    Revista
+    Manual
+  }
+
+  ENUM EstadoMaterial {
+    Disponible
+    Prestado
+    EnReparacion
+    Perdido
+  }
+
+  ' ========== Relaciones ==========
+
+  Material "1" -- "0..*" Ejemplar : tiene >
+  Material "1" -- "0..*" Prestamo : incluye >
+  Ejemplar "1" -- "0..*" Prestamo : es prestado >
+  Ejemplar "1" -- "0..*" HistorialEstadoEjemplar : registra cambios >
+
+  Alumno "1" -- "0..*" Prestamo : solicita >
+  Alumno "1" -- "0..*" Inscripcion : tiene >
+
+  Prestamo "1" -- "0..1" Devolucion : genera >
+  Prestamo "1" -- "0..*" RenovacionPrestamo : puede renovarse >
+
+  Material ..> TipoMaterial : usa
+  Ejemplar ..> EstadoMaterial : usa
+
+}
+
+' ============================================================================
+' MÓDULO DE SEGURIDAD (Services.DomainModel.Security)
+' ============================================================================
+
+package "Services.DomainModel.Security - Módulo Seguridad" #FFE6E6 {
+
+  abstract class Component <<Composite Pattern>> {
+    + Id : Guid <<PK>>
+    --
+    + Nombre : String
+    + Permiso : String
+    + Activo : Boolean
+    --
+    {abstract} + TieneHijos : Boolean
+    {abstract} + TienePermiso(patente) : Boolean
+  }
+
+  ENTITY Usuario {
+    + IdUsuario : Guid <<PK>>
+    --
+    + Nombre : String
+    + Email : String
+    + Clave : String {hashed}
+    + Activo : Boolean
+    + IdiomaPreferido : String
+    + FechaUltimoAcceso : DateTime?
+    + DVH : String
+    --
+    - Permisos : List<Component>
+    --
+    + HashDH : String {readOnly}
+    + HashPassword : String {readOnly}
+    + ObtenerFamiliaRol() : Familia
+    + TienePermiso(patente) : Boolean
+  }
+
+  ENTITY Familia <<Composite>> {
+    + IdFamilia : Guid <<PK>>
+    --
+    - Hijos : List<Component>
+    --
+    + Agregar(Component)
+    + Quitar(Component)
+    + ObtenerHijos() : List<Component>
+    + TieneHijos : Boolean {true}
+  }
+
+  ENTITY Patente <<Leaf>> {
+    + IdPatente : Guid <<PK>>
+    --
+    + TieneHijos : Boolean {false}
+  }
+
+  ENTITY Docente {
+    + IdDocente : Integer <<PK>>
+    --
+    + Apellido : String
+    + Nombre : String
+    + Usuario : String
+    + Contraseña : String
+  }
+
+  ' Tablas de Relación (Muchos a Muchos)
+
+  ENTITY UsuarioFamilia <<Relación>> {
+    + IdUsuario : Guid <<FK>>
+    + IdFamilia : Guid <<FK>>
+  }
+
+  ENTITY UsuarioPatente <<Relación>> {
+    + IdUsuario : Guid <<FK>>
+    + IdPatente : Guid <<FK>>
+  }
+
+  ENTITY FamiliaFamilia <<Relación>> {
+    + IdPadre : Guid <<FK>>
+    + IdHijo : Guid <<FK>>
+  }
+
+  ENTITY FamiliaPatente <<Relación>> {
+    + IdFamilia : Guid <<FK>>
+    + IdPatente : Guid <<FK>>
+  }
+
+  ' Relaciones del Patrón Composite
+
+  Component <|-- Familia
+  Component <|-- Patente
+  Component <|-- Usuario
+
+  Familia "1" *-- "0..*" Component : contiene >
+
+  ' Relaciones Muchos a Muchos
+
+  Usuario "0..*" -- "0..*" Familia : asignado a
+  (Usuario, Familia) .. UsuarioFamilia
+
+  Usuario "0..*" -- "0..*" Patente : tiene
+  (Usuario, Patente) .. UsuarioPatente
+
+  Familia "0..*" -- "0..*" Familia : contiene
+  (Familia, Familia) .. FamiliaFamilia
+
+  Familia "0..*" -- "0..*" Patente : agrupa
+  (Familia, Patente) .. FamiliaPatente
+
+}
+
+' ============================================================================
+' MÓDULO DE AUDITORÍA Y BACKUP
+' ============================================================================
+
+package "DomainModel - Auditoría y Backup" #E6F3FF {
+
+  ENTITY BitacoraSeguridad {
+    + IdBitacora : Guid <<PK>>
+    + IdUsuario : Guid? <<FK>>
+    --
+    + NombreUsuario : String
+    + TipoEvento : String
+    + Modulo : String
+    + Accion : String
+    + Detalle : String
+    + Gravedad : String
+    + DireccionIP : String?
+    + FechaHora : DateTime
+  }
+
+  ENTITY BitacoraOperaciones {
+    + IdBitacora : Guid <<PK>>
+    + IdUsuario : Guid? <<FK>>
+    --
+    + NombreUsuario : String
+    + TipoOperacion : String
+    + Modulo : String
+    + Accion : String
+    + EntidadAfectada : String
+    + IdEntidad : Integer?
+    + Detalle : String
+    + FechaHora : DateTime
+  }
+
+  ENTITY Backup {
+    + IdBackup : Guid <<PK>>
+    + IdUsuario : Guid <<FK>>
+    --
+    + NombreArchivo : String
+    + RutaCompleta : String
+    + BaseDatos : String
+    + Tipo : String
+    + TamañoMB : Decimal
+    + FechaCreacion : DateTime
+    + NombreUsuario : String
+    + Descripcion : String
+    + Estado : String
+  }
+
+}
+
+' ============================================================================
+' RELACIONES ENTRE MÓDULOS
+' ============================================================================
+
+Usuario "1" -- "0..*" Prestamo : registra >
+Usuario "1" -- "0..*" Devolucion : procesa >
+Usuario "1" -- "0..*" RenovacionPrestamo : autoriza >
+Usuario "1" -- "0..*" HistorialEstadoEjemplar : modifica >
+Usuario "1" -- "0..*" BitacoraSeguridad : genera >
+Usuario "1" -- "0..*" BitacoraOperaciones : ejecuta >
+Usuario "1" -- "0..*" Backup : crea >
+
+' ============================================================================
+' NOTAS Y LEYENDAS
+' ============================================================================
+
+note right of Material
+  **Material** representa el concepto
+  general de un libro/revista/manual.
+
+  Cada Material puede tener múltiples
+  ejemplares (copias físicas).
+end note
+
+note right of Component
+  **Patrón Composite** para gestión
+  de permisos jerárquicos.
+
+  - **Familia**: Agrupa permisos (Composite)
+  - **Patente**: Permiso individual (Leaf)
+  - **Usuario**: Tiene permisos asignados
+end note
+
+note bottom of EstadoMaterial
+  **Estados del Ejemplar:**
+  - Disponible: Listo para préstamo
+  - Prestado: Actualmente prestado
+  - EnReparacion: En mantenimiento
+  - Perdido: Extraviado
+end note
+
+legend right
+  |= Color |= Módulo |
+  | <#DDFFDD> | DomainModel - Biblioteca |
+  | <#FFE6E6> | Services.Security - Seguridad |
+  | <#E6F3FF> | DomainModel - Auditoría |
+
+  **Convenciones:**
+  PK = Primary Key
+  FK = Foreign Key
+  {readOnly} = Propiedad calculada
+  <<Composite Pattern>> = Patrón de diseño
+endlegend
+
+@enduml

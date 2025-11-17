@@ -1,0 +1,313 @@
+@startuml DER_Gestor_Catalogo
+
+title Diagrama de Entidad-Relación - Gestor de Catálogo
+
+' ============================================================================
+' CONFIGURACIÓN
+' ============================================================================
+
+!define PRIMARY_KEY <b><color:#FF6B6B>PK</color></b>
+!define FOREIGN_KEY <b><color:#4ECDC4>FK</color></b>
+!define NOT_NULL <color:#95E1D3>NOT NULL</color>
+!define UNIQUE <color:#F38181>UNIQUE</color>
+!define AUTO <color:#AA96DA>AUTO</color>
+
+skinparam linetype ortho
+
+' ============================================================================
+' ENTIDADES PRINCIPALES
+' ============================================================================
+
+entity "Material" as Material {
+  PRIMARY_KEY IdMaterial : UNIQUEIDENTIFIER
+  --
+  NOT_NULL Titulo : NVARCHAR(200)
+  NOT_NULL Autor : NVARCHAR(200)
+  Editorial : NVARCHAR(200)
+  NOT_NULL Tipo : NVARCHAR(50)
+  NOT_NULL Genero : NVARCHAR(100)
+  ISBN : NVARCHAR(20)
+  AnioPublicacion : INT
+  Nivel : NVARCHAR(50)
+  CantidadTotal : INT DEFAULT 0
+  CantidadDisponible : INT DEFAULT 0
+  FechaRegistro : DATETIME DEFAULT GETDATE()
+  NOT_NULL Activo : BIT DEFAULT 1
+}
+
+entity "Ejemplar" as Ejemplar {
+  PRIMARY_KEY IdEjemplar : UNIQUEIDENTIFIER
+  --
+  FOREIGN_KEY IdMaterial : UNIQUEIDENTIFIER
+  NOT_NULL NumeroEjemplar : INT
+  UNIQUE CodigoBarras : NVARCHAR(50)
+  NOT_NULL Estado : NVARCHAR(50)
+  Ubicacion : NVARCHAR(100)
+  FechaRegistro : DATETIME DEFAULT GETDATE()
+  NOT_NULL Activo : BIT DEFAULT 1
+}
+
+entity "HistorialEstadoEjemplar" as HistorialEstado {
+  PRIMARY_KEY IdHistorial : UNIQUEIDENTIFIER
+  --
+  FOREIGN_KEY IdEjemplar : UNIQUEIDENTIFIER
+  NOT_NULL EstadoAnterior : NVARCHAR(50)
+  NOT_NULL EstadoNuevo : NVARCHAR(50)
+  FechaCambio : DATETIME DEFAULT GETDATE()
+  FOREIGN_KEY IdUsuario : UNIQUEIDENTIFIER (nullable)
+  Motivo : NVARCHAR(500)
+  TipoCambio : NVARCHAR(50)
+}
+
+entity "Prestamo" as Prestamo {
+  PRIMARY_KEY IdPrestamo : UNIQUEIDENTIFIER
+  --
+  FOREIGN_KEY IdEjemplar : UNIQUEIDENTIFIER
+  FOREIGN_KEY IdAlumno : UNIQUEIDENTIFIER
+  FOREIGN_KEY IdUsuario : UNIQUEIDENTIFIER
+  NOT_NULL FechaPrestamo : DATETIME
+  NOT_NULL FechaDevolucionEstimada : DATETIME
+  FechaDevolucion : DATETIME (nullable)
+  NOT_NULL CantidadRenovaciones : INT DEFAULT 0
+  Observaciones : NVARCHAR(500)
+  NOT_NULL Activo : BIT DEFAULT 1
+}
+
+entity "BitacoraOperaciones" as Bitacora {
+  PRIMARY_KEY IdBitacora : UNIQUEIDENTIFIER
+  --
+  NOT_NULL TipoOperacion : NVARCHAR(100)
+  NOT_NULL Descripcion : NVARCHAR(500)
+  NOT_NULL Operacion : NVARCHAR(50)
+  FOREIGN_KEY IdUsuario : UNIQUEIDENTIFIER
+  NOT_NULL Fecha : DATETIME DEFAULT GETDATE()
+  Detalle : NVARCHAR(MAX)
+}
+
+' ============================================================================
+' ENTIDADES DE SOPORTE
+' ============================================================================
+
+entity "Usuario\n(SeguridadBiblioteca)" as Usuario {
+  PRIMARY_KEY IdUsuario : UNIQUEIDENTIFIER
+  --
+  NOT_NULL Nombre : NVARCHAR(100)
+  NOT_NULL Email : NVARCHAR(100) UNIQUE
+  ...
+}
+
+entity "Alumno" as Alumno {
+  PRIMARY_KEY IdAlumno : UNIQUEIDENTIFIER
+  --
+  NOT_NULL Nombre : NVARCHAR(100)
+  NOT_NULL Apellido : NVARCHAR(100)
+  NOT_NULL DNI : NVARCHAR(20) UNIQUE
+  NOT_NULL Grado : NVARCHAR(10)
+  NOT_NULL Division : NVARCHAR(10)
+  ...
+}
+
+' ============================================================================
+' ENUMERACIONES (Tipos)
+' ============================================================================
+
+note right of Material
+  **Tipo (TipoMaterial)**:
+  - Libro
+  - Revista
+  - Manual
+  - DVD
+  - CD
+  - Otro
+
+  **Género (ejemplos)**:
+  - Ficción
+  - No Ficción
+  - Ciencia
+  - Historia
+  - Literatura
+  - Referencia
+end note
+
+note right of Ejemplar
+  **Estado (EstadoMaterial)**:
+  - Disponible
+  - Prestado
+  - Reservado
+  - En Reparacion
+  - Extraviado
+  - Baja
+
+  **Ubicación (ejemplos)**:
+  - Estante A1
+  - Estante B2
+  - Depósito
+  - Sala Multimedia
+end note
+
+note right of HistorialEstado
+  **TipoCambio**:
+  - Automatico (por préstamo/devolución)
+  - Manual (cambio explícito de estado)
+
+  Registra todos los cambios
+  de estado de un ejemplar
+  para auditoría completa
+end note
+
+' ============================================================================
+' RELACIONES
+' ============================================================================
+
+' Material → Ejemplar (1:N)
+Material ||--o{ Ejemplar : "tiene múltiples\ncopias físicas"
+
+' Ejemplar → HistorialEstadoEjemplar (1:N)
+Ejemplar ||--o{ HistorialEstado : "registra historial\nde estados"
+
+' Ejemplar → Prestamo (1:N)
+Ejemplar ||--o{ Prestamo : "puede ser\nprestado\nvarias veces"
+
+' Alumno → Prestamo (1:N)
+Alumno ||--o{ Prestamo : "solicita\npréstamos"
+
+' Usuario → Prestamo (1:N)
+Usuario ||--o{ Prestamo : "autoriza\npréstamos"
+
+' Usuario → HistorialEstadoEjemplar (1:N)
+Usuario ||--o{ HistorialEstado : "registra\ncambios"
+
+' Usuario → BitacoraOperaciones (1:N)
+Usuario ||--o{ Bitacora : "realiza\noperaciones"
+
+' ============================================================================
+' ÍNDICES Y RESTRICCIONES
+' ============================================================================
+
+note bottom of Material
+  **Índices**:
+  - PK_Material (IdMaterial)
+  - IX_Material_Titulo
+  - IX_Material_Autor
+  - IX_Material_ISBN
+  - IX_Material_Tipo
+  - IX_Material_Activo
+
+  **Restricciones**:
+  - CantidadDisponible <= CantidadTotal
+  - CantidadTotal >= 0
+  - CantidadDisponible >= 0
+  - Titulo NOT NULL
+  - Autor NOT NULL
+  - Genero NOT NULL
+end note
+
+note bottom of Ejemplar
+  **Índices**:
+  - PK_Ejemplar (IdEjemplar)
+  - IX_Ejemplar_IdMaterial
+  - IX_Ejemplar_CodigoBarras (UNIQUE)
+  - IX_Ejemplar_Estado
+  - IX_Ejemplar_Activo
+
+  **Restricciones**:
+  - FK_Ejemplar_Material
+  - CodigoBarras UNIQUE
+  - NumeroEjemplar > 0
+
+  **Trigger**:
+  - TR_Ejemplar_ActualizarCantidades
+    (actualiza Material.CantidadTotal
+     y CantidadDisponible automáticamente)
+end note
+
+note bottom of Prestamo
+  **Índices**:
+  - PK_Prestamo (IdPrestamo)
+  - IX_Prestamo_IdEjemplar
+  - IX_Prestamo_IdAlumno
+  - IX_Prestamo_FechaPrestamo
+  - IX_Prestamo_Activo
+
+  **Restricciones**:
+  - FK_Prestamo_Ejemplar
+  - FK_Prestamo_Alumno
+  - FK_Prestamo_Usuario
+  - FechaDevolucionEstimada > FechaPrestamo
+  - CantidadRenovaciones >= 0
+
+  **Validaciones (BLL)**:
+  - Ejemplar debe estar Disponible
+  - Alumno no debe tener préstamos atrasados
+  - Máximo 3 renovaciones por préstamo
+end note
+
+' ============================================================================
+' CÁLCULOS Y LÓGICA
+' ============================================================================
+
+note top of Material
+  **CantidadTotal**:
+  = COUNT(Ejemplar WHERE IdMaterial = @Id AND Activo = 1)
+
+  **CantidadDisponible**:
+  = COUNT(Ejemplar WHERE IdMaterial = @Id
+          AND Estado = 'Disponible' AND Activo = 1)
+
+  Estos valores se recalculan automáticamente
+  mediante triggers o métodos BLL cuando:
+  - Se agrega un nuevo Ejemplar
+  - Se cambia el Estado de un Ejemplar
+  - Se elimina (lógicamente) un Ejemplar
+end note
+
+' ============================================================================
+' OPERACIONES CRUD
+' ============================================================================
+
+note left of Material
+  **CRUD Material** (CU-05):
+
+  **CREATE (CU-05.1 Registrar)**:
+  - INSERT INTO Material
+  - Validar campos obligatorios
+  - Registrar en BitacoraOperaciones
+
+  **READ (CU-05.4 Consultar)**:
+  - SELECT con filtros opcionales
+  - Solo registros Activo = 1
+  - Ordenar por Titulo
+
+  **UPDATE (CU-05.2 Modificar)**:
+  - UPDATE Material SET ... WHERE IdMaterial = @Id
+  - Validar datos antes de actualizar
+  - Registrar en BitacoraOperaciones
+
+  **DELETE (CU-05.3 Eliminar)**:
+  - Eliminación LÓGICA: UPDATE Material SET Activo = 0
+  - Verificar que NO tenga préstamos activos
+  - Marcar Ejemplares como Activo = 0
+  - Registrar en BitacoraOperaciones
+end note
+
+note left of Ejemplar
+  **CRUD Ejemplar** (CU-06):
+
+  **CREATE (CU-06.1 Agregar)**:
+  - INSERT INTO Ejemplar
+  - Generar NumeroEjemplar automático
+  - Estado inicial: Disponible
+  - Actualizar Material.CantidadTotal
+
+  **UPDATE (CU-06.2 Editar)**:
+  - UPDATE Ejemplar (Ubicación, CodigoBarras)
+  - CambiarEstado() → INSERT HistorialEstadoEjemplar
+  - Actualizar Material.CantidadDisponible
+
+  **DELETE (CU-06.3 Eliminar)**:
+  - Eliminación LÓGICA: UPDATE Activo = 0
+  - Verificar que NO esté Prestado
+  - Actualizar cantidades de Material
+end note
+
+@enduml

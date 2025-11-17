@@ -1,0 +1,153 @@
+@startuml Diagrama_Clases_Gestor_Catalogo
+
+title Diagrama de Clases - Gestor de Catálogo
+
+' ============================================================================
+' CAPA DE LÓGICA DE NEGOCIO (BLL)
+' ============================================================================
+
+package "BLL - Lógica de Negocio" <<Rectangle>> {
+  class MaterialBLL {
+    - _materialRepository: IMaterialRepository
+    --
+    + MaterialBLL()
+    + MaterialBLL(IMaterialRepository)
+    + ObtenerTodosMateriales(): List<Material>
+    + ObtenerMaterialPorId(Guid): Material
+    + BuscarMateriales(string, string, string): List<Material>
+    + GuardarMaterial(Material): void
+    + ActualizarMaterial(Material): void
+    + EliminarMaterial(Material): void
+    - ValidarMaterial(Material): void
+  }
+
+  class BitacoraOperacionesBLL {
+    + RegistrarOperacion(string, string, string, Guid): void
+  }
+}
+
+' ============================================================================
+' CAPA DE ACCESO A DATOS (DAL)
+' ============================================================================
+
+package "DAL - Acceso a Datos" <<Rectangle>> {
+  interface IMaterialRepository {
+    + GetAll(): List<Material>
+    + ObtenerPorId(Guid): Material
+    + Add(Material): void
+    + Update(Material): void
+    + Delete(Material): void
+    + BuscarPorFiltros(string, string, string): List<Material>
+  }
+
+  class MaterialRepository {
+    - _connectionString: string
+    --
+    + MaterialRepository()
+    + GetAll(): List<Material>
+    + ObtenerPorId(Guid): Material
+    + Add(Material): void
+    + Update(Material): void
+    + Delete(Material): void
+    + BuscarPorFiltros(string, string, string): List<Material>
+    - AdaptarMaterial(DataRow): Material
+    - EjecutarComando(SqlCommand): void
+  }
+
+  class MaterialAdapter {
+    + {static} AdaptarDesdeFila(DataRow): Material
+    + {static} AdaptarDesdeDataReader(SqlDataReader): Material
+  }
+}
+
+' ============================================================================
+' CAPA DE DOMINIO (Domain Model)
+' ============================================================================
+
+package "DomainModel - Entidades" <<Rectangle>> {
+  class Material {
+    + IdMaterial: Guid
+    + Titulo: string
+    + Autor: string
+    + Editorial: string
+    + Tipo: TipoMaterial
+    + Genero: string
+    + ISBN: string
+    + AnioPublicacion: int?
+    + Nivel: string
+    + CantidadTotal: int
+    + CantidadDisponible: int
+    + FechaRegistro: DateTime
+    + Activo: bool
+    --
+    + Material()
+  }
+
+  enum TipoMaterial {
+    Libro
+    Revista
+    Manual
+    DVD
+    CD
+    Otro
+  }
+}
+
+' ============================================================================
+' RELACIONES
+' ============================================================================
+
+' BLL → DAL
+MaterialBLL --> IMaterialRepository : utiliza
+MaterialBLL ..> Material : manipula
+
+' DAL → Implementación
+IMaterialRepository <|.. MaterialRepository : implementa
+MaterialRepository --> MaterialAdapter : utiliza
+
+' DAL → Domain
+MaterialRepository ..> Material : crea/manipula
+MaterialAdapter ..> Material : adapta
+
+' Domain
+Material --> TipoMaterial : tiene
+
+' ============================================================================
+' NOTAS
+' ============================================================================
+
+note right of Material
+  **Entidad Principal**
+
+  Representa la ficha
+  bibliográfica del material
+
+  CantidadTotal y
+  CantidadDisponible se
+  calculan desde Ejemplares
+end note
+
+note right of MaterialBLL
+  **Validaciones**:
+  - Título obligatorio
+  - Autor obligatorio
+  - Género obligatorio
+  - Cantidades >= 0
+  - Disponible <= Total
+
+  **Regla de negocio**:
+  No se puede eliminar si
+  tiene préstamos activos
+end note
+
+note left of IMaterialRepository
+  **Patrón Repository**
+
+  Abstrae el acceso
+  a datos
+
+  Permite testing con
+  mock/fake
+end note
+
+@enduml
