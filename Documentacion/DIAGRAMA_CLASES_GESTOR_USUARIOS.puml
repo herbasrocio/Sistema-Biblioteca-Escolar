@@ -1,0 +1,218 @@
+@startuml Diagrama_Clases_Gestor_Usuarios
+
+title Diagrama de Clases - Gestor de Usuarios (Simplificado)
+
+' ============================================================================
+' CAPA DE PRESENTACIÓN (UI)
+' ============================================================================
+
+package "UI - Capa de Presentación" <<Rectangle>> {
+  class gestionUsuarios {
+    - _usuarioLogueado: Usuario
+    - _usuarioSeleccionado: Usuario
+    - _modoEdicion: bool
+    - _bitacoraSeguridadBLL: BitacoraSeguridadBLL
+    --
+    + gestionUsuarios(Usuario)
+    - BtnNuevo_Click(): void
+    - BtnGuardar_Click(): void
+    - BtnModificar_Click(): void
+    - BtnEliminar_Click(): void
+    - BtnBuscar_Click(): void
+    - CargarTodosLosUsuarios(): void
+    - MostrarDatosUsuario(Usuario): void
+    - ValidarFormatoEmail(string): bool
+  }
+}
+
+' ============================================================================
+' CAPA DE LÓGICA DE NEGOCIO (BLL)
+' ============================================================================
+
+package "BLL - Lógica de Negocio" <<Rectangle>> {
+  class UsuarioBLL <<static>> {
+    + {static} ObtenerTodosLosUsuarios(): IEnumerable<Usuario>
+    + {static} ObtenerUsuarioPorId(Guid): Usuario
+    + {static} ObtenerUsuarioPorNombre(string): Usuario
+    + {static} CrearUsuario(string, string, string, Guid): void
+    + {static} ActualizarUsuario(Guid, string, string, string, Guid?): void
+    + {static} EliminarUsuario(Guid): void
+    + {static} ObtenerRolesDisponibles(): IEnumerable<Familia>
+    + {static} ObtenerRolDelUsuario(Guid): Familia
+    + {static} CambiarRol(Guid, Guid): void
+    - {static} ValidarCampoRequerido(string, string): void
+    - {static} ValidarLongitudMinima(string, string, int): void
+  }
+
+  class BitacoraSeguridadBLL {
+    + RegistrarEventoSeguridad(string, string, string, Guid, string, string): void
+    + RegistrarError(string, string, string, Guid?, string?, string): void
+  }
+}
+
+' ============================================================================
+' CAPA DE ACCESO A DATOS (DAL)
+' ============================================================================
+
+package "DAL - Acceso a Datos" <<Rectangle>> {
+  class UsuarioRepository <<singleton>> {
+    + {static} Current: UsuarioRepository
+    --
+    + SelectAll(): IEnumerable<Usuario>
+    + SelectOne(Guid): Usuario
+    + SelectOneByName(string): Usuario
+    + Insert(Usuario): void
+    + Update(Usuario): void
+    + Delete(Guid): void
+  }
+
+  class FamiliaRepository <<singleton>> {
+    + {static} Current: FamiliaRepository
+    --
+    + SelectAll(): IEnumerable<Familia>
+    + SelectOne(Guid): Familia
+  }
+
+  class UsuarioFamiliaRepository <<singleton>> {
+    + {static} Current: UsuarioFamiliaRepository
+    --
+    + GetChildren(Usuario): List<UsuarioFamilia>
+    + Insert(UsuarioFamilia): void
+    + DeleteRelacion(UsuarioFamilia): void
+  }
+}
+
+' ============================================================================
+' CAPA DE DOMINIO (Domain Model)
+' ============================================================================
+
+package "DomainModel - Entidades" <<Rectangle>> {
+  class Usuario {
+    + IdUsuario: Guid
+    + Nombre: string
+    + Email: string
+    + Password: string
+    + Clave: string
+    + Activo: bool
+    + IdiomaPreferido: string
+    + FechaUltimoAcceso: DateTime?
+    + Permisos: List<Component>
+    --
+    + Usuario()
+    + ObtenerFamiliaRol(): Familia
+    + ObtenerNombreRol(): string
+    + TieneRol(string): bool
+    + TienePermiso(string): bool
+  }
+
+  class Familia {
+    + IdComponent: Guid
+    + Nombre: string
+    + NombreRol: string
+    + EsRol: bool
+    + Activo: bool
+    --
+    + GetChildrens(): List<Component>
+    + ObtenerNombreRol(): string
+  }
+
+  class UsuarioFamilia {
+    + idUsuario: Guid
+    + idFamilia: Guid
+  }
+
+  abstract class Component {
+    + IdComponent: Guid
+    + Nombre: string
+    --
+    + {abstract} ChildrenCount(): int
+  }
+}
+
+' ============================================================================
+' SERVICIOS
+' ============================================================================
+
+package "Services - Servicios" <<Rectangle>> {
+  class CryptographyService <<static>> {
+    + {static} HashPassword(string): string
+  }
+}
+
+' ============================================================================
+' RELACIONES
+' ============================================================================
+
+' UI → BLL
+gestionUsuarios --> UsuarioBLL : utiliza
+gestionUsuarios --> BitacoraSeguridadBLL : utiliza
+
+' BLL → DAL
+UsuarioBLL --> UsuarioRepository : utiliza
+UsuarioBLL --> FamiliaRepository : utiliza
+UsuarioBLL --> UsuarioFamiliaRepository : utiliza
+
+' BLL → Services
+UsuarioBLL --> CryptographyService : utiliza
+
+' DAL → Domain
+UsuarioRepository ..> Usuario : crea/manipula
+FamiliaRepository ..> Familia : crea/manipula
+UsuarioFamiliaRepository ..> UsuarioFamilia : crea/manipula
+
+' Domain → Domain
+Usuario --> Component : contiene (Permisos)
+Usuario --> Familia : tiene rol
+Familia --|> Component : hereda
+UsuarioFamilia --> Usuario : relaciona
+UsuarioFamilia --> Familia : relaciona
+
+' ============================================================================
+' NOTAS
+' ============================================================================
+
+note right of Usuario
+  **Entidad Principal**
+
+  Representa a un usuario del sistema
+  con credenciales y permisos
+
+  - Password: texto plano (temporal)
+  - Clave: hash SHA256
+  - Permisos: árbol Composite
+    (Familias y Patentes)
+
+  Patrón Composite para permisos
+  con búsqueda recursiva
+end note
+
+note right of UsuarioBLL
+  **Validaciones**:
+  - Nombre requerido
+  - Email formato válido
+  - Contraseña mínimo 6 caracteres
+  - Nombre de usuario único
+  - Rol válido (Familia con EsRol=true)
+  - No eliminar a sí mismo
+
+  **Reglas de negocio**:
+  - Hash automático de contraseña
+  - Asignar rol al crear
+  - Cambiar rol (quita anterior)
+  - Registro en BitacoraSeguridad
+end note
+
+note left of Familia
+  **Roles del Sistema**
+
+  Familia con EsRol = true
+  representa un Rol:
+  - ROL_Administrador
+  - ROL_Bibliotecario
+  - ROL_Docente
+  - ROL_Ayudante
+
+  Cada usuario tiene UN rol
+end note
+
+@enduml

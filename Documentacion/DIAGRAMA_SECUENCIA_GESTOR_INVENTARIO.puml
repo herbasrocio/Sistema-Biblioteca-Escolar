@@ -1,0 +1,266 @@
+@startuml Diagrama_Secuencia_Gestor_Inventario
+
+title Diagrama de Secuencia - Gestor de Inventario
+
+' ============================================================================
+' CASO 1: AGREGAR EJEMPLAR
+' ============================================================================
+
+group CU-06.1: Agregar Ejemplar
+  actor "Bibliotecario/\nAdministrador" as Usuario
+  participant "GestionarEjemplares\n:Form" as UI
+  participant "EjemplarBLL" as BLL
+  participant ":Ejemplar" as ObjEjemplar
+  participant "EjemplarRepository" as RepoEjemplar
+  participant "MaterialRepository" as RepoMaterial
+  participant "BitacoraOperacionesBLL" as Bitacora
+
+  Usuario -> UI: Accede a "Gestionar Ejemplares"
+  activate UI
+
+  UI -> BLL: ObtenerEjemplaresPorMaterial(idMaterial)
+  activate BLL
+  BLL -> RepoEjemplar: ObtenerPorMaterial(idMaterial)
+  activate RepoEjemplar
+  RepoEjemplar --> BLL: List<Ejemplar>
+  deactivate RepoEjemplar
+  BLL --> UI: List<Ejemplar>
+  deactivate BLL
+
+  UI --> Usuario: Muestra lista de ejemplares existentes
+
+  Usuario -> UI: Clic en "Agregar Ejemplar"
+  UI --> Usuario: Muestra formulario nuevo ejemplar
+
+  Usuario -> UI: Ingresa datos:\n- NumeroEjemplar\n- CodigoEjemplar\n- Ubicacion\n- Estado\n- Observaciones
+  Usuario -> UI: Confirma
+
+  UI -> ObjEjemplar **: new Ejemplar()
+  activate ObjEjemplar
+  note right of ObjEjemplar
+    Se crea el objeto con:
+    - IdEjemplar (Guid auto-generado)
+    - IdMaterial
+    - NumeroEjemplar
+    - CodigoEjemplar
+    - Ubicacion
+    - Estado
+    - Observaciones
+    - FechaRegistro = DateTime.Now
+    - Activo = true
+  end note
+
+  UI -> BLL: GuardarEjemplar(ejemplar)
+  activate BLL
+
+  ' Validaciones
+  BLL -> RepoMaterial: ObtenerPorId(idMaterial)
+  activate RepoMaterial
+  RepoMaterial --> BLL: Material
+  deactivate RepoMaterial
+
+  alt Material no existe
+    BLL --> UI: Exception("Material no existe")
+    UI --> Usuario: Mensaje de error
+  end
+
+  BLL -> RepoEjemplar: ObtenerPorMaterial(idMaterial)
+  activate RepoEjemplar
+  RepoEjemplar --> BLL: List<Ejemplar> existentes
+  deactivate RepoEjemplar
+
+  alt NumeroEjemplar duplicado
+    BLL --> UI: Exception("Número duplicado")
+    UI --> Usuario: Mensaje de error
+  end
+
+  alt CodigoEjemplar duplicado
+    BLL -> RepoEjemplar: ObtenerPorCodigoEjemplar(codigo)
+    activate RepoEjemplar
+    RepoEjemplar --> BLL: Ejemplar encontrado
+    deactivate RepoEjemplar
+    BLL --> UI: Exception("Código duplicado")
+    UI --> Usuario: Mensaje de error
+  end
+
+  ' Guardar ejemplar
+  BLL -> RepoEjemplar: Add(ejemplar)
+  activate RepoEjemplar
+  RepoEjemplar --> BLL: void
+  deactivate RepoEjemplar
+
+  ' Actualizar cantidades del material
+  BLL -> RepoEjemplar: ObtenerPorMaterial(idMaterial)
+  activate RepoEjemplar
+  RepoEjemplar --> BLL: List<Ejemplar>
+  deactivate RepoEjemplar
+
+  BLL -> RepoMaterial: ObtenerPorId(idMaterial)
+  activate RepoMaterial
+  RepoMaterial --> BLL: Material
+  deactivate RepoMaterial
+
+  note right of BLL
+    Calcula:
+    - CantidadTotal = count(ejemplares activos)
+    - CantidadDisponible = count(ejemplares con Estado=Disponible)
+  end note
+
+  BLL -> RepoMaterial: Update(material)
+  activate RepoMaterial
+  RepoMaterial --> BLL: void
+  deactivate RepoMaterial
+
+  BLL --> UI: void
+  deactivate BLL
+
+  ' Registrar en bitácora
+  UI -> Bitacora: RegistrarOperacion("Inventario", "Agregar ejemplar", detalles, idUsuario)
+  activate Bitacora
+  Bitacora --> UI: void
+  deactivate Bitacora
+
+  UI -> UI: ActualizarGrilla()
+  UI --> Usuario: Mensaje de éxito
+  deactivate UI
+  deactivate ObjEjemplar
+end
+
+|||
+
+' ============================================================================
+' CASO 2: EDITAR EJEMPLAR
+' ============================================================================
+
+group CU-06.2: Editar Ejemplar
+  Usuario -> UI: Selecciona ejemplar de la grilla
+  activate UI
+  Usuario -> UI: Clic en "Editar"
+
+  UI -> BLL: ObtenerEjemplarPorId(idEjemplar)
+  activate BLL
+  BLL -> RepoEjemplar: ObtenerPorId(idEjemplar)
+  activate RepoEjemplar
+  RepoEjemplar --> BLL: Ejemplar
+  deactivate RepoEjemplar
+  BLL --> UI: Ejemplar
+  deactivate BLL
+
+  UI --> Usuario: Muestra formulario con datos actuales
+
+  Usuario -> UI: Modifica datos:\n- CodigoEjemplar\n- Ubicacion\n- Estado\n- Observaciones
+  Usuario -> UI: Confirma cambios
+
+  UI -> BLL: ActualizarEjemplar(ejemplar)
+  activate BLL
+
+  ' Si cambió el estado
+  opt Estado cambió
+    BLL -> BLL: CambiarEstado(idEjemplar, nuevoEstado, idUsuario, motivo)
+    activate BLL
+
+    ' Registrar en historial
+    participant "HistorialEstadoEjemplarRepository" as RepoHistorial
+    BLL -> RepoHistorial: Add(historial)
+    activate RepoHistorial
+    RepoHistorial --> BLL: void
+    deactivate RepoHistorial
+    deactivate BLL
+  end
+
+  ' Actualizar ejemplar
+  BLL -> RepoEjemplar: Update(ejemplar)
+  activate RepoEjemplar
+  RepoEjemplar --> BLL: void
+  deactivate RepoEjemplar
+
+  ' Actualizar cantidades del material
+  note right of BLL
+    ActualizarCantidadesMaterial()
+    recalcula las cantidades
+    basándose en los ejemplares
+  end note
+
+  BLL -> RepoMaterial: Update(material)
+  activate RepoMaterial
+  RepoMaterial --> BLL: void
+  deactivate RepoMaterial
+
+  BLL --> UI: void
+  deactivate BLL
+
+  UI -> Bitacora: RegistrarOperacion("Inventario", "Editar ejemplar", detalles, idUsuario)
+  activate Bitacora
+  Bitacora --> UI: void
+  deactivate Bitacora
+
+  UI -> UI: ActualizarGrilla()
+  UI --> Usuario: Mensaje de éxito
+  deactivate UI
+end
+
+|||
+
+' ============================================================================
+' CASO 3: ELIMINAR EJEMPLAR
+' ============================================================================
+
+group CU-06.3: Eliminar Ejemplar
+  Usuario -> UI: Selecciona ejemplar
+  activate UI
+  Usuario -> UI: Clic en "Eliminar"
+
+  UI --> Usuario: Diálogo de confirmación:\n"¿Eliminar ejemplar #[N]?"
+  Usuario -> UI: Confirma
+
+  UI -> BLL: EliminarEjemplar(ejemplar)
+  activate BLL
+
+  ' Validar que no esté prestado
+  alt Estado == Prestado
+    BLL --> UI: Exception("No se puede eliminar\nejemplar prestado")
+    UI --> Usuario: Mensaje de error:\n"Debe devolverse primero"
+    deactivate UI
+  end
+
+  ' Borrado lógico
+  BLL -> RepoEjemplar: Delete(ejemplar)
+  activate RepoEjemplar
+  note right of RepoEjemplar
+    Borrado lógico:
+    UPDATE Ejemplar
+    SET Activo = 0
+    WHERE IdEjemplar = @id
+
+    NO se usa DELETE físico
+    para preservar auditoría
+  end note
+  RepoEjemplar --> BLL: void
+  deactivate RepoEjemplar
+
+  ' Actualizar cantidades
+  BLL -> RepoMaterial: Update(material)
+  activate RepoMaterial
+  RepoMaterial --> BLL: void
+  deactivate RepoMaterial
+
+  BLL --> UI: void
+  deactivate BLL
+
+  UI -> Bitacora: RegistrarOperacion("Inventario", "Eliminar ejemplar", detalles, idUsuario)
+  activate Bitacora
+  Bitacora --> UI: void
+  deactivate Bitacora
+
+  UI -> UI: ActualizarGrilla()
+  note right of UI
+    Grilla NO muestra
+    ejemplares con
+    Activo = false
+  end note
+
+  UI --> Usuario: Mensaje de éxito
+  deactivate UI
+end
+
+@enduml

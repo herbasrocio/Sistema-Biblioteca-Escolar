@@ -1,0 +1,217 @@
+@startuml Diagrama_Clases_Gestor_Inventario
+
+title Diagrama de Clases - Gestor de Inventario (Ejemplares)
+
+' ============================================================================
+' CAPA DE PRESENTACIÓN (UI)
+' ============================================================================
+
+package "UI - Capa de Presentación" <<Rectangle>> {
+  class GestionarEjemplares {
+    - _usuarioLogueado: Usuario
+    - _material: Material
+    - _ejemplarBLL: EjemplarBLL
+    - _materialBLL: MaterialBLL
+    - _bitacoraBLL: BitacoraOperacionesBLL
+    --
+    + GestionarEjemplares(Usuario, Material)
+    - BtnAgregar_Click(): void
+    - BtnEditar_Click(): void
+    - BtnEliminar_Click(): void
+    - CargarEjemplares(): void
+    - ConfigurarPermisosEdicion(): void
+  }
+}
+
+' ============================================================================
+' CAPA DE LÓGICA DE NEGOCIO (BLL)
+' ============================================================================
+
+package "BLL - Lógica de Negocio" <<Rectangle>> {
+  class EjemplarBLL {
+    - _ejemplarRepository: IEjemplarRepository
+    - _materialRepository: IMaterialRepository
+    - _historialRepository: IHistorialEstadoEjemplarRepository
+    --
+    + GuardarEjemplar(Ejemplar): void
+    + ActualizarEjemplar(Ejemplar): void
+    + EliminarEjemplar(Ejemplar): void
+    + ObtenerEjemplaresPorMaterial(Guid): List<Ejemplar>
+    + BuscarPorCodigoEjemplar(string): Ejemplar
+    + CambiarEstado(Guid, EstadoMaterial, Guid?, string): void
+    - ActualizarCantidadesMaterial(Guid): void
+    - ValidarEjemplar(Ejemplar): void
+  }
+
+  class MaterialBLL {
+    + ObtenerMaterialPorId(Guid): Material
+    + ActualizarMaterial(Material): void
+  }
+
+  class BitacoraOperacionesBLL {
+    + RegistrarOperacion(string, string, string, Guid): void
+  }
+}
+
+' ============================================================================
+' CAPA DE ACCESO A DATOS (DAL)
+' ============================================================================
+
+package "DAL - Acceso a Datos" <<Rectangle>> {
+  interface IEjemplarRepository {
+    + GetAll(): List<Ejemplar>
+    + ObtenerPorId(Guid): Ejemplar
+    + Add(Ejemplar): void
+    + Update(Ejemplar): void
+    + Delete(Ejemplar): void
+    + ObtenerPorMaterial(Guid): List<Ejemplar>
+    + ObtenerPorCodigoEjemplar(string): Ejemplar
+    + ObtenerPorEstado(EstadoMaterial): List<Ejemplar>
+  }
+
+  class EjemplarRepository {
+    - _connectionString: string
+    --
+    + GetAll(): List<Ejemplar>
+    + ObtenerPorId(Guid): Ejemplar
+    + Add(Ejemplar): void
+    + Update(Ejemplar): void
+    + Delete(Ejemplar): void
+    + ObtenerPorMaterial(Guid): List<Ejemplar>
+    + ObtenerPorCodigoEjemplar(string): Ejemplar
+    - AdaptarEjemplar(DataRow): Ejemplar
+  }
+
+  interface IHistorialEstadoEjemplarRepository {
+    + Add(HistorialEstadoEjemplar): void
+    + ObtenerPorEjemplar(Guid): List<HistorialEstadoEjemplar>
+  }
+
+  class HistorialEstadoEjemplarRepository {
+    + Add(HistorialEstadoEjemplar): void
+    + ObtenerPorEjemplar(Guid): List<HistorialEstadoEjemplar>
+  }
+}
+
+' ============================================================================
+' CAPA DE DOMINIO (Domain Model)
+' ============================================================================
+
+package "DomainModel - Entidades" <<Rectangle>> {
+  class Ejemplar {
+    + IdEjemplar: Guid
+    + IdMaterial: Guid
+    + NumeroEjemplar: int
+    + CodigoEjemplar: string
+    + Estado: EstadoMaterial
+    + Ubicacion: string
+    + Observaciones: string
+    + FechaRegistro: DateTime
+    + Activo: bool
+    --
+    + Ejemplar()
+  }
+
+  class Material {
+    + IdMaterial: Guid
+    + Titulo: string
+    + Autor: string
+    + CantidadTotal: int
+    + CantidadDisponible: int
+    + Activo: bool
+  }
+
+  class HistorialEstadoEjemplar {
+    + IdHistorial: int
+    + IdEjemplar: Guid
+    + EstadoAnterior: EstadoMaterial
+    + EstadoNuevo: EstadoMaterial
+    + IdUsuario: Guid?
+    + Motivo: string
+    + TipoCambio: string
+    + FechaCambio: DateTime
+  }
+
+  enum EstadoMaterial {
+    Disponible
+    Prestado
+    EnReparacion
+    NoDisponible
+  }
+}
+
+' ============================================================================
+' RELACIONES
+' ============================================================================
+
+' UI → BLL
+GestionarEjemplares --> EjemplarBLL : utiliza
+GestionarEjemplares --> MaterialBLL : utiliza
+GestionarEjemplares --> BitacoraOperacionesBLL : utiliza
+
+' BLL → DAL
+EjemplarBLL --> IEjemplarRepository : utiliza
+EjemplarBLL --> IMaterialRepository : utiliza
+EjemplarBLL --> IHistorialEstadoEjemplarRepository : utiliza
+MaterialBLL --> IMaterialRepository : utiliza
+
+' DAL → Implementación
+IEjemplarRepository <|.. EjemplarRepository : implementa
+IHistorialEstadoEjemplarRepository <|.. HistorialEstadoEjemplarRepository : implementa
+
+' DAL → Domain
+EjemplarRepository ..> Ejemplar : crea/manipula
+HistorialEstadoEjemplarRepository ..> HistorialEstadoEjemplar : crea
+
+' Domain → Domain
+Ejemplar --> Material : pertenece a
+Ejemplar --> EstadoMaterial : tiene
+HistorialEstadoEjemplar --> Ejemplar : registra cambio de
+HistorialEstadoEjemplar --> EstadoMaterial : almacena
+
+' ============================================================================
+' NOTAS
+' ============================================================================
+
+note right of Ejemplar
+  **Entidad Principal**
+
+  Representa una copia física
+  individual de un Material
+
+  NumeroEjemplar: secuencial
+  por material (1, 2, 3...)
+
+  CodigoEjemplar: único
+  en todo el sistema (barras)
+
+  Borrado lógico: Activo=false
+end note
+
+note right of EjemplarBLL
+  **Validaciones**:
+  - Material asociado existe
+  - NumeroEjemplar > 0
+  - NumeroEjemplar no duplicado
+  - CodigoEjemplar único
+  - No eliminar si está prestado
+
+  **Reglas de negocio**:
+  - Actualiza cantidades del Material
+    automáticamente después de
+    cada operación CRUD
+  - Registra cambios de estado
+    en HistorialEstadoEjemplar
+end note
+
+note left of HistorialEstadoEjemplar
+  **Auditoría de Estados**
+
+  Registra cada cambio:
+  - Manual: usuario cambia
+  - Automático: préstamo/devolución
+
+  Permite trazabilidad completa
+end note
+
+@enduml

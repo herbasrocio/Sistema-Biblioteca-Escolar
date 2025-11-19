@@ -60,12 +60,12 @@ namespace UI.WinUi.Reportes
         {
             // Configurar títulos y traducciones
             this.Text = LanguageManager.Translate("reporte_prestamos_activos");
+            lblTitulo.Text = LanguageManager.Translate("reporte_prestamos_activos");
             lblDesde.Text = LanguageManager.Translate("fecha_desde") + ":";
             lblHasta.Text = LanguageManager.Translate("fecha_hasta") + ":";
             lblEstado.Text = LanguageManager.Translate("estado") + ":";
             btnGenerar.Text = LanguageManager.Translate("generar_reporte");
             btnExportarCsv.Text = LanguageManager.Translate("exportar_csv");
-            btnImprimir.Text = LanguageManager.Translate("imprimir");
             btnVolver.Text = LanguageManager.Translate("volver");
 
             // Recargar combo de estados con traducciones
@@ -80,16 +80,28 @@ namespace UI.WinUi.Reportes
             // Reconfigurar columnas del DataGridView si ya están creadas
             if (dgvReporte.Columns.Count > 0)
             {
-                dgvReporte.Columns["Alumno"].HeaderText = LanguageManager.Translate("alumno");
-                dgvReporte.Columns["Titulo"].HeaderText = LanguageManager.Translate("titulo");
-                dgvReporte.Columns["Autor"].HeaderText = LanguageManager.Translate("autor");
-                dgvReporte.Columns["CodigoEjemplar"].HeaderText = LanguageManager.Translate("codigo_ejemplar");
-                dgvReporte.Columns["FechaPrestamo"].HeaderText = LanguageManager.Translate("fecha_prestamo");
-                dgvReporte.Columns["FechaDevolucionEsperada"].HeaderText = LanguageManager.Translate("fecha_devolucion");
-                dgvReporte.Columns["DiasRestantes"].HeaderText = LanguageManager.Translate("dias_restantes");
-                dgvReporte.Columns["EstadoPrestamo"].HeaderText = LanguageManager.Translate("estado");
-                dgvReporte.Columns["Grado"].HeaderText = LanguageManager.Translate("grado");
-                dgvReporte.Columns["Division"].HeaderText = LanguageManager.Translate("division");
+                if (dgvReporte.Columns["Alumno"] != null)
+                    dgvReporte.Columns["Alumno"].HeaderText = LanguageManager.Translate("alumno");
+                if (dgvReporte.Columns["DNI"] != null)
+                    dgvReporte.Columns["DNI"].HeaderText = "DNI";
+                if (dgvReporte.Columns["Titulo"] != null)
+                    dgvReporte.Columns["Titulo"].HeaderText = LanguageManager.Translate("titulo");
+                if (dgvReporte.Columns["Autor"] != null)
+                    dgvReporte.Columns["Autor"].HeaderText = LanguageManager.Translate("autor");
+                if (dgvReporte.Columns["CodigoEjemplar"] != null)
+                    dgvReporte.Columns["CodigoEjemplar"].HeaderText = LanguageManager.Translate("codigo_ejemplar");
+                if (dgvReporte.Columns["FechaPrestamo"] != null)
+                    dgvReporte.Columns["FechaPrestamo"].HeaderText = LanguageManager.Translate("fecha_prestamo");
+                if (dgvReporte.Columns["FechaDevolucionEsperada"] != null)
+                    dgvReporte.Columns["FechaDevolucionEsperada"].HeaderText = LanguageManager.Translate("fecha_devolucion");
+                if (dgvReporte.Columns["DiasRestantes"] != null)
+                    dgvReporte.Columns["DiasRestantes"].HeaderText = LanguageManager.Translate("dias_restantes");
+                if (dgvReporte.Columns["EstadoPrestamo"] != null)
+                    dgvReporte.Columns["EstadoPrestamo"].HeaderText = LanguageManager.Translate("estado");
+                if (dgvReporte.Columns["Grado"] != null)
+                    dgvReporte.Columns["Grado"].HeaderText = LanguageManager.Translate("grado");
+                if (dgvReporte.Columns["Division"] != null)
+                    dgvReporte.Columns["Division"].HeaderText = LanguageManager.Translate("division");
             }
 
             // Actualizar estadísticas si hay datos
@@ -116,19 +128,12 @@ namespace UI.WinUi.Reportes
         private void ConfigurarDataGridView()
         {
             dgvReporte.AutoGenerateColumns = false;
-            dgvReporte.ReadOnly = true;
-            dgvReporte.AllowUserToAddRows = false;
-            dgvReporte.AllowUserToDeleteRows = false;
-            dgvReporte.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvReporte.MultiSelect = false;
-
-            // Configurar columnas
             dgvReporte.Columns.Clear();
 
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Alumno",
-                HeaderText = LanguageManager.Translate("alumno"),
+                HeaderText = "Alumno",
                 DataPropertyName = "Alumno",
                 Width = 150
             });
@@ -144,7 +149,7 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Titulo",
-                HeaderText = LanguageManager.Translate("titulo"),
+                HeaderText = "Título",
                 DataPropertyName = "Titulo",
                 Width = 200
             });
@@ -152,7 +157,7 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Autor",
-                HeaderText = LanguageManager.Translate("autor"),
+                HeaderText = "Autor",
                 DataPropertyName = "Autor",
                 Width = 120
             });
@@ -160,7 +165,7 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "CodigoEjemplar",
-                HeaderText = LanguageManager.Translate("codigo_ejemplar"),
+                HeaderText = "Código Ejemplar",
                 DataPropertyName = "CodigoEjemplar",
                 Width = 100
             });
@@ -168,7 +173,7 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "FechaPrestamo",
-                HeaderText = LanguageManager.Translate("fecha_prestamo"),
+                HeaderText = "Fecha Préstamo",
                 DataPropertyName = "FechaPrestamo",
                 Width = 100,
                 DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }
@@ -177,7 +182,7 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "FechaDevolucionEsperada",
-                HeaderText = LanguageManager.Translate("fecha_devolucion"),
+                HeaderText = "Fecha Devolución",
                 DataPropertyName = "FechaDevolucionEsperada",
                 Width = 100,
                 DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }
@@ -186,7 +191,7 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "DiasRestantes",
-                HeaderText = LanguageManager.Translate("dias_restantes"),
+                HeaderText = "Días Restantes",
                 DataPropertyName = "DiasRestantes",
                 Width = 80
             });
@@ -194,7 +199,7 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "EstadoPrestamo",
-                HeaderText = LanguageManager.Translate("estado"),
+                HeaderText = "Estado",
                 DataPropertyName = "EstadoPrestamo",
                 Width = 100
             });
@@ -202,7 +207,7 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Grado",
-                HeaderText = LanguageManager.Translate("grado"),
+                HeaderText = "Grado",
                 DataPropertyName = "Grado",
                 Width = 60
             });
@@ -210,12 +215,11 @@ namespace UI.WinUi.Reportes
             dgvReporte.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Division",
-                HeaderText = LanguageManager.Translate("division"),
+                HeaderText = "División",
                 DataPropertyName = "Division",
                 Width = 60
             });
 
-            // Configurar estilos
             dgvReporte.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(52, 152, 219);
             dgvReporte.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
             dgvReporte.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
@@ -338,17 +342,6 @@ namespace UI.WinUi.Reportes
                 MessageBox.Show($"Error al exportar: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void btnImprimir_Click(object sender, EventArgs e)
-        {
-            // TODO: Implementar impresión con ReportViewer después de instalar paquete NuGet
-            MessageBox.Show("Para habilitar la impresión, instale el paquete NuGet:\n\n" +
-                          "Microsoft.ReportingServices.ReportViewerControl.WinForms\n\n" +
-                          "Versión 150.1484.0",
-                          "Función no disponible",
-                          MessageBoxButtons.OK,
-                          MessageBoxIcon.Information);
         }
 
         private void btnVolver_Click(object sender, EventArgs e)

@@ -1,0 +1,296 @@
+@startuml Diagrama_Secuencia_Gestor_Usuarios
+
+title Diagrama de Secuencia - Gestor de Usuarios
+
+' ============================================================================
+' CASO 1: CREAR USUARIO
+' ============================================================================
+
+group CU-07.1: Crear Usuario
+  actor "Administrador" as Admin
+  participant "gestionUsuarios\n:Form" as UI
+  participant "UsuarioBLL" as BLL
+  participant ":Usuario" as ObjUsuario
+  participant "UsuarioRepository" as RepoUsuario
+  participant "FamiliaRepository" as RepoFamilia
+  participant "UsuarioFamiliaRepository" as RepoUsuarioFamilia
+  participant "CryptographyService" as Crypto
+  participant "BitacoraSeguridadBLL" as Bitacora
+
+  Admin -> UI: Accede a "Gestión de Usuarios"
+  activate UI
+
+  UI -> BLL: ObtenerTodosLosUsuarios()
+  activate BLL
+  BLL -> RepoUsuario: SelectAll()
+  activate RepoUsuario
+  RepoUsuario --> BLL: List<Usuario>
+  deactivate RepoUsuario
+  BLL --> UI: List<Usuario>
+  deactivate BLL
+
+  UI --> Admin: Muestra lista de usuarios
+
+  Admin -> UI: Clic en "Nuevo"
+  UI --> Admin: Habilita formulario vacío
+
+  Admin -> UI: Ingresa datos:\n- Nombre\n- Email\n- Contraseña\n- Selecciona Rol
+  Admin -> UI: Clic en "Guardar"
+
+  ' Validaciones
+  UI -> UI: ValidarFormatoEmail(email)
+  alt Email inválido
+    UI --> Admin: Mensaje: "Formato de email inválido"
+  end
+
+  UI -> BLL: CrearUsuario(nombre, email, password, idFamiliaRol)
+  activate BLL
+
+  ' Validar que el rol exista
+  BLL -> RepoFamilia: SelectOne(idFamiliaRol)
+  activate RepoFamilia
+  RepoFamilia --> BLL: Familia
+  deactivate RepoFamilia
+
+  alt Familia no existe o no es rol
+    BLL --> UI: Exception("Rol no válido")
+    UI --> Admin: Mensaje de error
+  end
+
+  ' Validar que el nombre no exista
+  BLL -> RepoUsuario: SelectOneByName(nombre)
+  activate RepoUsuario
+  RepoUsuario --> BLL: Usuario o null
+  deactivate RepoUsuario
+
+  alt Usuario ya existe
+    BLL --> UI: Exception("Usuario ya existe")
+    UI --> Admin: Mensaje: "Usuario duplicado"
+  end
+
+  ' Crear el usuario
+  BLL -> ObjUsuario **: new Usuario()
+  activate ObjUsuario
+  note right of ObjUsuario
+    Se crea con:
+    - IdUsuario = Guid.NewGuid()
+    - Nombre
+    - Email
+    - Password (texto plano)
+    - Activo = true
+  end note
+
+  ' Hashear contraseña
+  BLL -> Crypto: HashPassword(password)
+  activate Crypto
+  Crypto --> BLL: hash SHA256
+  deactivate Crypto
+
+  note right of BLL
+    Se asigna:
+    usuario.Clave = hash
+  end note
+
+  ' Guardar en BD
+  BLL -> RepoUsuario: Insert(usuario)
+  activate RepoUsuario
+  RepoUsuario --> BLL: void
+  deactivate RepoUsuario
+
+  ' Asignar rol (familia) al usuario
+  BLL -> RepoUsuarioFamilia: Insert(new UsuarioFamilia)
+  activate RepoUsuarioFamilia
+  note right of RepoUsuarioFamilia
+    INSERT INTO UsuarioFamilia
+    (idUsuario, idFamilia)
+  end note
+  RepoUsuarioFamilia --> BLL: void
+  deactivate RepoUsuarioFamilia
+
+  BLL --> UI: void
+  deactivate BLL
+  deactivate ObjUsuario
+
+  ' Registrar en bitácora
+  UI -> Bitacora: RegistrarEventoSeguridad(\n  "Usuarios", "Creación de usuario",\n  detalle, idUsuarioLogueado, gravedad="Alto")
+  activate Bitacora
+  Bitacora --> UI: void
+  deactivate Bitacora
+
+  UI -> UI: CargarTodosLosUsuarios()
+  UI --> Admin: Mensaje: "Usuario creado correctamente"
+  deactivate UI
+end
+
+|||
+
+' ============================================================================
+' CASO 2: MODIFICAR USUARIO
+' ============================================================================
+
+group CU-07.2: Modificar Usuario
+  Admin -> UI: Selecciona usuario de la grilla
+  activate UI
+  Admin -> UI: Clic en "Modificar"
+
+  UI -> BLL: ObtenerUsuarioPorId(idUsuario)
+  activate BLL
+  BLL -> RepoUsuario: SelectOne(idUsuario)
+  activate RepoUsuario
+  RepoUsuario --> BLL: Usuario
+  deactivate RepoUsuario
+  BLL --> UI: Usuario
+  deactivate BLL
+
+  UI --> Admin: Muestra formulario con datos actuales\n(contraseña con placeholder)
+
+  Admin -> UI: Modifica datos:\n- Nombre\n- Email\n- (Opcional) Cambia contraseña\n- (Opcional) Cambia Rol
+  Admin -> UI: Clic en "Guardar"
+
+  ' Validaciones
+  UI -> UI: ValidarFormatoEmail(email)
+
+  alt Nombre cambiado
+    UI -> BLL: verificar nombre no duplicado
+  end
+
+  UI -> BLL: ActualizarUsuario(idUsuario, nombre, email, password, idFamiliaRol)
+  activate BLL
+
+  BLL -> RepoUsuario: SelectOne(idUsuario)
+  activate RepoUsuario
+  RepoUsuario --> BLL: Usuario
+  deactivate RepoUsuario
+
+  ' Verificar nombre único
+  alt Nombre cambió
+    BLL -> RepoUsuario: SelectOneByName(nombre)
+    activate RepoUsuario
+    RepoUsuario --> BLL: Usuario o null
+    deactivate RepoUsuario
+
+    alt Nombre duplicado
+      BLL --> UI: Exception("Nombre ya existe")
+      UI --> Admin: Mensaje de error
+    end
+  end
+
+  ' Actualizar datos
+  note right of BLL
+    usuario.Nombre = nombre
+    usuario.Email = email
+  end note
+
+  ' Actualizar contraseña si se proporcionó
+  opt Contraseña nueva proporcionada
+    BLL -> Crypto: HashPassword(password)
+    activate Crypto
+    Crypto --> BLL: hash
+    deactivate Crypto
+    note right of BLL
+      usuario.Password = password
+      usuario.Clave = hash
+    end note
+  end
+
+  BLL -> RepoUsuario: Update(usuario)
+  activate RepoUsuario
+  RepoUsuario --> BLL: void
+  deactivate RepoUsuario
+
+  ' Cambiar rol si se proporcionó
+  opt Rol nuevo proporcionado
+    ' Quitar rol anterior
+    BLL -> RepoUsuarioFamilia: DeleteRelacion(usuarioFamilia)
+    activate RepoUsuarioFamilia
+    RepoUsuarioFamilia --> BLL: void
+    deactivate RepoUsuarioFamilia
+
+    ' Asignar nuevo rol
+    BLL -> RepoUsuarioFamilia: Insert(new UsuarioFamilia)
+    activate RepoUsuarioFamilia
+    RepoUsuarioFamilia --> BLL: void
+    deactivate RepoUsuarioFamilia
+  end
+
+  BLL --> UI: void
+  deactivate BLL
+
+  ' Registrar en bitácora
+  UI -> Bitacora: RegistrarEventoSeguridad(\n  "Usuarios", "Modificación de usuario",\n  detalle, idUsuarioLogueado, gravedad="Alto")
+  activate Bitacora
+  Bitacora --> UI: void
+  deactivate Bitacora
+
+  UI -> UI: CargarTodosLosUsuarios()
+  UI --> Admin: Mensaje: "Usuario actualizado correctamente"
+  deactivate UI
+end
+
+|||
+
+' ============================================================================
+' CASO 3: BAJA USUARIO (ELIMINAR)
+' ============================================================================
+
+group CU-07.3: Baja Usuario (Eliminar)
+  Admin -> UI: Selecciona usuario de la grilla
+  activate UI
+  Admin -> UI: Clic en "Eliminar"
+
+  UI --> Admin: Diálogo de confirmación:\n"¿Eliminar usuario 'XXX'?"
+  Admin -> UI: Confirma
+
+  ' Validar que no se elimine a sí mismo
+  alt Usuario seleccionado es el logueado
+    UI --> Admin: Mensaje: "No puede eliminar\nsu propio usuario"
+    deactivate UI
+  end
+
+  UI -> BLL: EliminarUsuario(idUsuario)
+  activate BLL
+
+  BLL -> RepoUsuario: SelectOne(idUsuario)
+  activate RepoUsuario
+  RepoUsuario --> BLL: Usuario
+  deactivate RepoUsuario
+
+  alt Usuario no encontrado
+    BLL --> UI: Exception("Usuario no encontrado")
+    UI --> Admin: Mensaje de error
+  end
+
+  ' Eliminar usuario (borrado físico)
+  BLL -> RepoUsuario: Delete(idUsuario)
+  activate RepoUsuario
+  note right of RepoUsuario
+    DELETE FROM Usuario
+    WHERE IdUsuario = @id
+
+    También elimina relaciones
+    en UsuarioFamilia y
+    UsuarioPatente (CASCADE)
+  end note
+  RepoUsuario --> BLL: void
+  deactivate RepoUsuario
+
+  BLL --> UI: void
+  deactivate BLL
+
+  ' Registrar en bitácora
+  UI -> Bitacora: RegistrarEventoSeguridad(\n  "Usuarios", "Eliminación de usuario",\n  detalle, idUsuarioLogueado, gravedad="Alto")
+  activate Bitacora
+  Bitacora --> UI: void
+  deactivate Bitacora
+
+  UI -> UI: CargarTodosLosUsuarios()
+  note right of UI
+    Usuario eliminado
+    ya no aparece en grilla
+  end note
+
+  UI --> Admin: Mensaje: "Usuario eliminado correctamente"
+  deactivate UI
+end
+
+@enduml

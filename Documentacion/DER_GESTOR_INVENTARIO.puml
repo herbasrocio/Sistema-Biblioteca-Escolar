@@ -1,0 +1,227 @@
+@startuml DER_Gestor_Inventario
+
+title Diagrama Entidad-Relación - Gestor de Inventario
+
+' ============================================================================
+' ESTILO
+' ============================================================================
+
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+
+' Estilo para entidades
+skinparam class {
+  BackgroundColor<<Main>> #E8F4F8
+  BorderColor<<Main>> #2E86AB
+  BackgroundColor<<Reference>> #FFF4E6
+  BorderColor<<Reference>> #FB8B24
+  BackgroundColor<<Audit>> #F0E6FF
+  BorderColor<<Audit>> #7B2CBF
+}
+
+' ============================================================================
+' ENTIDADES
+' ============================================================================
+
+' Entidad principal: Ejemplar
+entity "Ejemplar" as Ejemplar <<Main>> {
+  **PK** IdEjemplar : UNIQUEIDENTIFIER
+  --
+  **FK** IdMaterial : UNIQUEIDENTIFIER
+  NumeroEjemplar : INT
+  CodigoEjemplar : NVARCHAR(50) <<Unique>>
+  Estado : NVARCHAR(20)
+  Ubicacion : NVARCHAR(100)
+  Observaciones : NVARCHAR(MAX)
+  FechaRegistro : DATETIME
+  Activo : BIT
+  --
+  **Constraints:**
+  - PK: IdEjemplar (DEFAULT NEWID())
+  - FK: IdMaterial → Material.IdMaterial
+  - UQ: (IdMaterial, NumeroEjemplar)
+  - UQ: CodigoEjemplar (si no es NULL)
+  - CK: NumeroEjemplar > 0
+  - CK: Estado IN ('Disponible', 'Prestado',
+    'EnReparacion', 'NoDisponible')
+  - DF: Activo = 1
+  - DF: FechaRegistro = GETDATE()
+}
+
+' Entidad relacionada: Material
+entity "Material" as Material <<Reference>> {
+  **PK** IdMaterial : UNIQUEIDENTIFIER
+  --
+  Titulo : NVARCHAR(200)
+  Autor : NVARCHAR(200)
+  Editorial : NVARCHAR(100)
+  Tipo : NVARCHAR(50)
+  Genero : NVARCHAR(100)
+  ISBN : NVARCHAR(20)
+  AnioPublicacion : INT
+  Nivel : NVARCHAR(50)
+  **CantidadTotal : INT**
+  **CantidadDisponible : INT**
+  FechaRegistro : DATETIME
+  Activo : BIT
+  --
+  **Nota:**
+  CantidadTotal y CantidadDisponible
+  se calculan automáticamente
+  desde la tabla Ejemplar
+}
+
+' Entidad de auditoría: HistorialEstadoEjemplar
+entity "HistorialEstadoEjemplar" as Historial <<Audit>> {
+  **PK** IdHistorial : INT IDENTITY(1,1)
+  --
+  **FK** IdEjemplar : UNIQUEIDENTIFIER
+  EstadoAnterior : NVARCHAR(20)
+  EstadoNuevo : NVARCHAR(20)
+  IdUsuario : UNIQUEIDENTIFIER
+  Motivo : NVARCHAR(500)
+  TipoCambio : NVARCHAR(20)
+  FechaCambio : DATETIME
+  --
+  **Constraints:**
+  - FK: IdEjemplar → Ejemplar.IdEjemplar
+  - CK: TipoCambio IN ('Manual', 'Automatico')
+  - DF: FechaCambio = GETDATE()
+}
+
+' Entidad relacionada: Usuario (para auditoría)
+entity "Usuario" as Usuario <<Reference>> {
+  **PK** IdUsuario : UNIQUEIDENTIFIER
+  --
+  NombreUsuario : NVARCHAR(50)
+  Nombre : NVARCHAR(100)
+  Email : NVARCHAR(100)
+  Activo : BIT
+}
+
+' ============================================================================
+' RELACIONES
+' ============================================================================
+
+' Material tiene múltiples Ejemplares (1:N)
+Material ||--o{ Ejemplar : "tiene\nexemplares físicos"
+note on link
+  Un Material (ficha bibliográfica)
+  puede tener múltiples Ejemplares
+  (copias físicas)
+
+  **Relación 1:N**
+  Un Material → Muchos Ejemplares
+  Un Ejemplar → Un Material
+end note
+
+' Ejemplar tiene múltiples registros de Historial (1:N)
+Ejemplar ||--o{ Historial : "registra\ncambios de estado"
+note on link
+  Cada cambio de estado del
+  Ejemplar genera un registro
+  en el Historial
+
+  **Relación 1:N**
+  Preserva auditoría completa
+end note
+
+' Usuario registra cambios en Historial (1:N)
+Usuario ||--o{ Historial : "realiza\ncambios"
+note on link
+  **Relación opcional**
+  IdUsuario puede ser NULL
+  si el cambio fue automático
+  (por préstamo/devolución)
+end note
+
+' ============================================================================
+' NOTAS ADICIONALES
+' ============================================================================
+
+note right of Ejemplar
+  **Estados posibles:**
+  - Disponible (puede prestarse)
+  - Prestado (en manos de alumno)
+  - EnReparacion (mantenimiento)
+  - NoDisponible (dañado/extraviado)
+
+  **NumeroEjemplar:**
+  Secuencial por Material (1, 2, 3...)
+  NO es único global
+
+  **CodigoEjemplar:**
+  Código de barras, único en todo
+  el sistema (si se usa)
+
+  **Borrado:**
+  Lógico (Activo = 0)
+  NO se elimina físicamente
+end note
+
+note left of Material
+  **Actualización automática:**
+
+  CantidadTotal = COUNT(*)
+    FROM Ejemplar
+    WHERE IdMaterial = @id
+      AND Activo = 1
+
+  CantidadDisponible = COUNT(*)
+    FROM Ejemplar
+    WHERE IdMaterial = @id
+      AND Estado = 'Disponible'
+      AND Activo = 1
+
+  Se recalcula automáticamente
+  después de cada operación
+  CRUD sobre Ejemplar
+end note
+
+note bottom of Historial
+  **TipoCambio:**
+  - Manual: usuario cambió estado
+    explícitamente
+  - Automatico: sistema cambió
+    por préstamo o devolución
+
+  **Motivo:**
+  Obligatorio para cambios manuales
+  Opcional para automáticos
+
+  Permite trazabilidad completa
+  de todos los cambios de estado
+end note
+
+' ============================================================================
+' ÍNDICES
+' ============================================================================
+
+note bottom of Ejemplar
+  **Índices para optimización:**
+
+  - IX_Ejemplar_IdMaterial
+    ON Ejemplar(IdMaterial)
+
+  - IX_Ejemplar_Estado
+    ON Ejemplar(Estado)
+
+  - IX_Ejemplar_CodigoEjemplar
+    ON Ejemplar(CodigoEjemplar)
+
+  - UQ_Ejemplar_Material_Numero
+    UNIQUE(IdMaterial, NumeroEjemplar)
+end note
+
+note bottom of Historial
+  **Índices para auditoría:**
+
+  - IX_HistorialEstado_IdEjemplar
+    ON HistorialEstadoEjemplar(IdEjemplar)
+
+  - IX_HistorialEstado_FechaCambio
+    ON HistorialEstadoEjemplar(FechaCambio DESC)
+end note
+
+@enduml

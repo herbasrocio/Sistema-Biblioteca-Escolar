@@ -8,10 +8,34 @@ using DomainModel;
 
 namespace DAL.Implementations
 {
+    /// <summary>
+    /// Implementación del repositorio para el acceso a datos de materiales bibliográficos.
+    /// Proporciona operaciones CRUD y búsquedas especializadas contra la base de datos SQL Server.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Esta clase implementa el patrón Repository para la entidad <see cref="Material"/>,
+    /// encapsulando toda la lógica de acceso a datos y consultas SQL.
+    /// </para>
+    /// <para>
+    /// Las cantidades de ejemplares (CantidadTotal y CantidadDisponible) se calculan dinámicamente
+    /// mediante subconsultas SQL basándose en los ejemplares activos y su estado.
+    /// </para>
+    /// </remarks>
     public class MaterialRepository : IMaterialRepository
     {
         private readonly string _connectionString;
 
+        /// <summary>
+        /// Inicializa una nueva instancia de <see cref="MaterialRepository"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Se lanza si no se encuentra la cadena de conexión 'NegocioConString' en el archivo de configuración.
+        /// </exception>
+        /// <remarks>
+        /// La cadena de conexión se obtiene del archivo App.config mediante ConfigurationManager.
+        /// Es importante que el archivo App.config esté correctamente configurado y copiado al directorio de salida.
+        /// </remarks>
         public MaterialRepository()
         {
             var connStringSetting = System.Configuration.ConfigurationManager.ConnectionStrings["NegocioConString"];
@@ -23,6 +47,14 @@ namespace DAL.Implementations
             _connectionString = connStringSetting.ConnectionString;
         }
 
+        /// <summary>
+        /// Agrega un nuevo material al catálogo de la biblioteca.
+        /// </summary>
+        /// <param name="entity">Material a insertar en la base de datos.</param>
+        /// <remarks>
+        /// Inserta todos los campos del material incluyendo IdMaterial (GUID), información bibliográfica,
+        /// cantidades y estado de activación. Los valores nulos se manejan correctamente usando DBNull.Value.
+        /// </remarks>
         public void Add(Material entity)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -61,6 +93,14 @@ namespace DAL.Implementations
             }
         }
 
+        /// <summary>
+        /// Actualiza un material existente en el catálogo.
+        /// </summary>
+        /// <param name="entity">Material con los datos actualizados.</param>
+        /// <remarks>
+        /// Actualiza todos los campos excepto IdMaterial y FechaRegistro.
+        /// Los valores nulos se manejan correctamente usando DBNull.Value.
+        /// </remarks>
         public void Update(Material entity)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -101,6 +141,14 @@ namespace DAL.Implementations
             }
         }
 
+        /// <summary>
+        /// Elimina lógicamente un material del catálogo.
+        /// </summary>
+        /// <param name="entity">Material a eliminar.</param>
+        /// <remarks>
+        /// Implementa borrado lógico (soft delete) marcando el material como inactivo.
+        /// No se elimina físicamente de la base de datos.
+        /// </remarks>
         public void Delete(Material entity)
         {
             // Borrado lógico
@@ -108,6 +156,23 @@ namespace DAL.Implementations
             Update(entity);
         }
 
+        /// <summary>
+        /// Obtiene todos los materiales activos del catálogo con cantidades calculadas dinámicamente.
+        /// </summary>
+        /// <returns>
+        /// Lista de todos los materiales activos ordenados por título.
+        /// Las propiedades CantidadTotal y CantidadDisponible se calculan en tiempo real.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// La consulta SQL calcula dinámicamente:
+        /// <list type="bullet">
+        /// <item><description>CantidadTotal: Cuenta ejemplares activos asociados al material.</description></item>
+        /// <item><description>CantidadDisponible: Cuenta ejemplares activos con estado Disponible (valor 0).</description></item>
+        /// </list>
+        /// </para>
+        /// <para>Solo devuelve materiales con Activo=true.</para>
+        /// </remarks>
         public List<Material> GetAll()
         {
             List<Material> materiales = new List<Material>();
@@ -155,6 +220,18 @@ namespace DAL.Implementations
             return materiales;
         }
 
+        /// <summary>
+        /// Obtiene un material específico por su identificador con cantidades calculadas dinámicamente.
+        /// </summary>
+        /// <param name="idMaterial">Identificador único del material.</param>
+        /// <returns>
+        /// El objeto <see cref="Material"/> con cantidades actualizadas dinámicamente,
+        /// o <c>null</c> si no se encuentra.
+        /// </returns>
+        /// <remarks>
+        /// Similar a <see cref="GetAll"/>, las cantidades se calculan en tiempo real
+        /// basándose en los ejemplares activos asociados.
+        /// </remarks>
         public Material ObtenerPorId(Guid idMaterial)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -199,6 +276,23 @@ namespace DAL.Implementations
             return null;
         }
 
+        /// <summary>
+        /// Busca materiales aplicando filtros opcionales con cantidades calculadas dinámicamente.
+        /// </summary>
+        /// <param name="titulo">Título o parte del título. <c>null</c> o vacío para omitir filtro.</param>
+        /// <param name="autor">Autor o parte del autor. <c>null</c> o vacío para omitir filtro.</param>
+        /// <param name="tipo">Tipo de material. <c>null</c>, vacío o "Todos" para omitir filtro.</param>
+        /// <returns>
+        /// Lista de materiales que coinciden con los criterios, ordenados por título.
+        /// Las cantidades se calculan dinámicamente.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// La búsqueda utiliza operador LIKE para coincidencias parciales en título y autor.
+        /// Los filtros se combinan con operador AND. La búsqueda es insensible a mayúsculas/minúsculas.
+        /// </para>
+        /// <para>Solo devuelve materiales activos.</para>
+        /// </remarks>
         public List<Material> BuscarPorFiltros(string titulo, string autor, string tipo)
         {
             List<Material> materiales = new List<Material>();
